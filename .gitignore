@@ -6,6 +6,7 @@ __pycache__/
 .vscode/
 .idea/
 .ansible/
+dev/
 
 # General
 .DS_Store
