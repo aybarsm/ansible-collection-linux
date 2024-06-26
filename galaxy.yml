@@ -1,0 +1,15 @@
+---
+namespace: aybarsm
+name: CHANGE_ME
+version: 0.0.1
+readme: README.md
+authors:
+  - Murat Aybars <hello@aybarsm.com> (https://aybarsm.com)
+description: Ansible collection that...
+license_file: LICENSE
+tags: []
+dependencies: {}
+repository: https://github.com/aybarsm/CHANGE_ME
+documentation: https://github.com/aybarsm/CHANGE_ME
+homepage: https://github.com/aybarsm/CHANGE_ME
+issues: https://github.com/aybarsm/CHANGE_ME/issues
