@@ -1,0 +1,7 @@
+---
+- name: Import systemd network tasks
+  ansible.builtin.import_tasks:
+    file: systemd_network.yml
+  when:
+    - linux_manage_systemd_network | bool
+    - not linux_systemd_network_ensure_service_manager | bool or ansible_service_mgr == "systemd"

@@ -1,0 +1,21 @@
+# {{ ansible_managed }}
+
+{% for param in linux_grub_config_all %}
+{%  if (param | type_debug) == 'dict' and 'name' in param %}
+{%      set paramName = (linux_grub_config_name_prefix | upper) ~ (param.name | upper) %}
+{%      if 'value' in param %}
+{%          if (param.value | type_debug) == 'list' %}
+{%              if ((param.name | lower) == 'cmdline_linux_default' and (linux_grub_inherit_cmdline_default | bool)) or ((param.name | lower) == 'cmdline_linux' and (linux_grub_inherit_cmdline | bool)) %}
+{%                  set paramValPrefix = '$' ~ paramName ~ ' ' %}
+{%              else %}
+{%                  set paramValPrefix = '' %}
+{%              endif %}
+{{ paramName }}="{{ paramValPrefix }}{{ param.value | flatten_query('name', 'value', '=', ' ') }}"
+{%          else %}
+{{ paramName }}="{{ param.value }}"
+{%          endif %}
+{%      else %}
+{{ paramName }}=""
+{%      endif %}
+{%  endif %}
+{% endfor %}

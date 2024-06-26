@@ -1,0 +1,35 @@
+# {{ ansible_managed }}
+
+{% if linux_network_interfaces_file_source_position == 'top' %}
+{{ linux_network_interfaces_source_line }}
+
+{% endif %}
+{% if linux_network_interfaces_file_keep_lo | bool %}
+# The loopback network interface
+auto lo
+iface lo inet loopback
+{% endif %}
+
+{% for iface in linux_network_interfaces_ifaces_all %}
+{%  if 'mount' in iface and iface.mount != 'None' %}
+{{ iface.mount }} {{ iface.name }}
+{%  endif %}
+{%  for addr_family in ['inet', 'inet6'] %}
+{%      if addr_family in iface %}
+{%          set ifaceMethod = iface[addr_family] | selectattr('name', 'equalto', 'method') | map(attribute='value') | first | default('') %}
+{%          if ifaceMethod in ['static', 'dhcp'] %}
+iface {{ iface.name }} {{ addr_family }} {{ ifaceMethod }}
+{%              set ifaceParamsExclude = linux_network_interfaces_ifaces_dhcp_excludes if ifaceMethod == 'dhcp' else linux_network_interfaces_ifaces_static_excludes %}
+{%              set ifaceParamsExclude = ifaceParamsExclude + ['method'] %}
+{%              set ifaceParams = iface[addr_family] | rejectattr('name', 'in', ifaceParamsExclude) %}
+{%              if ifaceParams | length > 0 %}
+{{ ifaceParams | flatten_query('name', 'value', ' ', '\n') | indent(4, true) }}
+{%              endif %}
+
+{%          endif %}
+{%      endif %}
+{%  endfor %}
+{% endfor %}
+{% if linux_network_interfaces_file_source_position != 'top' %}
+{{ linux_network_interfaces_source_line }}
+{% endif %}

@@ -1,15 +1,26 @@
 ---
 namespace: aybarsm
-name: CHANGE_ME
+name: linux
 version: 0.0.1
 readme: README.md
 authors:
   - Murat Aybars <hello@aybarsm.com> (https://aybarsm.com)
-description: Ansible collection that...
+description: Ansible collection of linux related roles
 license_file: LICENSE
-tags: []
-dependencies: {}
-repository: https://github.com/aybarsm/CHANGE_ME
-documentation: https://github.com/aybarsm/CHANGE_ME
-homepage: https://github.com/aybarsm/CHANGE_ME
-issues: https://github.com/aybarsm/CHANGE_ME/issues
+tags:
+  - common
+  - linux
+  - debian
+  - system
+  - grub
+  - systemd
+  - systemd-network
+  - network_interfaces_file
+dependencies:
+  ansible.posix: "*"
+  community.general: "*"
+  aybarsm.helper: "*"
+repository: https://github.com/aybarsm/ansible-collection-linux
+documentation: https://github.com/aybarsm/ansible-collection-linux
+homepage: https://github.com/aybarsm/ansible-collection-linux
+issues: https://github.com/aybarsm/ansible-collection-linux/issues

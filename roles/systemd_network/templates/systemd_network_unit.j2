@@ -1,0 +1,13 @@
+# {{ ansible_managed }}
+
+{% for section, parameters in item.config.items() %}
+[{{ section }}]
+{%  if (parameters | type_debug) == 'dict' %}
+{%      for paramKey, paramVal in parameters.items() %}
+{{ paramKey }}={{ paramVal }}
+{%  endfor %}
+{%  endif %}
+{%  if not loop.last %}
+
+{%  endif %}
+{% endfor %}

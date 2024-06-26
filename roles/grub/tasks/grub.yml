@@ -1,0 +1,13 @@
+---
+- name: Deploy grub.cfg
+  become: true
+  ansible.builtin.template:
+    src: "{{ linux_grub_cfg_template }}"
+    dest: "{{ __linux_grub_cfg_destination }}"
+    backup: "{{ linux_grub_backup_cfg_file | default(omit) | bool }}"
+    mode: "0644"
+  when:
+    - linux_grub_config_all | type_debug == 'list'
+    - linux_grub_config_all | length > 0
+  register: linux_grub_deploy_cfg
+  notify: linux_grub_update_grub

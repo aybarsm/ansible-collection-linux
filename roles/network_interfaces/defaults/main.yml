@@ -1,0 +1,43 @@
+---
+linux_manage_network_interfaces: false
+linux_network_interfaces_dir: /etc/network
+linux_network_interfaces_file: interfaces
+
+linux_network_interfaces_file_keep_lo: true
+linux_network_interfaces_file_source_position: bottom
+
+# Seggrate network interfaces into separate files i.e. /etc/network/interfaces.d/eth0
+# This has not been implemented yet
+# TODO: Implement this feature
+linux_network_interfaces_segregate: false
+linux_network_interfaces_seggregate_dir: "{{ linux_network_interfaces_dir }}/interfaces.d"
+linux_network_interfaces_source_line: "source {{ linux_network_interfaces_seggregate_dir }}/*"
+
+linux_network_interfaces_backup_files: true
+linux_network_interfaces_template: network_interfaces.j2
+# This has not been implemented yet
+# TODO: Implement this feature
+linux_network_interfaces_iface_template: network_interfaces.iface.j2
+
+linux_network_interfaces_apply_changes: false
+
+# TODO: Implement this feature
+linux_systemd_network_responsible_services:
+  - networking
+linux_systemd_network_responsible_commands:
+  - ifreload -a
+
+linux_network_interfaces_ifaces_static_excludes: []
+linux_network_interfaces_ifaces_dhcp_excludes: [
+  'address', 'netmask', 'gateway', 'broadcast', 'network', 'dns-nameservers', 'dns-search',
+  'dns-domain', 'dns-domain-search', 'dns-options', 'dns-sortlist', 'dns-opts']
+
+linux_network_interfaces_ifaces_default: []
+linux_network_interfaces_ifaces_group: []
+linux_network_interfaces_ifaces_host: []
+linux_network_interfaces_ifaces_all: "{{
+  [linux_interfaces_file_ifaces_default, linux_interfaces_file_ifaces_group, linux_interfaces_file_ifaces_host] |
+  community.general.lists_mergeby('name', recursive=true, list_merge='prepend') |
+  unique_recursive(attribute='name', recurse='inet') | unique_recursive(attribute='name', recurse='inet6') }}"
+
+__linux_network_interfaces_file_destination: "{{ linux_network_interfaces_dir + '/' + linux_network_interfaces_file }}"

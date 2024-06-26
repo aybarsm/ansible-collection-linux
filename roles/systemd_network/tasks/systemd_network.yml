@@ -1,0 +1,35 @@
+---
+- name: Find unexpected systemd-network unit files
+  become: true
+  ansible.builtin.find:
+    paths: "{{ linux_systemd_network_unit_dir }}"
+    patterns: "{{ linux_systemd_network_cleanup_patterns }}"
+    use_regex: "{{ linux_systemd_network_cleanup_patterns_use_regex | bool }}"
+  when: linux_systemd_network_cleanup_units | bool
+  register: linux_systemd_network_find_cleanup_files
+
+- name: Remove unexpected systemd-network unit files
+  become: true
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop: "{{ linux_systemd_network_find_cleanup_files.files | map(attribute='path') }}"
+  when:
+    - linux_systemd_network_cleanup_units | bool
+    - linux_systemd_network_find_cleanup_files.files | length > 0
+  register: linux_systemd_network_cleanup_unit_files
+  notify: linux_systemd_network_restart
+
+- name: Deploy systemd-network unit files
+  become: true
+  ansible.builtin.template:
+    src: "{{ linux_systemd_network_unit_template }}"
+    dest: "{{ linux_systemd_network_unit_dir }}/{{ item.name }}"
+    backup: "{{ linux_systemd_network_backup_units | default(omit) | bool }}"
+    mode: "0644"
+  loop: "{{ linux_systemd_network_units_all }}"
+  when:
+    - linux_systemd_network_units_all | type_debug == 'list'
+    - linux_systemd_network_units_all | length > 0
+  register: linux_systemd_network_deploy_unit_files
+  notify: linux_systemd_network_restart

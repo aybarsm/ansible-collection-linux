@@ -1,0 +1,12 @@
+---
+- name: Apply grub changes
+  become: true
+  ansible.builtin.command:
+    cmd: "{{ item }}"
+  loop: "{{ linux_grub_update_commands }}"
+  changed_when: true
+  listen: "linux_grub_update_grub"
+  when:
+    - linux_grub_apply_changes | bool
+    - linux_grub_update_commands | type_debug == "list"
+    - linux_grub_update_commands | length > 0
