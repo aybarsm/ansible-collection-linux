@@ -5,12 +5,14 @@
 {%      set paramName = (linux_grub_config_name_prefix | upper) ~ (param.name | upper) %}
 {%      if 'value' in param %}
 {%          if (param.value | type_debug) == 'list' %}
-{%              if ((param.name | lower) == 'cmdline_linux_default' and (linux_grub_inherit_cmdline_default | bool)) or ((param.name | lower) == 'cmdline_linux' and (linux_grub_inherit_cmdline | bool)) %}
+{%              set inheritCmdlineDefault = param.name | lower == 'cmdline_linux_default' and linux_grub_inherit_cmdline_default | bool %}
+{%              set inheritCmdline = param.name | lower == 'cmdline_linux' and linux_grub_inherit_cmdline | bool %}
+{%              if inheritCmdlineDefault or inheritCmdline %}
 {%                  set paramValPrefix = '$' ~ paramName ~ ' ' %}
 {%              else %}
 {%                  set paramValPrefix = '' %}
 {%              endif %}
-{{ paramName }}="{{ paramValPrefix }}{{ param.value | flatten_query('name', 'value', '=', ' ') }}"
+{{ paramName }}="{{ paramValPrefix }}{{ param.value | aybarsm.helper.flatten_query('name', 'value', '=', ' ') }}"
 {%          else %}
 {{ paramName }}="{{ param.value }}"
 {%          endif %}
