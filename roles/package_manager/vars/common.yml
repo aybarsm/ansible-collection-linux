@@ -1,0 +1,9 @@
+linux_package_manager_packages_all: "{{ linux_package_manager_all | selectattr('type', 'equalto', 'package') |
+  aybarsm.helper.selectattr_defined(attributes=__linux_package_manager_uniques_package, logic='or') |
+  aybarsm.helper.unique_recursive(attributes=__linux_package_manager_uniques_package) | default([]) }}"
+linux_package_manager_repos_all: "{{ linux_package_manager_all | selectattr('type', 'equalto', 'repo') |
+  aybarsm.helper.selectattr_defined(attributes=__linux_package_manager_uniques_repo, logic='or') |
+  aybarsm.helper.unique_recursive(attributes=__linux_package_manager_uniques_repo) | default([]) }}"
+linux_package_manager_repo_keys_all: "{{ linux_package_manager_all | selectattr('type', 'equalto', 'repo_key') |
+  aybarsm.helper.selectattr_defined(attributes=__linux_package_manager_uniques_repo_key, logic='or') |
+  aybarsm.helper.unique_recursive(attributes=__linux_package_manager_uniques_repo_key) | default([]) }}"

@@ -54,7 +54,7 @@ linux_network_interfaces_host: []
 linux_network_interfaces_all: "{{
   [linux_network_interfaces_default, linux_network_interfaces_group, linux_network_interfaces_host] |
   community.general.lists_mergeby('name', recursive=true, list_merge='prepend') |
-  aybarsm.helper.unique_recursive(attribute='name', recurse='inet') | aybarsm.helper.unique_recursive(attribute='name', recurse='inet6') }}"
+  aybarsm.helper.unique_recursive(attributes='name', recurse='inet') | aybarsm.helper.unique_recursive(attributes='name', recurse='inet6') }}"
 
 # linux_network_interfaces_default:
 #   - name: enp0s6

@@ -27,4 +27,4 @@ linux_grub_host: []
 # linux_grub_host > linux_grub_group > linux_grub_default
 linux_grub_all: "{{ [linux_grub_default, linux_grub_group, linux_grub_host] |
   community.general.lists_mergeby('name', recursive=true, list_merge='prepend') |
-  aybarsm.helper.unique_recursive(attribute='name', recurse='value') }}"
+  aybarsm.helper.unique_recursive(attributes='name', recurse='value') }}"

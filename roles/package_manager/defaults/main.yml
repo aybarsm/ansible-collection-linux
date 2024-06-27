@@ -9,8 +9,3 @@ linux_package_manager_default: []
 linux_package_manager_group: []
 linux_package_manager_host: []
 linux_package_manager_all: "{{ (linux_package_manager_default + linux_package_manager_group + linux_package_manager_host) | selectattr('type', 'defined') }}"
-
-linux_package_manager_packages_all: "{{ linux_package_manager_all | selectattr('type', 'equalto', 'package') |
-  selectattr('name', 'defined') | unique(attribute='name') | default([]) }}"
-linux_package_manager_repos_all: "{{ linux_package_manager_all | selectattr('type', 'equalto', 'repo') |
-  selectattr('repo', 'defined') | unique(attribute='repo') | default([]) }}"

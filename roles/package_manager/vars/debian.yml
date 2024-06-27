@@ -1,0 +1,3 @@
+__linux_package_manager_uniques_package: ['name']
+__linux_package_manager_uniques_repo: ['repo']
+__linux_package_manager_uniques_repo_key: ['keyserver', 'url', 'id', 'data', 'file']
