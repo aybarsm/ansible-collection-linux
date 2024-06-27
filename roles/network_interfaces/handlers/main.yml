@@ -1,6 +1,38 @@
 ---
-- name: Apply linux_network_interfaces changes
-  ansible.builtin.import_tasks:
-    file: command.yml
-  listen: "linux_network_interfaces_apply_changes"
-  when: linux_network_interfaces_change_strategy | default('') | in ['command', 'service']
+- name: Apply command(s) for linux_network_interfaces changes
+  become: true
+  ansible.builtin.command:
+    chdir: "{{ item.chdir | default(omit) }}"
+    cmd: "{{ item.cmd }}"
+    creates: "{{ item.creates | default(omit) }}"
+    removes: "{{ item.removes | default(omit) }}"
+    stdin: "{{ item.stdin | default(omit) }}"
+    stdin_add_newline: "{{ item.stdin_add_newline | default(omit) }}"
+    strip_empty_ends: "{{ item.strip_empty_ends | default(omit) }}"
+  changed_when: true
+  loop: "{{ linux_network_interfaces_change | selectattr('cmd', 'defined') }}"
+  register: linux_network_interfaces_apply_changes_command
+  listen: "linux_network_interfaces_apply_changes_by_command"
+  when:
+    - linux_network_interfaces_change_strategy | default('') == 'command'
+    - linux_network_interfaces_change | type_debug == 'list'
+    - linux_network_interfaces_change | selectattr('cmd', 'defined') | length > 0
+
+- name: Effect service(s) for linux_network_interfaces changes
+  become: true
+  ansible.builtin.service:
+    arguments: "{{ item.arguments | default(omit) }}"
+    enabled: "{{ item.enabled | default(omit) }}"
+    name: "{{ item.name }}"
+    pattern: "{{ item.pattern | default(omit) }}"
+    runlevel: "{{ item.runlevel | default(omit) }}"
+    sleep: "{{ item.sleep | default(omit) }}"
+    state: "{{ item.state | default(omit) }}"
+    use: "{{ item.use | default(omit) }}"
+  loop: "{{ linux_network_interfaces_change | selectattr('name', 'defined') }}"
+  register: linux_network_interfaces_apply_changes_service
+  listen: "linux_network_interfaces_apply_changes_by_service"
+  when:
+    - linux_network_interfaces_change_strategy | default('') == 'service'
+    - linux_network_interfaces_change | type_debug == 'list'
+    - linux_network_interfaces_change | selectattr('name', 'defined') | length > 0

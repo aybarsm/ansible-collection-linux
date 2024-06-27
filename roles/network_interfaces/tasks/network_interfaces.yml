@@ -10,4 +10,6 @@
     - linux_network_interfaces_ifaces_all | type_debug == 'list'
     - linux_network_interfaces_ifaces_all | length > 0
   register: linux_network_interfaces_deploy_file
-  notify: linux_network_interfaces_apply_changes
+  notify:
+    - linux_network_interfaces_apply_changes_by_command
+    - linux_network_interfaces_apply_changes_by_service
