@@ -1,0 +1,17 @@
+---
+- name: Effect service(s) for linux_network_interfaces changes
+  become: true
+  ansible.builtin.service:
+    arguments: "{{ item.arguments | default(omit) }}"
+    enabled: "{{ item.enabled | default(omit) }}"
+    name: "{{ item.name }}"
+    pattern: "{{ item.pattern | default(omit) }}"
+    runlevel: "{{ item.runlevel | default(omit) }}"
+    sleep: "{{ item.sleep | default(omit) }}"
+    state: "{{ item.state | default(omit) }}"
+    use: "{{ item.use | default(omit) }}"
+  loop: "{{ linux_network_interfaces_change | selectattr('name', 'defined') }}"
+  register: linux_network_interfaces_apply_changes_service
+  when:
+    - linux_network_interfaces_change | type_debug == 'list'
+    - linux_network_interfaces_change | selectattr('name', 'defined') | length > 0

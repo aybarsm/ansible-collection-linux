@@ -19,7 +19,7 @@ iface lo inet loopback
 {%          set ifaceMethod = iface[addr_family] | selectattr('name', 'equalto', 'method') | map(attribute='value') | first | default('') %}
 {%          if ifaceMethod in ['static', 'dhcp'] %}
 iface {{ iface.name }} {{ addr_family }} {{ ifaceMethod }}
-{%              set ifaceParamsExclude = linux_network_interfaces_ifaces_dhcp_excludes if ifaceMethod == 'dhcp' else linux_network_interfaces_ifaces_static_excludes %}
+{%              set ifaceParamsExclude = linux_network_interfaces_dhcp_excludes | default([]) if ifaceMethod == 'dhcp' else linux_network_interfaces_static_excludes | default([]) %}
 {%              set ifaceParamsExclude = ifaceParamsExclude + ['method'] %}
 {%              set ifaceParams = iface[addr_family] | rejectattr('name', 'in', ifaceParamsExclude) %}
 {%              if ifaceParams | length > 0 %}

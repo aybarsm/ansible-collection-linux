@@ -1,11 +1,7 @@
 ---
 linux_manage_systemd_network: false
 
-linux_systemd_network_apply_changes: []
-# linux_systemd_network_apply_changes:
-#   - service: systemd-networkd
-#     state: restarted
-#   - command: "systemctl daemon-reload"
+linux_systemd_network_apply_changes: false
 
 linux_systemd_network_backup: true
 linux_systemd_network_cleanup: false

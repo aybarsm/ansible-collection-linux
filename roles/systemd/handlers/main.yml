@@ -1,11 +1,8 @@
 ---
-- name: Restart designated service(s) for systemd network changes
+- name: Restart systemd-networkd service for linux_systemd_network changes
   become: true
   ansible.builtin.service:
-    name: "{{ item }}"
+    name: "systemd-networkd"
     state: restarted
-  listen: "linux_systemd_network_restart"
-  loop: "{{ linux_systemd_network_responsible_services }}"
-  when:
-    - linux_systemd_network_apply_changes | type_debug == 'list'
-    - linux_systemd_network_apply_changes | length > 0
+  listen: "linux_systemd_networkd_restart"
+  when: linux_systemd_network_apply_changes | bool
