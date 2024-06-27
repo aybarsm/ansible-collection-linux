@@ -17,13 +17,13 @@ iface lo inet loopback
 {%  for addr_family in ['inet', 'inet6'] %}
 {%      if addr_family in iface %}
 {%          set ifaceMethod = iface[addr_family] | selectattr('name', 'equalto', 'method') | map(attribute='value') | first | default('') %}
-{%          if ifaceMethod in ['static', 'dhcp'] %}
+{%          if ifaceMethod in ['static', 'dhcp', 'manual'] %}
 iface {{ iface.name }} {{ addr_family }} {{ ifaceMethod }}
 {%              set ifaceParamsExclude = linux_network_interfaces_dhcp_excludes | default([]) if ifaceMethod == 'dhcp' else linux_network_interfaces_static_excludes | default([]) %}
 {%              set ifaceParamsExclude = ifaceParamsExclude + ['method'] %}
 {%              set ifaceParams = iface[addr_family] | rejectattr('name', 'in', ifaceParamsExclude) %}
 {%              if ifaceParams | length > 0 %}
-{{ ifaceParams | flatten_query('name', 'value', ' ', '\n') | indent(4, true) }}
+{{ ifaceParams | aybarsm.helper.flatten_query('name', 'value', ' ', '\n') | indent(4, true) }}
 {%              endif %}
 
 {%          endif %}

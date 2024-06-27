@@ -28,6 +28,9 @@ linux_network_interfaces_source_line: "source {{ linux_network_interfaces_seggre
 linux_network_interfaces_backup: true
 linux_network_interfaces_template: network_interfaces.j2
 
+# iface XXX inet {manual|static|dhcp}
+# Manual method only INCLUDES selected options whereas static and dhcp methods EXCLUDES selected options
+linux_network_interfaces_manual_includes: []
 linux_network_interfaces_static_excludes: []
 linux_network_interfaces_dhcp_excludes: [
   'address', 'netmask', 'gateway', 'broadcast', 'network', 'dns-nameservers', 'dns-search',
