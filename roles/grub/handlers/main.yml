@@ -1,6 +1,6 @@
 ---
 - name: Apply linux_grub changes
   ansible.builtin.import_tasks:
-    file: "{{ linux_grub_change_strategy }}.yml"
+    file: command.yml
   listen: "linux_grub_apply_changes"
-  when: linux_grub_change_strategy | default('') == 'command'
+  when: (linux_grub_change_strategy | default('') == 'command')

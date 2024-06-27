@@ -12,6 +12,8 @@
     use: "{{ item.use | default(omit) }}"
   loop: "{{ linux_network_interfaces_change | selectattr('name', 'defined') }}"
   register: linux_network_interfaces_apply_changes_service
+  listen: "linux_network_interfaces_apply_changes_by_service"
   when:
+    - linux_network_interfaces_change_strategy | default('') == 'service'
     - linux_network_interfaces_change | type_debug == 'list'
     - linux_network_interfaces_change | selectattr('name', 'defined') | length > 0

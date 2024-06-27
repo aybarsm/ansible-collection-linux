@@ -1,6 +1,6 @@
 ---
 - name: Apply linux_network_interfaces changes
   ansible.builtin.import_tasks:
-    file: "{{ linux_network_interfaces_change_strategy }}.yml"
+    file: command.yml
   listen: "linux_network_interfaces_apply_changes"
   when: linux_network_interfaces_change_strategy | default('') | in ['command', 'service']
