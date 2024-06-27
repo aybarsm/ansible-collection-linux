@@ -1,0 +1,5 @@
+---
+- name: Import posix sysctl tasks
+  ansible.builtin.import_tasks:
+    file: sysctl.yml
+  when: linux_manage_posix_sysctl | bool

@@ -1,0 +1,2 @@
+# Ensures system manager is systemd - ansible_service_mgr == "systemd"
+linux_systemd_ensure_service_manager: true

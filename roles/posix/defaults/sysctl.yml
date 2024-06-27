@@ -1,0 +1,6 @@
+linux_manage_posix_sysctl: false
+
+linux_posix_sysctl_default: []
+linux_posix_sysctl_group: []
+linux_posix_sysctl_host: []
+linux_posix_sysctl_all: "{{ (linux_posix_sysctl_host + linux_posix_sysctl_group + linux_posix_sysctl_default) | unique(attribute='name') }}"

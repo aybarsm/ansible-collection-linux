@@ -1,0 +1,14 @@
+---
+- name: Manage sysctl settings
+  ansible.posix.sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    ignoreerrors: "{{ item.ignoreerrors | default(omit) | bool }}"
+    reload: "{{ item.reload | default(omit) | bool }}"
+    state: "{{ item.state | default('present') }}"
+    sysctl_file: "{{ item.sysctl_file | default(omit) }}"
+    sysctl_set: "{{ item.sysctl_set | default(omit) | bool }}"
+  when:
+    - linux_posix_sysctl_conf | linux_type_debug == 'list'
+    - linux_posix_sysctl_conf | length > 0
+  loop: "{{ linux_posix_sysctl_conf }}"
