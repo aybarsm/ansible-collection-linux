@@ -1,0 +1,69 @@
+---
+- name: Manage APT packages
+  become: true
+  ansible.builtin.apt:
+    name: "{{ package_name }}"
+    allow_change_held_packages: "{{ item.allow_change_held_packages | default(omit) | bool }}"
+    allow_downgrade: "{{ item.allow_downgrade | default(omit) | bool }}"
+    allow_unauthenticated: "{{ item.allow_unauthenticated | default(omit) | bool }}"
+    autoclean: "{{ item.autoclean | default(omit) | bool }}"
+    autoremove: "{{ item.autoremove | default(omit) | bool }}"
+    cache_valid_time: "{{ item.cache_valid_time | default(omit) }}"
+    clean: "{{ item.clean | default(omit) | bool }}"
+    deb: "{{ item.deb | default(omit) }}"
+    default_release: "{{ item.default_release | default(omit) }}"
+    dpkg_options: "{{ item.dpkg_options | default(omit) }}"
+    fail_on_autoremove: "{{ item.fail_on_autoremove | default(omit) | bool }}"
+    force: "{{ item.force | default(omit) | bool }}"
+    force_apt_get: "{{ item.force_apt_get | default(omit) | bool }}"
+    install_recommends: "{{ item.install_recommends | default(omit) | bool }}"
+    lock_timeout: "{{ item.lock_timeout | default(omit) }}"
+    only_upgrade: "{{ item.only_upgrade | default(omit) | bool }}"
+    policy_rc_d: "{{ item.policy_rc_d | default(omit) }}"
+    purge: "{{ item.purge | default(omit) | bool }}"
+    state: "{{ item.state | default(omit) }}"
+    update_cache: "{{ item.update_cache | default(omit) | bool }}"
+    update_cache_retries: "{{ item.update_cache_retries | default(omit) }}"
+    update_cache_retry_max_delay: "{{ item.update_cache_retry_max_delay | default(omit) }}"
+    upgrade: "{{ item.upgrade | default(omit) }}"
+  vars:
+    package_name: "{{ item.name + '=' + item.version if 'version' in item else item.name }}"
+  loop: "{{ linux_package_manager_packages_all }}"
+  register: linux_package_manager_apt_packages_apply
+  when:
+    - linux_package_manager_packages_all | type_debug == 'list'
+    - linux_package_manager_packages_all | length > 0
+
+- name: Manage APT repositories
+  become: true
+  ansible.builtin.apt_repository:
+    repo: "{{ item.repo }}"
+    state: "{{ item.state | default(omit) }}"
+    codename: "{{ item.codename | default(omit) }}"
+    filename: "{{ item.filename | default(omit) }}"
+    install_python_apt: "{{ item.install_python_apt | default(omit) | bool }}"
+    mode: "{{ item.mode | default(omit) }}"
+    update_cache: "{{ item.update_cache | default(omit) | bool }}"
+    update_cache_retries: "{{ item.update_cache_retries | default(omit) }}"
+    update_cache_retry_max_delay: "{{ item.update_cache_retry_max_delay | default(omit) }}"
+    validate_certs: "{{ item.validate_certs | default(omit) | bool }}"
+  loop: "{{ linux_package_manager_repos_all }}"
+  register: linux_package_manager_apt_repos_apply
+  when:
+    - linux_package_manager_repos_all | type_debug == 'list'
+    - linux_package_manager_repos_all | length > 0
+
+- name: Manage APT keys
+  become: true
+  ansible.builtin.apt_key:
+    state: "{{ item.state | default(omit) }}"
+    data: "{{ item.data | default(omit) }}"
+    file: "{{ item.file | default(omit) }}"
+    keyring: "{{ item.keyring | default(omit) }}"
+    url: "{{ item.url | default(omit) }}"
+    validate_certs: "{{ item.validate_certs | default(omit) | bool }}"
+  loop: "{{ linux_package_manager_repo_keys_all }}"
+  register: linux_package_manager_apt_repo_keys_apply
+  when:
+    - linux_package_manager_repo_keys_all | type_debug == 'list'
+    - linux_package_manager_repo_keys_all | length > 0

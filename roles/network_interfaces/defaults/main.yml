@@ -1,5 +1,5 @@
 ---
-linux_manage_network_interfaces: false
+linux_role_network_interfaces_enabled: false
 
 # Leave empty not to apply changes
 linux_network_interfaces_change_strategy: ''
@@ -33,6 +33,9 @@ linux_network_interfaces_source_line: "source {{ linux_network_interfaces_seggre
 
 linux_network_interfaces_backup: true
 linux_network_interfaces_template: network_interfaces.j2
+# This has not been implemented yet
+# TODO: Implement this feature
+linux_network_interfaces_iface_template: network_interfaces.iface.j2
 
 # iface XXX inet {manual|static|dhcp}
 # Manual method only INCLUDES selected options whereas static and dhcp methods EXCLUDES selected options

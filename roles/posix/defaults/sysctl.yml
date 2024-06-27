@@ -1,4 +1,4 @@
-linux_manage_posix_sysctl: false
+linux_role_posix_sysctl_enabled: false
 
 linux_posix_sysctl_default: []
 linux_posix_sysctl_group: []

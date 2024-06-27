@@ -1,0 +1,19 @@
+---
+- name: Load OS related variables
+  ansible.builtin.include_vars:
+    file: "{{ ansible_facts['os_family'] | lower }}.yml"
+
+- name: Import APT package manager tasks
+  ansible.builtin.import_tasks:
+    file: apt.yml
+  when:
+    - linux_role_repos_enabled | default(false) | bool
+    - linux_package_manager_strategy | default('specific') == 'specific'
+    - ansible_pkg_mgr | lower == 'apt'
+
+- name: Import common package manager tasks
+  ansible.builtin.import_tasks:
+    file: common.yml
+  when:
+    - linux_role_repos_enabled | default(false) | bool
+    - linux_package_manager_strategy | default('specific') == 'common'

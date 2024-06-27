@@ -1,5 +1,5 @@
 ---
-linux_manage_grub: false
+linux_role_grub_enabled: false
 
 linux_grub_dir: /etc/default/grub.d
 linux_grub_file: 50-ansible.cfg

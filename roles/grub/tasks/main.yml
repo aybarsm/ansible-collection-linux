@@ -2,4 +2,4 @@
 - name: Import grub tasks
   ansible.builtin.import_tasks:
     file: grub.yml
-  when: linux_manage_grub | bool
+  when: linux_role_grub_enabled | bool

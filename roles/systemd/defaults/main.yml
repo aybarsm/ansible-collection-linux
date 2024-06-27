@@ -1,7 +1,7 @@
 ---
 # Ensures system manager is systemd - ansible_service_mgr == "systemd"
 linux_systemd_ensure_service_manager: true
-linux_manage_systemd_network: false
+linux_role_systemd_network_enabled: false
 
 linux_systemd_network_apply_changes: false
 
