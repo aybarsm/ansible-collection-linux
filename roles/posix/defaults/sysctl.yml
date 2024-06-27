@@ -3,4 +3,6 @@ linux_manage_posix_sysctl: false
 linux_posix_sysctl_default: []
 linux_posix_sysctl_group: []
 linux_posix_sysctl_host: []
+# The combination strategy below is highly nested hierarchy compliant and recommended (Example provided below)
+# linux_posix_sysctl_host > linux_posix_sysctl_group > linux_posix_sysctl_default
 linux_posix_sysctl_all: "{{ (linux_posix_sysctl_host + linux_posix_sysctl_group + linux_posix_sysctl_default) | unique(attribute='name') }}"

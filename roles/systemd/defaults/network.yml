@@ -16,11 +16,14 @@ linux_systemd_network_template: network.j2
 linux_systemd_network_default: []
 linux_systemd_network_group: []
 linux_systemd_network_host: []
+# The combination strategy below is highly nested hierarchy compliant and recommended
+# linux_systemd_network_host > linux_systemd_network_group > linux_systemd_network_default
 linux_systemd_network_all: "{{ (linux_systemd_network_host + linux_systemd_network_group + linux_systemd_network_default) |
   selectattr('name', 'defined') | selectattr('name', 'search', '\\.(network|link|netdev)$') |
   selectattr('config', 'defined') | unique(attribute='name') }}"
 
 linux_systemd_network_names: "{{ linux_systemd_network_all | map(attribute='name') }}"
+# Escape file names defined in linux_systemd_network_all
 linux_systemd_network_cleanup_regex:
   - "^({{ linux_systemd_network_names | select('match', '.*\\.link$') | map('replace', '.link', '') | join('|') }})\\.link$"
   - "^({{ linux_systemd_network_names | select('match', '.*\\.netdev$') | map('replace', '.netdev', '') | join('|') }})\\.netdev$"
@@ -28,4 +31,5 @@ linux_systemd_network_cleanup_regex:
 # Escape backup files:
   - "^.*\\.\\d+\\.\\d{4}-\\d{2}-\\d{2}@\\d{2}:\\d{2}:\\d{2}~$"
 
+# Join regex expressions
 linux_systemd_network_cleanup_patterns: ["(?!{{ linux_systemd_network_cleanup_regex | join('|') }})"]
