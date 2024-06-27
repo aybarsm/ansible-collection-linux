@@ -1,10 +1,11 @@
 ---
 linux_manage_systemd_network: false
 
-linux_systemd_network_apply_changes: false
-linux_systemd_network_responsible_services:
-  - systemd
-  - systemd-networkd
+linux_systemd_network_apply_changes: []
+# linux_systemd_network_apply_changes:
+#   - service: systemd-networkd
+#     state: restarted
+#   - command: "systemctl daemon-reload"
 
 linux_systemd_network_backup: true
 linux_systemd_network_cleanup: false
@@ -12,8 +13,6 @@ linux_systemd_network_cleanup_patterns_use_regex: true
 
 # Consult: https://manpages.debian.org/bookworm/systemd/systemd.net-naming-scheme.7.en.html
 linux_systemd_network_naming_scheme: "v252"
-# TODO: This feature will be implemented.
-linux_systemd_network_naming_scheme_apply_kernel: false
 
 linux_systemd_network_dir: /etc/systemd/network
 linux_systemd_network_template: network.j2
