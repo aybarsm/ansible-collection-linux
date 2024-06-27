@@ -10,4 +10,4 @@
     - linux_grub_all | type_debug == 'list'
     - linux_grub_all | length > 0
   register: linux_grub_deploy
-  notify: linux_grub_apply_changes
+  notify: linux_grub_apply_changes_by_command

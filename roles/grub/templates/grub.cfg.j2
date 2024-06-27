@@ -1,8 +1,8 @@
 # {{ ansible_managed }}
 
-{% for param in linux_grub_config_all %}
+{% for param in linux_grub_all %}
 {%  if (param | type_debug) == 'dict' and 'name' in param %}
-{%      set paramName = (linux_grub_config_name_prefix | upper) ~ (param.name | upper) %}
+{%      set paramName = (linux_grub_entry_prefix | upper) ~ (param.name | upper) %}
 {%      if 'value' in param %}
 {%          if (param.value | type_debug) == 'list' %}
 {%              set inheritCmdlineDefault = param.name | lower == 'cmdline_linux_default' and linux_grub_inherit_cmdline_default | bool %}

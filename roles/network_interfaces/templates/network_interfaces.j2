@@ -1,16 +1,16 @@
 # {{ ansible_managed }}
 
-{% if linux_network_interfaces_file_source_position == 'top' %}
+{% if linux_network_interfaces_source_position == 'top' %}
 {{ linux_network_interfaces_source_line }}
 
 {% endif %}
-{% if linux_network_interfaces_file_keep_lo | bool %}
+{% if linux_network_interfaces_keep_lo | bool %}
 # The loopback network interface
 auto lo
 iface lo inet loopback
 {% endif %}
 
-{% for iface in linux_network_interfaces_ifaces_all %}
+{% for iface in linux_network_interfaces_all %}
 {%  if 'mount' in iface and iface.mount != 'None' %}
 {{ iface.mount }} {{ iface.name }}
 {%  endif %}
@@ -43,6 +43,6 @@ iface {{ iface.name }} {{ addr_family }} {{ ifaceMethod }}
 {%      endif %}
 {%  endfor %}
 {% endfor %}
-{% if linux_network_interfaces_file_source_position != 'top' %}
+{% if linux_network_interfaces_source_position != 'top' %}
 {{ linux_network_interfaces_source_line }}
 {% endif %}

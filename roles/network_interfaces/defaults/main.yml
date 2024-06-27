@@ -19,10 +19,16 @@ linux_network_interfaces_dir: /etc/network
 linux_network_interfaces_file: interfaces
 linux_network_interfaces_file_destination: "{{ linux_network_interfaces_dir + '/' + linux_network_interfaces_file }}"
 
+# Seggrate network interfaces into separate files i.e. /etc/network/interfaces.d/eth0
+# This has not been implemented yet
+# TODO: Implement this feature
+linux_network_interfaces_segregate: false
+linux_network_interfaces_seggregate_dir: "{{ linux_network_interfaces_dir }}/interfaces.d"
+
 # Keep the lo interface in the file
-linux_network_interfaces_file_keep_lo: true
+linux_network_interfaces_keep_lo: true
 # The location of the source line in the file (controversial topic)
-linux_network_interfaces_file_source_position: bottom
+linux_network_interfaces_source_position: bottom
 linux_network_interfaces_source_line: "source {{ linux_network_interfaces_seggregate_dir }}/*"
 
 linux_network_interfaces_backup: true
