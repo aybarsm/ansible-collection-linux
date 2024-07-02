@@ -1,4 +1,5 @@
 ---
+# TODO: Implement handlers for sysctl
 - name: Deploy posix sysctl settings
   ansible.posix.sysctl:
     name: "{{ item.name }}"
@@ -8,7 +9,8 @@
     state: "{{ item.state | default(omit) }}"
     sysctl_file: "{{ item.sysctl_file | default(omit) }}"
     sysctl_set: "{{ item.sysctl_set | default(omit) | bool }}"
-  when:
-    - linux_posix_sysctl_all | linux_type_debug == 'list'
-    - linux_posix_sysctl_all | length > 0
   loop: "{{ linux_posix_sysctl_all }}"
+  register: linux_posix_sysctl_deploy
+  when:
+    - linux_posix_sysctl_all | type_debug == 'list'
+    - linux_posix_sysctl_all | length > 0

@@ -1,0 +1,4 @@
+---
+- name: Include Debug Tasks
+  ansible.builtin.import_tasks:
+    file: debug.yml

@@ -12,6 +12,18 @@
     - linux_role_package_manager_enabled | default(false) | bool
     - ansible_os_family | lower == 'debian'
 
+- name: Simulate DEB package tasks (APT)
+  ansible.builtin.import_tasks:
+    file: deb_packages.yml
+  vars:
+    __linux_package_manager_simulate_packages: true
+  when:
+    - linux_role_package_manager_enabled | default(false) | bool
+    - linux_package_manager_package_strategy | lower == 'specific'
+    - ansible_os_family | lower == 'debian'
+    - linux_package_manager_package_simulation | default(true) | bool
+    - not ansible_check_mode
+
 - name: Import DEB package tasks (APT)
   ansible.builtin.import_tasks:
     file: deb_packages.yml
@@ -22,7 +34,7 @@
 
 - name: Import common package manager tasks
   ansible.builtin.import_tasks:
-    file: common.yml
+    file: common_packages.yml
   when:
     - linux_role_package_manager_enabled | default(false) | bool
     - linux_package_manager_package_strategy | lower == 'common'

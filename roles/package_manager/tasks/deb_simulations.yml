@@ -1,0 +1,12 @@
+---
+- name: Simulate DEB package install via APT
+  ansible.builtin.command:
+    cmd: "apt --simulate install {{ packages | join(' ') }}"
+  register: linux_package_manager_deb_packages_simulate_install
+  changed_when: false
+
+- name: Simulate DEB package remove via APT
+  ansible.builtin.command:
+    cmd: "apt --simulate remove {{ packages | join(' ') }}"
+  register: linux_package_manager_deb_packages_simulate_remove
+  changed_when: false

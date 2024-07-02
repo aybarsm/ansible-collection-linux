@@ -12,7 +12,7 @@
 {%              else %}
 {%                  set paramValPrefix = '' %}
 {%              endif %}
-{{ paramName }}="{{ paramValPrefix }}{{ param.value | aybarsm.helper.flatten_query('name', 'value', '=', ' ') }}"
+{{ paramName }}="{{ paramValPrefix }}{{ param.value | aybarsm.helper.to_querystring('name', 'value', '=', ' ') }}"
 {%          else %}
 {{ paramName }}="{{ param.value }}"
 {%          endif %}

@@ -36,7 +36,7 @@ iface lo inet loopback
 {%              endif %}
 iface {{ iface.name }} {{ addr_family }} {{ ifaceMethod }}
 {%              if ifaceParams | length > 0 %}
-{{ ifaceParams | aybarsm.helper.flatten_query('name', 'value', ' ', '\n') | indent(4, true) }}
+{{ ifaceParams | aybarsm.helper.to_querystring('name', 'value', ' ', '\n') | indent(4, true) }}
 {%              endif %}
 {%          endif %}
 

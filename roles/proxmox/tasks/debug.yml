@@ -1,0 +1,7 @@
+---
+- name: Debug
+  ansible.builtin.debug:
+    msg:
+      linux_proxmox_role_repos: "{{ linux_proxmox_role_repos }}"
+      linux_proxmox_all: "{{ linux_proxmox_all }}"
+  delegate_to: localhost

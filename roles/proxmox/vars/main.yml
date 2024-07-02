@@ -32,24 +32,3 @@ linux_proxmox_role_repos:
   ceph_reef_no_subscription:
     repo: "deb {{ linux_proxmox_repo_url_no_subscription }}/ceph-reef {{ ansible_distribution_release }} no-subscription"
     filename: ceph
-
-# '<role_name> <repo_prefix> <filename>'
-# if <repo_prefix> is empty, there won't be any prefix at the end of the repo line
-# (i.e. /pve bookworm pve-enterprise vs /ceph-pacific bookworm enterprise)
-# if <filename> is empty, it will be the same as <repo_prefix>-<subscription_type>
-# (i.e. pve-no-subscription vs ceph)
-# linux_proxmox_role_repos:
-#   - ['pve', 'pve-']
-#   - ['pbs', 'pbs-']
-#   - ['pmg', 'pmg-']
-#   - ['ceph-reef', '', 'ceph']
-#   - ['ceph-quincy', '', 'ceph']
-#   - ['ceph-pacific', '', 'ceph']
-
-# linux_proxmox_role_repos:
-#   pve: ['pve-']
-#   pbs: ['pbs-']
-#   pmg: ['pmg-']
-#   ceph_reef: ['ceph-reef', '', 'ceph']
-#   ceph_quincy: ['ceph-quincy', '', 'ceph']
-#   ceph_pacific: ['ceph-pacific', '', 'ceph']

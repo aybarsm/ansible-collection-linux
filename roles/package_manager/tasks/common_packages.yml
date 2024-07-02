@@ -1,0 +1,11 @@
+---
+- name: Manage system packages with common package manager
+  ansible.builtin.package:
+    name: "{{ item.name }}"
+    state: "{{ item.state | default(omit) }}"
+    use: "{{ item.use | default(omit) }}"
+  register: linux_package_manager_common_packages_apply
+  when:
+    - linux_packages_all | type_debug == 'list'
+    - linux_packages_all | length > 0
+  loop: "{{ linux_packages_all }}"

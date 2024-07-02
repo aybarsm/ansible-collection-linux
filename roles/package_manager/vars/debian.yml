@@ -10,6 +10,11 @@ __linux_package_manager_package_config:
         - ['type', 'equalto', 'package']
     - when: "{{ __linux_package_manager_uniques_package | product(['defined']) | list }}"
       logic: or
+  replace_keys:
+    - before: package
+      after: name
+    - before: pkg
+      after: name
   setattr:
     - attribute: name
       value: package
@@ -25,13 +30,9 @@ __linux_package_manager_package_config:
         - ['name', 'undefined']
         - ['pkg', 'defined']
     - attribute: state
-      value: absent
-      else: present
-      overwrite: true
+      value: present
       when:
-        - ['autoremove', 'defined']
-        - ['autoremove', 'true']
-      logic: and
+        - ['state', 'undefined']
   splitattr:
     - srcAttr: name
       dstAttr: version

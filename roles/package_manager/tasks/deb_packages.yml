@@ -2,7 +2,7 @@
 - name: Manage DEB packages via APT
   become: true
   ansible.builtin.apt:
-    name: "{{ package_name }}"
+    name: "{{ item.name }}"
     allow_change_held_packages: "{{ item.allow_change_held_packages | default(omit) | bool }}"
     allow_downgrade: "{{ item.allow_downgrade | default(omit) | bool }}"
     allow_unauthenticated: "{{ item.allow_unauthenticated | default(omit) | bool }}"
@@ -26,10 +26,11 @@
     update_cache_retries: "{{ item.update_cache_retries | default(omit) }}"
     update_cache_retry_max_delay: "{{ item.update_cache_retry_max_delay | default(omit) }}"
     upgrade: "{{ item.upgrade | default(omit) }}"
-  vars:
-    package_name: "{{ item.name + '=' + item.version if 'version' in item else item.name }}"
   loop: "{{ linux_package_manager_packages_all }}"
-  register: linux_package_manager_deb_packages_apply
+  vars:
+    __is_simulation: "{{ __linux_package_manager_simulate_packages | default(false) | bool }}"
+  register: "{{ 'linux_package_manager_deb_packages_' + ('simulate' if __is_simulation else 'simulate') }}"
+  check_mode: "{{ __is_simulation }}"
   when:
     - linux_package_manager_packages_all | type_debug == 'list'
     - linux_package_manager_packages_all | length > 0
