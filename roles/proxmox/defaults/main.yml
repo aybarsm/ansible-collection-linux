@@ -1,0 +1,7 @@
+linux_role_proxmox_enabled: false
+
+linux_proxmox_default: []
+linux_proxmox_group: []
+linux_proxmox_host: []
+
+linux_proxmox_all: "{{ linux_proxmox_default + linux_proxmox_group + linux_proxmox_host }}"

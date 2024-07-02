@@ -1,0 +1,8 @@
+__linux_package_manager_package_state_config:
+  - attribute: state
+    value: absent
+    else: present
+    when:
+      - ['autoremove', 'defined']
+      - ['autoremove', 'true']
+    logic: and

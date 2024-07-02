@@ -1,0 +1,43 @@
+---
+- name: Manage RPM packages via DNF
+  become: true
+  ansible.builtin.dnf:
+    name: "{{ package_name }}"
+    allow_downgrade: "{{ item.allow_downgrade | default(omit) | bool }}"
+    allowerasing: "{{ item.allowerasing | default(omit) | bool }}"
+    autoremove: "{{ item.autoremove | default(omit) | bool }}"
+    best: "{{ item.best | default(omit) | bool }}"
+    bugfix: "{{ item.bugfix | default(omit) | bool }}"
+    cacheonly: "{{ item.cacheonly | default(omit) | bool }}"
+    conf_file: "{{ item.conf_file | default(omit) }}"
+    disable_excludes: "{{ item.disable_excludes | default(omit) }}"
+    disable_gpg_check: "{{ item.disable_gpg_check | default(omit) | bool }}"
+    disable_plugin: "{{ item.disable_plugin | default(omit) }}"
+    disablerepo: "{{ item.disablerepo | default(omit) }}"
+    download_dir: "{{ item.download_dir | default(omit) }}"
+    download_only: "{{ item.download_only | default(omit) | bool }}"
+    enable_plugin: "{{ item.enable_plugin | default(omit) }}"
+    enablerepo: "{{ item.enablerepo | default(omit) }}"
+    exclude: "{{ item.exclude | default(omit) }}"
+    install_repoquery: "{{ item.install_repoquery | default(omit) | bool }}"
+    install_weak_deps: "{{ item.install_weak_deps | default(omit) | bool }}"
+    installroot: "{{ item.installroot | default(omit) }}"
+    list: "{{ item.list | default(omit) }}"
+    lock_timeout: "{{ item.lock_timeout | default(omit) }}"
+    nobest: "{{ item.nobest | default(omit) | bool }}"
+    releasever: "{{ item.releasever | default(omit) }}"
+    security: "{{ item.security | default(omit) | bool }}"
+    skip_broken: "{{ item.skip_broken | default(omit) | bool }}"
+    sslverify: "{{ item.sslverify | default(omit) | bool }}"
+    state: "{{ item.state | default(omit) }}"
+    update_cache: "{{ item.update_cache | default(omit) | bool }}"
+    update_only: "{{ item.update_only | default(omit) | bool }}"
+    use_backend: "{{ item.use_backend | default(omit) }}"
+    validate_certs: "{{ item.validate_certs | default(omit) | bool }}"
+  vars:
+    package_name: "{{ item.name + '=' + item.version if 'version' in item else item.name }}"
+  loop: "{{ linux_package_manager_packages_all }}"
+  register: linux_package_manager_rpm_packages_apply
+  when:
+    - linux_package_manager_packages_all | type_debug == 'list'
+    - linux_package_manager_packages_all | length > 0

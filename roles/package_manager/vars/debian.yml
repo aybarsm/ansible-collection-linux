@@ -1,3 +1,71 @@
-__linux_package_manager_uniques_package: ['name']
+__linux_package_manager_uniques_package: ['name', 'package', 'pkg']
 __linux_package_manager_uniques_repo: ['repo']
 __linux_package_manager_uniques_repo_key: ['keyserver', 'url', 'id', 'data', 'file']
+
+__linux_package_manager_package_config:
+  uniques: "{{ __linux_package_manager_uniques_package }}"
+  selectattr:
+    - when:
+        - ['type', 'defined']
+        - ['type', 'equalto', 'package']
+    - when: "{{ __linux_package_manager_uniques_package | product(['defined']) | list }}"
+      logic: or
+  setattr:
+    - attribute: name
+      value: package
+      mode: copy_delete
+      when:
+        - ['name', 'undefined']
+        - ['package', 'defined']
+      logic: and
+    - attribute: name
+      value: pkg
+      mode: copy_delete
+      when:
+        - ['name', 'undefined']
+        - ['pkg', 'defined']
+    - attribute: state
+      value: absent
+      else: present
+      overwrite: true
+      when:
+        - ['autoremove', 'defined']
+        - ['autoremove', 'true']
+      logic: and
+  splitattr:
+    - srcAttr: name
+      dstAttr: version
+      search: '='
+      overwrite: true
+  joinattr:
+    - leftAttr: name
+      rightAttr: version
+      join: '='
+      overwrite: true
+      deleteSrcAttrs: true
+
+__linux_package_manager_repo_config:
+  uniques: "{{ __linux_package_manager_uniques_repo }}"
+  selectattr:
+    - when:
+      - ['type', 'defined']
+      - ['type', 'equalto', 'repo']
+    - when: "{{ __linux_package_manager_uniques_repo | product(['defined']) }}"
+      logic: or
+  setattr:
+    - attribute: state
+      value: present
+      overwrite: false
+
+__linux_package_manager_repo_key_config:
+  uniques: "{{ __linux_package_manager_uniques_repo_key }}"
+  selectattr:
+    - when:
+      - ['type', 'defined']
+      - ['type', 'equalto', 'repo_key']
+    - when: "{{ __linux_package_manager_uniques_repo_key | product(['defined']) }}"
+      logic: or
+  setattr:
+    - attribute: state
+      value: present
+      overwrite: false

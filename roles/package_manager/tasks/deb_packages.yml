@@ -1,5 +1,5 @@
 ---
-- name: Manage APT packages
+- name: Manage DEB packages via APT
   become: true
   ansible.builtin.apt:
     name: "{{ package_name }}"
@@ -29,41 +29,7 @@
   vars:
     package_name: "{{ item.name + '=' + item.version if 'version' in item else item.name }}"
   loop: "{{ linux_package_manager_packages_all }}"
-  register: linux_package_manager_apt_packages_apply
+  register: linux_package_manager_deb_packages_apply
   when:
     - linux_package_manager_packages_all | type_debug == 'list'
     - linux_package_manager_packages_all | length > 0
-
-- name: Manage APT repositories
-  become: true
-  ansible.builtin.apt_repository:
-    repo: "{{ item.repo }}"
-    state: "{{ item.state | default(omit) }}"
-    codename: "{{ item.codename | default(omit) }}"
-    filename: "{{ item.filename | default(omit) }}"
-    install_python_apt: "{{ item.install_python_apt | default(omit) | bool }}"
-    mode: "{{ item.mode | default(omit) }}"
-    update_cache: "{{ item.update_cache | default(omit) | bool }}"
-    update_cache_retries: "{{ item.update_cache_retries | default(omit) }}"
-    update_cache_retry_max_delay: "{{ item.update_cache_retry_max_delay | default(omit) }}"
-    validate_certs: "{{ item.validate_certs | default(omit) | bool }}"
-  loop: "{{ linux_package_manager_repos_all }}"
-  register: linux_package_manager_apt_repos_apply
-  when:
-    - linux_package_manager_repos_all | type_debug == 'list'
-    - linux_package_manager_repos_all | length > 0
-
-- name: Manage APT keys
-  become: true
-  ansible.builtin.apt_key:
-    state: "{{ item.state | default(omit) }}"
-    data: "{{ item.data | default(omit) }}"
-    file: "{{ item.file | default(omit) }}"
-    keyring: "{{ item.keyring | default(omit) }}"
-    url: "{{ item.url | default(omit) }}"
-    validate_certs: "{{ item.validate_certs | default(omit) | bool }}"
-  loop: "{{ linux_package_manager_repo_keys_all }}"
-  register: linux_package_manager_apt_repo_keys_apply
-  when:
-    - linux_package_manager_repo_keys_all | type_debug == 'list'
-    - linux_package_manager_repo_keys_all | length > 0
