@@ -27,15 +27,47 @@
     path: "{{ package_manager__create_temp_etc_apt_dir.path }}"
     state: absent
   register: package_manager__remove_temp_etc_apt_dir
+  when: package_manager__create_temp_etc_apt_dir.path is defined
 
-# - name: Find apt source files
-#   become: true
-#   ansible.builtin.find:
-#     paths: "{{ systemd__network_dir }}"
-#     patterns: "{{ systemd__network_cleanup_patterns }}"
-#     use_regex: "{{ systemd__network_cleanup_patterns_use_regex | bool }}"
-#   when: systemd__network_cleanup | bool
-#   register: systemd__network_find_cleanup_files
+# - name: Debug find patterns
+#   ansible.builtin.debug:
+#     msg:
+#       base_sources: "{{ base_sources }}"
+#       base_sources_dir: "{{ base_sources_dir }}"
+#       find_patterns: "{{ find_patterns }}"
+#   vars:
+#     base_sources: "^{{ package_manager__repo_list_file | basename }}$"
+#     # base_sources_dir: "^{{ package_manager__repo_list_dir | basename }}\\/.*\\.list$"
+#     base_sources_dir: "{{ package_manager__repo_list_dir | basename | ansible.builtin.regex_escape }}\\/*"
+#     # find_patterns: "{{ [base_sources_dir] }}"
+#     find_patterns:    
+#       - "^sources\\.list$"
+#       - "^sources\\.list\\.d\\/.*\\.list$"
+
+- name: Find apt source files in repo list directory
+  become: true
+  ansible.builtin.find:
+    paths: "{{ package_manager__repo_list_dir }}"
+    patterns: [".*\\.list$"]
+    use_regex: true
+  register: package_manager__repo_list_find
+  vars:
+    base_sources: "^{{ package_manager__repo_list_file | basename }}$"
+    # base_sources_dir: "^{{ package_manager__repo_list_dir | basename }}\\/.*\\.list$"
+    # base_sources_dir: "{{ package_manager__repo_list_dir | basename }}\\/.*\\.list$"
+    # base_sources_dir: "{{ package_manager__repo_list_dir | basename | ansible.builtin.regex_escape }}\\/*"
+    base_sources_dir: ".*sources\\.list\\.d\\/.*\\.list$"  
+    # find_patterns: "{{ [base_sources, base_sources_dir] }}"
+    # find_patterns: "{{ [base_sources_dir] }}"
+    find_patterns:    
+      - "^sources\\.list$"
+      - "^sources\\.list\\.d\\/.*\\.list$"
+
+- name: Debug find apt source files
+  ansible.builtin.debug:
+    msg:
+      # stat_main: "{{ package_manager__repo_list_file_stat }}"
+      found: "{{ package_manager__repo_list_find }}"
 
 # - name: Find apt source files
 #   become: true
