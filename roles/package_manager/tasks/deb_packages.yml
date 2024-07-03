@@ -27,10 +27,7 @@
     update_cache_retry_max_delay: "{{ item.update_cache_retry_max_delay | default(omit) }}"
     upgrade: "{{ item.upgrade | default(omit) }}"
   loop: "{{ linux_package_manager_packages_all }}"
-  vars:
-    __is_simulation: "{{ __linux_package_manager_simulate_packages | default(false) | bool }}"
-  register: "{{ 'linux_package_manager_deb_packages_' + ('simulate' if __is_simulation else 'simulate') }}"
-  check_mode: "{{ __is_simulation }}"
+  register: linux_package_manager_deb_packages_apply  
   when:
     - linux_package_manager_packages_all | type_debug == 'list'
     - linux_package_manager_packages_all | length > 0

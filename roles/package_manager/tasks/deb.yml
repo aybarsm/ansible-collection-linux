@@ -1,4 +1,19 @@
 ---
+- name: Manage DEB repository keys via APT
+  become: true
+  ansible.builtin.apt_key:
+    state: "{{ item.state | default(omit) }}"
+    data: "{{ item.data | default(omit) }}"
+    file: "{{ item.file | default(omit) }}"
+    keyring: "{{ item.keyring | default(omit) }}"
+    url: "{{ item.url | default(omit) }}"
+    validate_certs: "{{ item.validate_certs | default(omit) | bool }}"
+  loop: "{{ linux_package_manager_repo_keys_all }}"
+  register: linux_package_manager_deb_repo_keys_apply
+  when:
+    - linux_package_manager_repo_keys_all | type_debug == 'list'
+    - linux_package_manager_repo_keys_all | length > 0
+
 - name: Manage DEB repositories via APT
   become: true
   ansible.builtin.apt_repository:
@@ -17,18 +32,3 @@
   when:
     - linux_package_manager_repos_all | type_debug == 'list'
     - linux_package_manager_repos_all | length > 0
-
-- name: Manage DEB repository keys via APT
-  become: true
-  ansible.builtin.apt_key:
-    state: "{{ item.state | default(omit) }}"
-    data: "{{ item.data | default(omit) }}"
-    file: "{{ item.file | default(omit) }}"
-    keyring: "{{ item.keyring | default(omit) }}"
-    url: "{{ item.url | default(omit) }}"
-    validate_certs: "{{ item.validate_certs | default(omit) | bool }}"
-  loop: "{{ linux_package_manager_repo_keys_all }}"
-  register: linux_package_manager_deb_repo_keys_apply
-  when:
-    - linux_package_manager_repo_keys_all | type_debug == 'list'
-    - linux_package_manager_repo_keys_all | length > 0

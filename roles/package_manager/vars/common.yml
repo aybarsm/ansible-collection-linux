@@ -1,5 +1,6 @@
 linux_package_manager_packages_all: "{{ linux_package_manager_all |
   aybarsm.helper.selectattr(__linux_package_manager_package_config.selectattr) |
+  ansible.utils.replace_keys(target=__linux_package_manager_package_config.replace_keys) |
   aybarsm.helper.setattr(__linux_package_manager_package_config.setattr) |
   aybarsm.helper.splitattr(__linux_package_manager_package_config.splitattr) |
   aybarsm.helper.unique_recursive(__linux_package_manager_package_config.uniques) |

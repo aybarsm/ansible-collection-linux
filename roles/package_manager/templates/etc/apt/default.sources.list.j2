@@ -1,0 +1,27 @@
+{% set os_distrib = ansible_distribution | lower %}
+{% set os_release = ansible_distribution_release | lower %}
+{% if os_distrib == "debian" %}
+deb http://deb.debian.org/debian/ {{ os_release }} main
+deb-src http://deb.debian.org/debian/ {{ os_release }} main
+
+deb http://security.debian.org/debian-security {{ os_release }}-security main
+deb-src http://security.debian.org/debian-security {{ os_release }}-security main
+
+deb http://deb.debian.org/debian/ {{ os_release }}-updates main
+deb-src http://deb.debian.org/debian/ {{ os_release }}-updates main
+{% elif os_distrib == "ubuntu" %}
+deb http://archive.ubuntu.com/ubuntu/ {{ os_release }} main restricted universe multiverse
+deb-src http://archive.ubuntu.com/ubuntu/ {{ os_release }} main restricted universe multiverse
+
+deb http://archive.ubuntu.com/ubuntu/ {{ os_release }}-updates main restricted universe multiverse
+deb-src http://archive.ubuntu.com/ubuntu/ {{ os_release }}-updates main restricted universe multiverse
+
+deb http://archive.ubuntu.com/ubuntu/ {{ os_release }}-security main restricted universe multiverse
+deb-src http://archive.ubuntu.com/ubuntu/ {{ os_release }}-security main restricted universe multiverse
+
+deb http://archive.ubuntu.com/ubuntu/ {{ os_release }}-backports main restricted universe multiverse
+deb-src http://archive.ubuntu.com/ubuntu/ {{ os_release }}-backports main restricted universe multiverse
+
+deb http://archive.canonical.com/ubuntu {{ os_release }} partner
+deb-src http://archive.canonical.com/ubuntu {{ os_release }} partner
+{% endif %}

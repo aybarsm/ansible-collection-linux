@@ -2,7 +2,7 @@
 - name: Manage RPM packages via DNF
   become: true
   ansible.builtin.dnf:
-    name: "{{ package_name }}"
+    name: "{{ item.name }}"
     allow_downgrade: "{{ item.allow_downgrade | default(omit) | bool }}"
     allowerasing: "{{ item.allowerasing | default(omit) | bool }}"
     autoremove: "{{ item.autoremove | default(omit) | bool }}"
@@ -34,8 +34,6 @@
     update_only: "{{ item.update_only | default(omit) | bool }}"
     use_backend: "{{ item.use_backend | default(omit) }}"
     validate_certs: "{{ item.validate_certs | default(omit) | bool }}"
-  vars:
-    package_name: "{{ item.name + '=' + item.version if 'version' in item else item.name }}"
   loop: "{{ linux_package_manager_packages_all }}"
   register: linux_package_manager_rpm_packages_apply
   when:

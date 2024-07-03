@@ -5,24 +5,22 @@
 - name: Load common variables structured on OS related variables
   ansible.builtin.include_vars: common.yml
 
+- name: Import DEB initial upgrade (APT)
+  ansible.builtin.import_tasks:
+    file: deb_initial_upgrade.yml
+  when:
+    - linux_role_package_manager_enabled | default(false) | bool
+    - linux_package_manager_initial_upgrade | default(false) | bool
+    - linux_role_ansible_manage_local_facts | default(false) | bool
+    - __linux_ansible_local_facts is defined
+    - ansible_os_family | lower == 'debian'
+
 - name: Import DEB repository and repository key tasks (APT)
   ansible.builtin.import_tasks:
     file: deb.yml
   when:
     - linux_role_package_manager_enabled | default(false) | bool
     - ansible_os_family | lower == 'debian'
-
-- name: Simulate DEB package tasks (APT)
-  ansible.builtin.import_tasks:
-    file: deb_packages.yml
-  vars:
-    __linux_package_manager_simulate_packages: true
-  when:
-    - linux_role_package_manager_enabled | default(false) | bool
-    - linux_package_manager_package_strategy | lower == 'specific'
-    - ansible_os_family | lower == 'debian'
-    - linux_package_manager_package_simulation | default(true) | bool
-    - not ansible_check_mode
 
 - name: Import DEB package tasks (APT)
   ansible.builtin.import_tasks:

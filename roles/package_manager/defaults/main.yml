@@ -5,7 +5,14 @@ linux_role_package_manager_enabled: false
 # Available options: specific, common
 linux_package_manager_package_strategy: specific
 
-linux_package_manager_package_simulation: true
+linux_package_manager_initial_upgrade: false
+# Available options: full, dist, clean_full, clean_dist
+# Clean options temproarily removes all repos other than OS default repos before upgrade
+linux_package_manager_initial_upgrade_strategy: clean_full
+linux_package_manager_deb_default_repos_template: etc/apt/default.sources.list.j2
+
+# TODO: Implement this feature
+# linux_package_manager_package_simulation: true
 
 linux_package_manager_default: []
 linux_package_manager_group: []

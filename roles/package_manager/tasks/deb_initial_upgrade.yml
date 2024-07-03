@@ -1,0 +1,39 @@
+---
+- name: Create temporary etc_apt directory
+  become: true
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: etc_apt
+  register: linux_package_manager_temp_etc_apt_dir
+
+- name: Create sources.list.d directory in temporary etc_apt directory
+  become: true
+  ansible.builtin.file:
+    state: directory
+    recurse: true
+    path: "{{ linux_package_manager_temp_etc_apt_dir.path }}/sources.list.d"
+  register: linux_package_manager_temp_etc_apt_sources_dir
+
+- name: Check main sources.list file status
+  become: true
+  ansible.builtin.stat:
+    path: "{{ linux_package_manager_repo_list_file }}"
+  register: linux_package_manager_repo_list_file_stat
+
+# - name: Find apt source files
+#   become: true
+#   ansible.builtin.find:
+#     paths: "{{ linux_systemd_network_dir }}"
+#     patterns: "{{ linux_systemd_network_cleanup_patterns }}"
+#     use_regex: "{{ linux_systemd_network_cleanup_patterns_use_regex | bool }}"
+#   when: linux_systemd_network_cleanup | bool
+#   register: linux_systemd_network_find_cleanup_files
+
+# - name: Find apt source files
+#   become: true
+#   ansible.builtin.find:
+#     paths: "{{ linux_systemd_network_dir }}"
+#     patterns: "{{ linux_systemd_network_cleanup_patterns }}"
+#     use_regex: "{{ linux_systemd_network_cleanup_patterns_use_regex | bool }}"
+#   when: linux_systemd_network_cleanup | bool
+#   register: linux_systemd_network_find_cleanup_files

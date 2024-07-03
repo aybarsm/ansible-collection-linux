@@ -1,3 +1,7 @@
+linux_package_manager_repo_dir: /etc/apt
+linux_package_manager_repo_list_file: "{{ linux_package_manager_repo_dir}}/sources.list"
+linux_package_manager_repo_list_dir: "{{ linux_package_manager_repo_dir}}/sources.list.d"
+
 __linux_package_manager_uniques_package: ['name', 'package', 'pkg']
 __linux_package_manager_uniques_repo: ['repo']
 __linux_package_manager_uniques_repo_key: ['keyserver', 'url', 'id', 'data', 'file']
@@ -16,19 +20,6 @@ __linux_package_manager_package_config:
     - before: pkg
       after: name
   setattr:
-    - attribute: name
-      value: package
-      mode: copy_delete
-      when:
-        - ['name', 'undefined']
-        - ['package', 'defined']
-      logic: and
-    - attribute: name
-      value: pkg
-      mode: copy_delete
-      when:
-        - ['name', 'undefined']
-        - ['pkg', 'defined']
     - attribute: state
       value: present
       when:

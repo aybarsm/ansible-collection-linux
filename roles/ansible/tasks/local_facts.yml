@@ -1,0 +1,11 @@
+---
+- name: Create directory on host for ansible local facts
+  become: true
+  ansible.builtin.file:
+    state: directory
+    recurse: true
+    path: "{{ linux_ansible_local_facts_dir }}"
+
+- name: Assign local facts as ansible facts
+  ansible.builtin.set_fact:
+    __linux_ansible_local_facts: "{{ ansible_local.aybarsm_linux | default({}) }}"

@@ -20,6 +20,12 @@ linux_proxmox_role_repos:
   pmg_no_subscription:
     repo: "deb {{ linux_proxmox_repo_url_no_subscription }}/pmg {{ ansible_distribution_release }} pmg-no-subscription"
     filename: pmg-no-subscription
+  ceph_pacific_enterprise:
+    repo: "deb {{ linux_proxmox_repo_url_enterprise }}/ceph-pacific {{ ansible_distribution_release }} enterprise"
+    filename: ceph
+  ceph_pacific_no_subscription:
+    repo: "deb {{ linux_proxmox_repo_url_no_subscription }}/ceph-pacific {{ ansible_distribution_release }} no-subscription"
+    filename: ceph
   ceph_quincy_enterprise:
     repo: "deb {{ linux_proxmox_repo_url_enterprise }}/ceph-quincy {{ ansible_distribution_release }} enterprise"
     filename: ceph
