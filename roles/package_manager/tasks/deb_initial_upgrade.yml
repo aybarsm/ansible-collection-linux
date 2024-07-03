@@ -4,15 +4,17 @@
   ansible.builtin.tempfile:
     state: directory
     suffix: etc_apt
-  register: package_manager__create_temp_etc_apt_dir
+  register: package_manager__create_temp_repo_dir
 
-- name: Create sources.list.d directory in temporary etc_apt directory
+- name: Create repo list directory in temporary etc_apt directory
   become: true
   ansible.builtin.file:
     state: directory
     recurse: true
-    path: "{{ package_manager__create_temp_etc_apt_dir.path }}/sources.list.d"
-  register: package_manager__temp_etc_apt_sources_dir
+    path: "{{ package_manager__create_temp_etc_apt_dir.path '/' + repo_list_dir_basename }}"
+  register: package_manager__create_temp_etc_apt_sources_dir
+  vars:
+    repo_list_dir_basename: "{{ package_manager__repo_list_dir | basename }}"
   when: package_manager__create_temp_etc_apt_dir.path is defined
 
 - name: Check main sources.list file status
@@ -20,14 +22,6 @@
   ansible.builtin.stat:
     path: "{{ package_manager__repo_list_file }}"
   register: package_manager__repo_list_file_stat
-
-- name: Remove temporary etc_apt directory
-  become: true
-  ansible.builtin.tempfile:
-    path: "{{ package_manager__create_temp_etc_apt_dir.path }}"
-    state: absent
-  register: package_manager__remove_temp_etc_apt_dir
-  when: package_manager__create_temp_etc_apt_dir.path is defined
 
 # - name: Debug find patterns
 #   ansible.builtin.debug:
@@ -51,23 +45,20 @@
     patterns: [".*\\.list$"]
     use_regex: true
   register: package_manager__repo_list_find
-  vars:
-    base_sources: "^{{ package_manager__repo_list_file | basename }}$"
-    # base_sources_dir: "^{{ package_manager__repo_list_dir | basename }}\\/.*\\.list$"
-    # base_sources_dir: "{{ package_manager__repo_list_dir | basename }}\\/.*\\.list$"
-    # base_sources_dir: "{{ package_manager__repo_list_dir | basename | ansible.builtin.regex_escape }}\\/*"
-    base_sources_dir: ".*sources\\.list\\.d\\/.*\\.list$"  
-    # find_patterns: "{{ [base_sources, base_sources_dir] }}"
-    # find_patterns: "{{ [base_sources_dir] }}"
-    find_patterns:    
-      - "^sources\\.list$"
-      - "^sources\\.list\\.d\\/.*\\.list$"
 
 - name: Debug find apt source files
   ansible.builtin.debug:
     msg:
-      # stat_main: "{{ package_manager__repo_list_file_stat }}"
+      stat_main: "{{ package_manager__repo_list_file_stat }}"
       found: "{{ package_manager__repo_list_find }}"
+      main_source: "{{ main_source }}"
+      found_sources: "{{ found_sources }}"
+  vars:
+    main_source_check: "{{ package_manager__repo_list_file_stat.stat.path | default('') }}"
+    main_source: "{{ (not main_source_check) | ternary([], [main_source_check]) }}"
+    found_sources: "{{ package_manager__repo_list_find.files |
+      ternary(package_manager__repo_list_find.files | map(attribute='path') | list, []) }}"
+
 
 # - name: Find apt source files
 #   become: true
@@ -77,3 +68,11 @@
 #     use_regex: "{{ systemd__network_cleanup_patterns_use_regex | bool }}"
 #   when: systemd__network_cleanup | bool
 #   register: systemd__network_find_cleanup_files
+
+- name: Remove temporary etc_apt directory
+  become: true
+  ansible.builtin.tempfile:
+    path: "{{ package_manager__create_temp_repo_dir.path }}"
+    state: absent
+  register: package_manager__remove_temp_etc_apt_dir
+  when: package_manager__create_temp_repo_dir.path is defined
