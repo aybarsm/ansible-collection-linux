@@ -1,5 +1,5 @@
 ---
-- name: Apply command(s) for linux_grub changes
+- name: Apply command(s) for grub_ changes
   become: true
   ansible.builtin.command:
     chdir: "{{ item.chdir | default(omit) }}"
@@ -10,10 +10,10 @@
     stdin_add_newline: "{{ item.stdin_add_newline | default(omit) }}"
     strip_empty_ends: "{{ item.strip_empty_ends | default(omit) }}"
   changed_when: true
-  loop: "{{ linux_grub_change | selectattr('cmd', 'defined') }}"
-  register: linux_grub_apply_changes_command
-  listen: "linux_grub_apply_changes_by_command"
+  loop: "{{ grub__change | selectattr('cmd', 'defined') }}"
+  register: grub__apply_changes_command
+  listen: "grub__apply_changes_by_command"
   when:
-    - linux_grub_change_strategy | default('') == 'command'
-    - linux_grub_change | type_debug == 'list'
-    - linux_grub_change | selectattr('cmd', 'defined') | length > 0
+    - grub__change_strategy | default('') == 'command'
+    - grub__change | type_debug == 'list'
+    - grub__change | selectattr('cmd', 'defined') | length > 0

@@ -1,17 +1,17 @@
-linux_package_manager_packages_all: "{{ linux_package_manager_all |
-  aybarsm.helper.selectattr(__linux_package_manager_package_config.selectattr) |
-  ansible.utils.replace_keys(target=__linux_package_manager_package_config.replace_keys) |
-  aybarsm.helper.setattr(__linux_package_manager_package_config.setattr) |
-  aybarsm.helper.splitattr(__linux_package_manager_package_config.splitattr) |
-  aybarsm.helper.unique_recursive(__linux_package_manager_package_config.uniques) |
-  aybarsm.helper.joinattr(__linux_package_manager_package_config.joinattr) | default([]) }}"
+package_manager__packages_all: "{{ package_manager__all |
+  aybarsm.helper.selectattr(__package_manager__package_config.selectattr) |
+  ansible.utils.replace_keys(target=__package_manager__package_config.replace_keys) |
+  aybarsm.helper.setattr(__package_manager__package_config.setattr) |
+  aybarsm.helper.splitattr(__package_manager__package_config.splitattr) |
+  aybarsm.helper.unique_recursive(__package_manager__package_config.uniques) |
+  aybarsm.helper.joinattr(__package_manager__package_config.joinattr) | default([]) }}"
 
-linux_package_manager_repos_all: "{{ linux_package_manager_all |
-  aybarsm.helper.selectattr(__linux_package_manager_repo_config.selectattr) |
-  aybarsm.helper.unique_recursive(__linux_package_manager_repo_config.uniques) |
-  aybarsm.helper.setattr(__linux_package_manager_repo_config.setattr) | default([]) }}"
+package_manager__repos_all: "{{ package_manager__all |
+  aybarsm.helper.selectattr(__package_manager__repo_config.selectattr) |
+  aybarsm.helper.unique_recursive(__package_manager__repo_config.uniques) |
+  aybarsm.helper.setattr(__package_manager__repo_config.setattr) | default([]) }}"
 
-linux_package_manager_repo_keys_all: "{{ linux_package_manager_all |
-  aybarsm.helper.selectattr(__linux_package_manager_repo_key_config.selectattr) |
-  aybarsm.helper.unique_recursive(__linux_package_manager_repo_key_config.uniques) |
-  aybarsm.helper.setattr(__linux_package_manager_repo_key_config.setattr) | default([]) }}"
+package_manager__repo_keys_all: "{{ package_manager__all |
+  aybarsm.helper.selectattr(__package_manager__repo_key_config.selectattr) |
+  aybarsm.helper.unique_recursive(__package_manager__repo_key_config.uniques) |
+  aybarsm.helper.setattr(__package_manager__repo_key_config.setattr) | default([]) }}"

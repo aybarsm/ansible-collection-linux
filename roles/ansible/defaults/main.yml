@@ -1,7 +1,7 @@
-linux_role_ansible_enabled: true
+role_ansible_enabled: true
 linux_role_ansible_manage_local_facts: true
 
-linux_ansible_local_fact_template: aybarsm_linux.json.fact.j2
-linux_ansible_local_fact_backup: true
-linux_ansible_local_facts_dir: "{{ (not lookup('config', 'DEFAULT_FACT_PATH')) | ternary('/etc/ansible/facts.d', lookup('config', 'DEFAULT_FACT_PATH')) }}"
-linux_ansible_local_fact_file: "{{ linux_ansible_local_facts_dir }}/aybarsm_linux.fact"
+ansible__local_fact_template: aybarsm_linux.json.fact.j2
+ansible__local_fact_backup: true
+ansible__local_facts_dir: "{{ (not lookup('config', 'DEFAULT_FACT_PATH')) | ternary('/etc/ansible/facts.d', lookup('config', 'DEFAULT_FACT_PATH')) }}"
+ansible__local_fact_file: "{{ ansible__local_facts_dir }}/aybarsm_linux.fact"

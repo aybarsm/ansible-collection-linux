@@ -4,7 +4,7 @@
     name: "{{ item.name }}"
     state: "{{ item.state | default(omit) }}"
     use: "{{ item.use | default(omit) }}"
-  register: linux_package_manager_common_packages_apply
+  register: package_manager__common_packages_apply
   when:
     - linux_packages_all | type_debug == 'list'
     - linux_packages_all | length > 0

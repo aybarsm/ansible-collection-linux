@@ -1,30 +1,30 @@
 ---
-linux_role_grub_enabled: false
+grub_role_enabled: false
 
-linux_grub_dir: /etc/default/grub.d
-linux_grub_file: 50-ansible.cfg
-linux_grub_destination: "{{ linux_grub_dir + '/' + linux_grub_file }}"
+grub__dir: /etc/default/grub.d
+grub__file: 50-ansible.cfg
+grub__destination: "{{ grub__dir + '/' + grub__file }}"
 
-linux_grub_backup: true
-linux_grub_template: grub.cfg.j2
+grub__backup: true
+grub__template: grub.cfg.j2
 
 # Currently only command strategy is supported
-# linux_grub_change_strategy: 'command'
+# grub__change_strategy: 'command'
 # Leave empty not to apply changes
-linux_grub_change_strategy: ''
-linux_grub_change:
+grub__change_strategy: ''
+grub__change:
   - cmd: update-grub
 
-linux_grub_entry_prefix: GRUB_
+grub__entry_prefix: GRUB_
 
-linux_grub_inherit_cmdline_default: true
-linux_grub_inherit_cmdline: true
+grub__inherit_cmdline_default: true
+grub__inherit_cmdline: true
 
-linux_grub_default: []
-linux_grub_group: []
-linux_grub_host: []
+grub__default: []
+grub__group: []
+grub__host: []
 # The combination strategy below is highly nested hierarchy compliant and recommended (Example provided below)
-# linux_grub_host > linux_grub_group > linux_grub_default
-linux_grub_all: "{{ [linux_grub_default, linux_grub_group, linux_grub_host] |
+# grub__host > grub__group > grub__default
+grub__all: "{{ [grub__default, grub__group, grub__host] |
   community.general.lists_mergeby('name', recursive=true, list_merge='prepend') |
   aybarsm.helper.unique_recursive(attributes='name', recurse='value') }}"

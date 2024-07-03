@@ -1,40 +1,40 @@
-linux_proxmox_repo_url_enterprise: https://enterprise.proxmox.com/debian
-linux_proxmox_repo_url_no_subscription: http://download.proxmox.com/debian
+proxmox__repo_url_enterprise: https://enterprise.proxmox.com/debian
+proxmox__repo_url_no_subscription: http://download.proxmox.com/debian
 
-linux_proxmox_role_repos:
+proxmox__role_repos:
   pve_enterprise:
-    repo: "deb {{ linux_proxmox_repo_url_enterprise }}/pve {{ ansible_distribution_release }} pve-enterprise"
+    repo: "deb {{ proxmox__repo_url_enterprise }}/pve {{ ansible_distribution_release }} pve-enterprise"
     filename: pve-enterprise
   pve_no_subscription:
-    repo: "deb {{ linux_proxmox_repo_url_no_subscription }}/pve {{ ansible_distribution_release }} pve-no-subscription"
+    repo: "deb {{ proxmox__repo_url_no_subscription }}/pve {{ ansible_distribution_release }} pve-no-subscription"
     filename: pve-no-subscription
   pbs_enterprise:
-    repo: "deb {{ linux_proxmox_repo_url_enterprise }}/pbs {{ ansible_distribution_release }} pbs-enterprise"
+    repo: "deb {{ proxmox__repo_url_enterprise }}/pbs {{ ansible_distribution_release }} pbs-enterprise"
     filename: pbs-enterprise
   pbs_no_subscription:
-    repo: "deb {{ linux_proxmox_repo_url_no_subscription }}/pbs {{ ansible_distribution_release }} pbs-no-subscription"
+    repo: "deb {{ proxmox__repo_url_no_subscription }}/pbs {{ ansible_distribution_release }} pbs-no-subscription"
     filename: pbs-no-subscription
   pmg_enterprise:
-    repo: "deb {{ linux_proxmox_repo_url_enterprise }}/pmg {{ ansible_distribution_release }} pmg-enterprise"
+    repo: "deb {{ proxmox__repo_url_enterprise }}/pmg {{ ansible_distribution_release }} pmg-enterprise"
     filename: pmg-enterprise
   pmg_no_subscription:
-    repo: "deb {{ linux_proxmox_repo_url_no_subscription }}/pmg {{ ansible_distribution_release }} pmg-no-subscription"
+    repo: "deb {{ proxmox__repo_url_no_subscription }}/pmg {{ ansible_distribution_release }} pmg-no-subscription"
     filename: pmg-no-subscription
   ceph_pacific_enterprise:
-    repo: "deb {{ linux_proxmox_repo_url_enterprise }}/ceph-pacific {{ ansible_distribution_release }} enterprise"
+    repo: "deb {{ proxmox__repo_url_enterprise }}/ceph-pacific {{ ansible_distribution_release }} enterprise"
     filename: ceph
   ceph_pacific_no_subscription:
-    repo: "deb {{ linux_proxmox_repo_url_no_subscription }}/ceph-pacific {{ ansible_distribution_release }} no-subscription"
+    repo: "deb {{ proxmox__repo_url_no_subscription }}/ceph-pacific {{ ansible_distribution_release }} no-subscription"
     filename: ceph
   ceph_quincy_enterprise:
-    repo: "deb {{ linux_proxmox_repo_url_enterprise }}/ceph-quincy {{ ansible_distribution_release }} enterprise"
+    repo: "deb {{ proxmox__repo_url_enterprise }}/ceph-quincy {{ ansible_distribution_release }} enterprise"
     filename: ceph
   ceph_quincy_no_subscription:
-    repo: "deb {{ linux_proxmox_repo_url_no_subscription }}/ceph-quincy {{ ansible_distribution_release }} no-subscription"
+    repo: "deb {{ proxmox__repo_url_no_subscription }}/ceph-quincy {{ ansible_distribution_release }} no-subscription"
     filename: ceph
   ceph_reef_enterprise:
-    repo: "deb {{ linux_proxmox_repo_url_enterprise }}/ceph-reef {{ ansible_distribution_release }} enterprise"
+    repo: "deb {{ proxmox__repo_url_enterprise }}/ceph-reef {{ ansible_distribution_release }} enterprise"
     filename: ceph
   ceph_reef_no_subscription:
-    repo: "deb {{ linux_proxmox_repo_url_no_subscription }}/ceph-reef {{ ansible_distribution_release }} no-subscription"
+    repo: "deb {{ proxmox__repo_url_no_subscription }}/ceph-reef {{ ansible_distribution_release }} no-subscription"
     filename: ceph

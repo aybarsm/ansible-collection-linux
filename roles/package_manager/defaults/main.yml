@@ -1,20 +1,20 @@
 ---
-linux_role_package_manager_enabled: false
+package_manager_role_enabled: false
 
 # Change the package manager strategy to use for the system i.e. ansible.builtin.apt vs ansible.builtin.package
 # Available options: specific, common
-linux_package_manager_package_strategy: specific
+package_manager__package_strategy: specific
 
-linux_package_manager_initial_upgrade: false
+package_manager__initial_upgrade: false
 # Available options: full, dist, clean_full, clean_dist
 # Clean options temproarily removes all repos other than OS default repos before upgrade
-linux_package_manager_initial_upgrade_strategy: clean_full
-linux_package_manager_deb_default_repos_template: etc/apt/default.sources.list.j2
+package_manager__initial_upgrade_strategy: clean_full
+package_manager__deb_default_repos_template: etc/apt/default.sources.list.j2
 
 # TODO: Implement this feature
-# linux_package_manager_package_simulation: true
+# package_manager__package_simulation: true
 
-linux_package_manager_default: []
-linux_package_manager_group: []
-linux_package_manager_host: []
-linux_package_manager_all: "{{ linux_package_manager_default + linux_package_manager_group + linux_package_manager_host }}"
+package_manager__default: []
+package_manager__group: []
+package_manager__host: []
+package_manager__all: "{{ package_manager__default + package_manager__group + package_manager__host }}"

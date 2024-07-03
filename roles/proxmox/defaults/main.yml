@@ -1,9 +1,9 @@
-linux_role_proxmox_enabled: false
+proxmox_role_enabled: false
 
-linux_proxmox_clean_os_upgrade: ''
+proxmox__clean_os_upgrade: ''
 
-linux_proxmox_default: {}
-linux_proxmox_group: {}
-linux_proxmox_host: {}
+proxmox__default: {}
+proxmox__group: {}
+proxmox__host: {}
 
-linux_proxmox_all: "{{ linux_proxmox_default | combine(linux_proxmox_group, linux_proxmox_host) }}"
+proxmox__all: "{{ proxmox__default | combine(proxmox__group, proxmox__host) }}"

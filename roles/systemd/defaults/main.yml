@@ -1,37 +1,37 @@
 ---
 # Ensures system manager is systemd - ansible_service_mgr == "systemd"
-linux_systemd_ensure_service_manager: true
-linux_role_systemd_network_enabled: false
+systemd__ensure_service_manager: true
+systemd_network_role_enabled: false
 
-linux_systemd_network_apply_changes: false
+systemd__network_apply_changes: false
 
-linux_systemd_network_backup: true
-linux_systemd_network_cleanup: false
-linux_systemd_network_cleanup_patterns_use_regex: true
+systemd__network_backup: true
+systemd__network_cleanup: false
+systemd__network_cleanup_patterns_use_regex: true
 
 # Consult: https://manpages.debian.org/bookworm/systemd/systemd.net-naming-scheme.7.en.html
-linux_systemd_network_naming_scheme: "v252"
+systemd__network_naming_scheme: "v252"
 
-linux_systemd_network_dir: /etc/systemd/network
-linux_systemd_network_template: network.j2
+systemd__network_dir: /etc/systemd/network
+systemd__network_template: network.j2
 
-linux_systemd_network_default: []
-linux_systemd_network_group: []
-linux_systemd_network_host: []
+systemd__network_default: []
+systemd__network_group: []
+systemd__network_host: []
 # The combination strategy below is highly nested hierarchy compliant and recommended
-# linux_systemd_network_host > linux_systemd_network_group > linux_systemd_network_default
-linux_systemd_network_all: "{{ (linux_systemd_network_host + linux_systemd_network_group + linux_systemd_network_default) |
+# systemd__network_host > systemd__network_group > systemd__network_default
+systemd__network_all: "{{ (systemd__network_host + systemd__network_group + systemd__network_default) |
   selectattr('name', 'defined') | selectattr('name', 'search', '\\.(network|link|netdev)$') |
   selectattr('config', 'defined') | unique(attribute='name') }}"
 
-linux_systemd_network_names: "{{ linux_systemd_network_all | map(attribute='name') }}"
-# Escape file names defined in linux_systemd_network_all
-linux_systemd_network_cleanup_regex:
-  - "^({{ linux_systemd_network_names | select('match', '.*\\.link$') | map('replace', '.link', '') | join('|') }})\\.link$"
-  - "^({{ linux_systemd_network_names | select('match', '.*\\.netdev$') | map('replace', '.netdev', '') | join('|') }})\\.netdev$"
-  - "^({{ linux_systemd_network_names | select('match', '.*\\.network$') | map('replace', '.network', '') | join('|') }})\\.network$"
+systemd__network_names: "{{ systemd__network_all | map(attribute='name') }}"
+# Escape file names defined in systemd__network_all
+systemd__network_cleanup_regex:
+  - "^({{ systemd__network_names | select('match', '.*\\.link$') | map('replace', '.link', '') | join('|') }})\\.link$"
+  - "^({{ systemd__network_names | select('match', '.*\\.netdev$') | map('replace', '.netdev', '') | join('|') }})\\.netdev$"
+  - "^({{ systemd__network_names | select('match', '.*\\.network$') | map('replace', '.network', '') | join('|') }})\\.network$"
 # Escape backup files:
   - "^.*\\.\\d+\\.\\d{4}-\\d{2}-\\d{2}@\\d{2}:\\d{2}:\\d{2}~$"
 
 # Join regex expressions
-linux_systemd_network_cleanup_patterns: ["(?!{{ linux_systemd_network_cleanup_regex | join('|') }})"]
+systemd__network_cleanup_patterns: ["(?!{{ systemd__network_cleanup_regex | join('|') }})"]

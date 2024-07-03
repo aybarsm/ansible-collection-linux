@@ -1,18 +1,18 @@
-linux_package_manager_repo_dir: /etc/apt
-linux_package_manager_repo_list_file: "{{ linux_package_manager_repo_dir}}/sources.list"
-linux_package_manager_repo_list_dir: "{{ linux_package_manager_repo_dir}}/sources.list.d"
+package_manager__repo_dir: /etc/apt
+package_manager__repo_list_file: "{{ package_manager__repo_dir}}/sources.list"
+package_manager__repo_list_dir: "{{ package_manager__repo_dir}}/sources.list.d"
 
-__linux_package_manager_uniques_package: ['name', 'package', 'pkg']
-__linux_package_manager_uniques_repo: ['repo']
-__linux_package_manager_uniques_repo_key: ['keyserver', 'url', 'id', 'data', 'file']
+__package_manager__uniques_package: ['name', 'package', 'pkg']
+__package_manager__uniques_repo: ['repo']
+__package_manager__uniques_repo_key: ['keyserver', 'url', 'id', 'data', 'file']
 
-__linux_package_manager_package_config:
-  uniques: "{{ __linux_package_manager_uniques_package }}"
+__package_manager__package_config:
+  uniques: "{{ __package_manager__uniques_package }}"
   selectattr:
     - when:
         - ['type', 'defined']
         - ['type', 'equalto', 'package']
-    - when: "{{ __linux_package_manager_uniques_package | product(['defined']) | list }}"
+    - when: "{{ __package_manager__uniques_package | product(['defined']) | list }}"
       logic: or
   replace_keys:
     - before: package
@@ -36,26 +36,26 @@ __linux_package_manager_package_config:
       overwrite: true
       deleteSrcAttrs: true
 
-__linux_package_manager_repo_config:
-  uniques: "{{ __linux_package_manager_uniques_repo }}"
+__package_manager__repo_config:
+  uniques: "{{ __package_manager__uniques_repo }}"
   selectattr:
     - when:
       - ['type', 'defined']
       - ['type', 'equalto', 'repo']
-    - when: "{{ __linux_package_manager_uniques_repo | product(['defined']) }}"
+    - when: "{{ __package_manager__uniques_repo | product(['defined']) }}"
       logic: or
   setattr:
     - attribute: state
       value: present
       overwrite: false
 
-__linux_package_manager_repo_key_config:
-  uniques: "{{ __linux_package_manager_uniques_repo_key }}"
+__package_manager__repo_key_config:
+  uniques: "{{ __package_manager__uniques_repo_key }}"
   selectattr:
     - when:
       - ['type', 'defined']
       - ['type', 'equalto', 'repo_key']
-    - when: "{{ __linux_package_manager_uniques_repo_key | product(['defined']) }}"
+    - when: "{{ __package_manager__uniques_repo_key | product(['defined']) }}"
       logic: or
   setattr:
     - attribute: state

@@ -2,14 +2,14 @@
 - name: Deploy network interfaces configuration
   become: true
   ansible.builtin.template:
-    src: "{{ linux_network_interfaces_template }}"
-    dest: "{{ linux_network_interfaces_file_destination }}"
-    backup: "{{ linux_network_interfaces_backup | default(omit) | bool }}"
+    src: "{{ network_interfaces__template }}"
+    dest: "{{ network_interfaces__file_destination }}"
+    backup: "{{ network_interfaces__backup | default(omit) | bool }}"
     mode: "0644"
   when:
-    - linux_network_interfaces_all | type_debug == 'list'
-    - linux_network_interfaces_all | length > 0
-  register: linux_network_interfaces_deploy_file
+    - network_interfaces__all | type_debug == 'list'
+    - network_interfaces__all | length > 0
+  register: network_interfaces__deploy_file
   notify:
-    - linux_network_interfaces_apply_changes_by_command
-    - linux_network_interfaces_apply_changes_by_service
+    - network_interfaces__apply_changes_by_command
+    - network_interfaces__apply_changes_by_service

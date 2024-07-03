@@ -3,5 +3,5 @@
   ansible.builtin.import_tasks:
     file: local_facts.yml
   when:
-    - linux_role_ansible_enabled | bool
+    - role_ansible_enabled | bool
     - linux_role_ansible_manage_local_facts | bool

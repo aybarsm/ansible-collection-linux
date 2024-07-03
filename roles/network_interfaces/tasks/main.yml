@@ -3,4 +3,4 @@
   ansible.builtin.import_tasks:
     file: network_interfaces.yml
   when:
-    - linux_role_systemd_network_enabled | bool
+    - systemd_network_role_enabled | bool

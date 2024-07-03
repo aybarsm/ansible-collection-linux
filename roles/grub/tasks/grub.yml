@@ -2,12 +2,12 @@
 - name: Deploy grub.cfg
   become: true
   ansible.builtin.template:
-    src: "{{ linux_grub_template }}"
-    dest: "{{ linux_grub_destination }}"
-    backup: "{{ linux_grub_backup | default(omit) | bool }}"
+    src: "{{ grub__template }}"
+    dest: "{{ grub__destination }}"
+    backup: "{{ grub__backup | default(omit) | bool }}"
     mode: "0644"
   when:
-    - linux_grub_all | type_debug == 'list'
-    - linux_grub_all | length > 0
-  register: linux_grub_deploy
-  notify: linux_grub_apply_changes_by_command
+    - grub__all | type_debug == 'list'
+    - grub__all | length > 0
+  register: grub__deploy
+  notify: grub__apply_changes_by_command

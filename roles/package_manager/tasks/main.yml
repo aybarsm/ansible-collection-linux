@@ -9,30 +9,30 @@
   ansible.builtin.import_tasks:
     file: deb_initial_upgrade.yml
   when:
-    - linux_role_package_manager_enabled | default(false) | bool
-    - linux_package_manager_initial_upgrade | default(false) | bool
+    - package_manager_role_enabled | default(false) | bool
+    - package_manager__initial_upgrade | default(false) | bool
     - linux_role_ansible_manage_local_facts | default(false) | bool
-    - __linux_ansible_local_facts is defined
+    - __ansible__local_facts is defined
     - ansible_os_family | lower == 'debian'
 
 - name: Import DEB repository and repository key tasks (APT)
   ansible.builtin.import_tasks:
     file: deb.yml
   when:
-    - linux_role_package_manager_enabled | default(false) | bool
+    - package_manager_role_enabled | default(false) | bool
     - ansible_os_family | lower == 'debian'
 
 - name: Import DEB package tasks (APT)
   ansible.builtin.import_tasks:
     file: deb_packages.yml
   when:
-    - linux_role_package_manager_enabled | default(false) | bool
-    - linux_package_manager_package_strategy | lower == 'specific'
+    - package_manager_role_enabled | default(false) | bool
+    - package_manager__package_strategy | lower == 'specific'
     - ansible_os_family | lower == 'debian'
 
 - name: Import common package manager tasks
   ansible.builtin.import_tasks:
     file: common_packages.yml
   when:
-    - linux_role_package_manager_enabled | default(false) | bool
-    - linux_package_manager_package_strategy | lower == 'common'
+    - package_manager_role_enabled | default(false) | bool
+    - package_manager__package_strategy | lower == 'common'

@@ -4,36 +4,44 @@
   ansible.builtin.tempfile:
     state: directory
     suffix: etc_apt
-  register: linux_package_manager_temp_etc_apt_dir
+  register: package_manager__create_temp_etc_apt_dir
 
 - name: Create sources.list.d directory in temporary etc_apt directory
   become: true
   ansible.builtin.file:
     state: directory
     recurse: true
-    path: "{{ linux_package_manager_temp_etc_apt_dir.path }}/sources.list.d"
-  register: linux_package_manager_temp_etc_apt_sources_dir
+    path: "{{ package_manager__create_temp_etc_apt_dir.path }}/sources.list.d"
+  register: package_manager__temp_etc_apt_sources_dir
+  when: package_manager__create_temp_etc_apt_dir.path is defined
 
 - name: Check main sources.list file status
   become: true
   ansible.builtin.stat:
-    path: "{{ linux_package_manager_repo_list_file }}"
-  register: linux_package_manager_repo_list_file_stat
+    path: "{{ package_manager__repo_list_file }}"
+  register: package_manager__repo_list_file_stat
+
+- name: Remove temporary etc_apt directory
+  become: true
+  ansible.builtin.tempfile:
+    path: "{{ package_manager__create_temp_etc_apt_dir.path }}"
+    state: absent
+  register: package_manager__remove_temp_etc_apt_dir
 
 # - name: Find apt source files
 #   become: true
 #   ansible.builtin.find:
-#     paths: "{{ linux_systemd_network_dir }}"
-#     patterns: "{{ linux_systemd_network_cleanup_patterns }}"
-#     use_regex: "{{ linux_systemd_network_cleanup_patterns_use_regex | bool }}"
-#   when: linux_systemd_network_cleanup | bool
-#   register: linux_systemd_network_find_cleanup_files
+#     paths: "{{ systemd__network_dir }}"
+#     patterns: "{{ systemd__network_cleanup_patterns }}"
+#     use_regex: "{{ systemd__network_cleanup_patterns_use_regex | bool }}"
+#   when: systemd__network_cleanup | bool
+#   register: systemd__network_find_cleanup_files
 
 # - name: Find apt source files
 #   become: true
 #   ansible.builtin.find:
-#     paths: "{{ linux_systemd_network_dir }}"
-#     patterns: "{{ linux_systemd_network_cleanup_patterns }}"
-#     use_regex: "{{ linux_systemd_network_cleanup_patterns_use_regex | bool }}"
-#   when: linux_systemd_network_cleanup | bool
-#   register: linux_systemd_network_find_cleanup_files
+#     paths: "{{ systemd__network_dir }}"
+#     patterns: "{{ systemd__network_cleanup_patterns }}"
+#     use_regex: "{{ systemd__network_cleanup_patterns_use_regex | bool }}"
+#   when: systemd__network_cleanup | bool
+#   register: systemd__network_find_cleanup_files

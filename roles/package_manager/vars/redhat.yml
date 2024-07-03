@@ -1,4 +1,4 @@
-__linux_package_manager_package_state_config:
+__package_manager__package_state_config:
   - attribute: state
     value: absent
     else: present

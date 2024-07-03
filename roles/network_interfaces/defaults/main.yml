@@ -1,62 +1,62 @@
 ---
-linux_role_network_interfaces_enabled: false
+network_interfaces_role_enabled: false
 
 # Leave empty not to apply changes
-linux_network_interfaces_change_strategy: ''
+network_interfaces__change_strategy: ''
 
 # Example for apply changes via command strategy:
-# linux_network_interfaces_change_strategy: command
-# linux_network_interfaces_change:
+# network_interfaces__change_strategy: command
+# network_interfaces__change:
 #   - cmd: ifreload -a
 
 # Example for apply changes via service strategy:
-# linux_network_interfaces_change_strategy: service
-# linux_network_interfaces_change:
+# network_interfaces__change_strategy: service
+# network_interfaces__change:
 #   - name: networking
 #     state: restarted
 
-linux_network_interfaces_dir: /etc/network
-linux_network_interfaces_file: interfaces
-linux_network_interfaces_file_destination: "{{ linux_network_interfaces_dir + '/' + linux_network_interfaces_file }}"
+network_interfaces__dir: /etc/network
+network_interfaces__file: interfaces
+network_interfaces__file_destination: "{{ network_interfaces__dir + '/' + network_interfaces__file }}"
 
 # Seggrate network interfaces into separate files i.e. /etc/network/interfaces.d/eth0
 # This has not been implemented yet
 # TODO: Implement this feature
-linux_network_interfaces_segregate: false
-linux_network_interfaces_seggregate_dir: "{{ linux_network_interfaces_dir }}/interfaces.d"
+network_interfaces__segregate: false
+network_interfaces__seggregate_dir: "{{ network_interfaces__dir }}/interfaces.d"
 
 # Keep the lo interface in the file
-linux_network_interfaces_keep_lo: true
+network_interfaces__keep_lo: true
 # The location of the source line in the file (controversial topic)
-linux_network_interfaces_source_position: bottom
-linux_network_interfaces_source_line: "source {{ linux_network_interfaces_seggregate_dir }}/*"
+network_interfaces__source_position: bottom
+network_interfaces__source_line: "source {{ network_interfaces__seggregate_dir }}/*"
 
-linux_network_interfaces_backup: true
-linux_network_interfaces_template: network_interfaces.j2
+network_interfaces__backup: true
+network_interfaces__template: network_interfaces.j2
 # This has not been implemented yet
 # TODO: Implement this feature
-linux_network_interfaces_iface_template: network_interfaces.iface.j2
+network_interfaces__iface_template: network_interfaces.iface.j2
 
 # iface XXX inet {manual|static|dhcp}
 # Manual method only INCLUDES selected options whereas static and dhcp methods EXCLUDES selected options
-linux_network_interfaces_manual_includes: []
-linux_network_interfaces_static_excludes: []
-linux_network_interfaces_dhcp_excludes: [
+network_interfaces__manual_includes: []
+network_interfaces__static_excludes: []
+network_interfaces__dhcp_excludes: [
   'address', 'netmask', 'gateway', 'broadcast', 'network', 'dns-nameservers', 'dns-search',
   'dns-domain', 'dns-domain-search', 'dns-options', 'dns-sortlist', 'dns-opts']
 
-linux_network_interfaces_default: []
-linux_network_interfaces_group: []
-linux_network_interfaces_host: []
+network_interfaces__default: []
+network_interfaces__group: []
+network_interfaces__host: []
 
 # The combination strategy below is highly nested hierarchy compliant and recommended (Example provided below)
-# linux_network_interfaces_host > linux_network_interfaces_group > linux_network_interfaces_default
-linux_network_interfaces_all: "{{
-  [linux_network_interfaces_default, linux_network_interfaces_group, linux_network_interfaces_host] |
+# network_interfaces__host > network_interfaces__group > network_interfaces__default
+network_interfaces__all: "{{
+  [network_interfaces__default, network_interfaces__group, network_interfaces__host] |
   community.general.lists_mergeby('name', recursive=true, list_merge='prepend') |
   aybarsm.helper.unique_recursive(attributes='name', recurse='inet') | aybarsm.helper.unique_recursive(attributes='name', recurse='inet6') }}"
 
-# linux_network_interfaces_default:
+# network_interfaces__default:
 #   - name: enp0s6
 #     mount: auto
 #   - name: vmbr0
@@ -66,7 +66,7 @@ linux_network_interfaces_all: "{{
 #       - name: bridge-stp
 #         value: "on"
 
-# linux_network_interfaces_group:
+# network_interfaces__group:
 #   - name: vmbr0
 #     mount: auto
 #     inet:
@@ -77,7 +77,7 @@ linux_network_interfaces_all: "{{
 #       - name: bridge-fd
 #         value: 0
 
-# linux_network_interfaces_host:
+# network_interfaces__host:
 #   - name: enp0s6
 #     mount: None
 #   - name: vmbr0
@@ -93,7 +93,7 @@ linux_network_interfaces_all: "{{
 #         value: fdff::1/64
 
 # !!!!! RESULT: !!!!!
-# linux_network_interfaces_all:
+# network_interfaces__all:
 #   - name: enp0s6
 #     mount: None # Replaced from default by host
 #   - name: vmbr0

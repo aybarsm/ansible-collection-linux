@@ -1,5 +1,5 @@
-{% if __linux_ansible_local_facts is defined %}
-{{ __linux_ansible_local_facts | to_nice_json }}
+{% if __ansible__local_facts is defined %}
+{{ __ansible__local_facts | to_nice_json }}
 {% else %}
 {
 }

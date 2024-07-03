@@ -2,4 +2,4 @@
 - name: Import posix sysctl tasks
   ansible.builtin.import_tasks:
     file: sysctl.yml
-  when: linux_role_posix_sysctl_enabled | bool
+  when: posix_sysctl_role_enabled | bool
