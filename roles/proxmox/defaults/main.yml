@@ -1,4 +1,4 @@
-proxmox_role_enabled: false
+proxmox__role_enabled: false
 
 proxmox__clean_os_upgrade: ''
 

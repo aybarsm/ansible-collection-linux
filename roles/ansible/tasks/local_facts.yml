@@ -4,8 +4,10 @@
   ansible.builtin.file:
     state: directory
     recurse: true
-    path: "{{ ansible__local_facts_dir }}"
+    path: "{{ ansible__host_facts_dir }}"
 
 - name: Assign local facts as ansible facts
   ansible.builtin.set_fact:
-    __ansible__local_facts: "{{ ansible_local.aybarsm_linux | default({}) }}"
+    __ansible__host_facts: "{{ ansible_local[fact_basename] | default({}) }}"
+  vars:
+    fact_basename: "{{ ansible__local_fact_file | basename | regex_replace('\\.fact$', '') }}"

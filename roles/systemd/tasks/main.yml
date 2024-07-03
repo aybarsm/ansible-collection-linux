@@ -3,5 +3,5 @@
   ansible.builtin.import_tasks:
     file: network.yml
   when:
-    - systemd_network_role_enabled | bool
+    - systemd_network__role_enabled | bool
     - not systemd__ensure_service_manager | bool or ansible_service_mgr == "systemd"

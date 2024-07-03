@@ -1,5 +1,5 @@
 ---
-grub_role_enabled: false
+grub__role_enabled: false
 
 grub__dir: /etc/default/grub.d
 grub__file: 50-ansible.cfg

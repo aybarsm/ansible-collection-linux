@@ -5,17 +5,17 @@
   vars:
     fact_basename: "{{ ansible__local_fact_file | basename | regex_replace('\\.fact$', '') }}"
     host_fact_updates: "{{ dict((
-      ansible_host_fact_updates | map(attribute='path') |
+      ansible__host_fact_updates | map(attribute='path') |
       map('regex_replace', '^ansible_local\\.' + fact_basename + '\\.|^ansible_local\\.', '') |
-      map('regex_replace', '^(?!__ansible__local_facts\\.)(.*)$', '__ansible__local_facts.\\1')) |
-      zip(ansible_host_fact_updates | map(attribute='value'))) |
+      map('regex_replace', '^(?!__ansible__host_facts\\.)(.*)$', '__ansible__host_facts.\\1')) |
+      zip(ansible__host_fact_updates | map(attribute='value'))) |
       dict2items(key_name='path', value_name='value') }}"
-  register: ansible__update_local_facts
+  register: ansible__update_host_facts
 
 - name: Re-assign host local facts to ansible facts
   ansible.builtin.set_fact:
-    __ansible__local_facts: "{{ ansible__update_local_facts.__ansible__local_facts }}"
-  register: ansible__local_facts_reassign
+    __ansible__host_facts: "{{ ansible__update_host_facts.__ansible__host_facts }}"
+  register: ansible__host_facts_reassign
 
 - name: Settle local facts on host if changed
   become: true
@@ -23,19 +23,19 @@
     src: "{{ ansible__local_fact_template }}"
     dest: "{{ ansible__local_fact_file }}"
     backup: "{{ ansible__local_fact_backup | default(omit) | bool }}"
-  register: ansible__local_facts_settle
+  register: ansible__host_facts_settle
   vars:
     fact_basename: "{{ ansible__local_fact_file | basename | regex_replace('\\.fact$', '') }}"
     on_host: "{{ ansible_local[fact_basename] | default({}) | b64encode }}"
-    on_runtime: "{{ __ansible__local_facts | default({}) | b64encode }}"
+    on_runtime: "{{ __ansible__host_facts | default({}) | b64encode }}"
   when: on_host != on_runtime
 
 - name: Re-read local facts
   become: true
   ansible.builtin.setup:
     filter: ansible_local
-  register: ansible__local_facts_reread
-  when: ansible__local_facts_settle.changed
+  register: ansible__host_facts_reread
+  when: ansible__host_facts_settle.changed
 
 # - name: Settle local facts if they have been modified
 #   ansible.builtin.meta: 'flush_handlers'

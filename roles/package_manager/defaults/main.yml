@@ -1,5 +1,5 @@
 ---
-package_manager_role_enabled: false
+package_manager__role_enabled: false
 
 # Change the package manager strategy to use for the system i.e. ansible.builtin.apt vs ansible.builtin.package
 # Available options: specific, common

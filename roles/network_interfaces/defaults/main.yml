@@ -1,5 +1,5 @@
 ---
-network_interfaces_role_enabled: false
+network_interfaces__role_enabled: false
 
 # Leave empty not to apply changes
 network_interfaces__change_strategy: ''
