@@ -1,0 +1,109 @@
+---
+- name: Create temporary directory for repo lists (Clean Upgrade)
+  become: true
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: "{{ temp_dir_suffix }}"
+  vars:
+    temp_dir_suffix: "{{ package_manager__repo_dir | trim(' /') | regex_replace('/', '_') }}"
+  register: package_manager__create_temp_repo_dir
+  when: package_manager__initial_upgrade_strategy in ['clean_full', 'clean_dist']
+
+- name: Create repo list directory in temporary repo list directory (Clean Upgrade)
+  become: true
+  ansible.builtin.file:
+    state: directory
+    recurse: true
+    path: "{{ package_manager__create_temp_etc_apt_dir.path '/' + repo_list_dir_basename }}"
+  register: package_manager__create_temp_repo_list_dir
+  vars:
+    repo_list_dir_basename: "{{ package_manager__repo_list_dir | basename }}"
+  when:
+    - package_manager__initial_upgrade_strategy in ['clean_full', 'clean_dist']
+    - package_manager__create_temp_etc_apt_dir.path is defined
+
+- name: Check main repo list file and repo list directory status (Clean Upgrade)
+  become: true
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop:
+    - "{{ package_manager__repo_list_file }}"
+    - "{{ package_manager__repo_list_dir }}"
+  register: package_manager__repo_lists_file_stat
+  when: package_manager__initial_upgrade_strategy in ['clean_full', 'clean_dist']
+
+- name: Set facts for backup and restore (Clean Upgrade)
+  ansible.builtin.set_fact:
+    package_manager__clean_upgrade_backup: "{{ backup }}"
+    package_manager__clean_upgrade_restore: "{{ restore }}"
+  vars:
+    backup_src: "{{ package_manager__repo_lists_file_stat.results |
+      selectattr('stat.exists', 'equalto', true) |
+      map(attribute='path') | list }}"
+    backup: "{{ dict(backup_src |
+      zip(['/' + (tmp_dir | trim('/ '))] | product(backup_src | map('basename')) | map('path_join') | list)) |
+      dict2items(key_name='src', value_name='dest') }}"
+    restore: "{{ backups | ansible.utils.replace_keys(
+      target=[{'before':'src','after':'dest__'}, {'before':'dest', 'after':'src'}, {'before':'dest__', 'after':'dest'}]
+      ) }}"
+  register: package_manager__set_facts_backup_restore
+  when:
+    - package_manager__initial_upgrade_strategy in ['clean_full', 'clean_dist']
+    - package_manager__repo_lists_file_stat.results | selectattr('stat.exists', 'equalto', true) | list
+
+- name: Copy (Backup) repo list files and directory (Clean Upgrade)
+  become: true
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop: "{{ package_manager__clean_upgrade_backup }}"
+  register: package_manager__repo_list_backup
+  when:
+    - package_manager__initial_upgrade_strategy in ['clean_full', 'clean_dist']
+    - package_manager__clean_upgrade_backup is defined
+    - package_manager__clean_upgrade_backup | length > 0
+
+# - name: Debug find apt source files
+#   ansible.builtin.debug:
+#     msg:
+#       stat_main: "{{ package_manager__repo_list_file_stat }}"
+#       found: "{{ package_manager__repo_list_find }}"
+#       main_source: "{{ main_source }}"
+#       found_sources: "{{ found_sources }}"
+#   vars:
+#     main_source_check: "{{ package_manager__repo_list_file_stat.stat.path | default('') }}"
+#     main_source: "{{ (not main_source_check) | ternary([], [main_source_check]) }}"
+#     found_sources: "{{ package_manager__repo_list_find.files |
+#       ternary(package_manager__repo_list_find.files | map(attribute='path') | list, []) }}"
+
+
+# - name: Find apt source files
+#   become: true
+#   ansible.builtin.find:
+#     paths: "{{ systemd__network_dir }}"
+#     patterns: "{{ systemd__network_cleanup_patterns }}"
+#     use_regex: "{{ systemd__network_cleanup_patterns_use_regex | bool }}"
+#   when: systemd__network_cleanup | bool
+#   register: systemd__network_find_cleanup_files
+
+- name: Copy (Restore) repo list files and directory (Clean Upgrade)
+  become: true
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop: "{{ package_manager__clean_upgrade_restore }}"
+  register: package_manager__repo_list_restore
+  when:
+    - package_manager__initial_upgrade_strategy in ['clean_full', 'clean_dist']
+    - package_manager__clean_upgrade_restore is defined
+    - package_manager__clean_upgrade_restore | length > 0
+
+- name: Remove temporary directory for repo lists (Clean Upgrade)
+  become: true
+  ansible.builtin.tempfile:
+    path: "{{ package_manager__create_temp_repo_dir.path }}"
+    state: absent
+  register: package_manager__remove_temp_repo_dir
+  when:
+    - package_manager__initial_upgrade_strategy in ['clean_full', 'clean_dist']
+    - package_manager__create_temp_repo_dir.path is defined
