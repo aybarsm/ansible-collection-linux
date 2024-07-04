@@ -9,19 +9,6 @@
   register: package_manager__create_temp_repo_dir
   when: package_manager__initial_upgrade_strategy in ['clean_full', 'clean_dist']
 
-- name: Create repo list directory in temporary repo list directory (Clean Upgrade)
-  become: true
-  ansible.builtin.file:
-    state: directory
-    recurse: true
-    path: "{{ package_manager__create_temp_etc_apt_dir.path '/' + repo_list_dir_basename }}"
-  register: package_manager__create_temp_repo_list_dir
-  vars:
-    repo_list_dir_basename: "{{ package_manager__repo_list_dir | basename }}"
-  when:
-    - package_manager__initial_upgrade_strategy in ['clean_full', 'clean_dist']
-    - package_manager__create_temp_etc_apt_dir.path is defined
-
 - name: Check main repo list file and repo list directory status (Clean Upgrade)
   become: true
   ansible.builtin.stat:
@@ -38,18 +25,17 @@
     package_manager__clean_upgrade_restore: "{{ restore }}"
   vars:
     backup_src: "{{ package_manager__repo_lists_file_stat.results |
-      selectattr('stat.exists', 'equalto', true) |
-      map(attribute='path') | list }}"
+      selectattr('stat.exists', 'truthy') | map(attribute='stat.path') | list }}"
     backup: "{{ dict(backup_src |
       zip(['/' + (tmp_dir | trim('/ '))] | product(backup_src | map('basename')) | map('path_join') | list)) |
       dict2items(key_name='src', value_name='dest') }}"
     restore: "{{ backups | ansible.utils.replace_keys(
-      target=[{'before':'src','after':'dest__'}, {'before':'dest', 'after':'src'}, {'before':'dest__', 'after':'dest'}]
+      target=[{'before':'src','after':'__dest__'}, {'before':'dest', 'after':'src'}, {'before':'__dest__', 'after':'dest'}]
       ) }}"
   register: package_manager__set_facts_backup_restore
   when:
     - package_manager__initial_upgrade_strategy in ['clean_full', 'clean_dist']
-    - package_manager__repo_lists_file_stat.results | selectattr('stat.exists', 'equalto', true) | list
+    - package_manager__repo_lists_file_stat.results | selectattr('stat.exists', 'truthy') | list | length > 0
 
 - name: Copy (Backup) repo list files and directory (Clean Upgrade)
   become: true
