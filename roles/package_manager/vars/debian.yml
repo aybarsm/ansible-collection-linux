@@ -1,6 +1,8 @@
 package_manager__repo_dir: /etc/apt
 package_manager__repo_list_file: "{{ package_manager__repo_dir}}/sources.list"
 package_manager__repo_list_dir: "{{ package_manager__repo_dir}}/sources.list.d"
+package_manager__repo_list_use_regex: true
+package_manager__repo_list_patterns: [".*\\.list$"]
 
 __package_manager__uniques_package: ['name', 'package', 'pkg']
 __package_manager__uniques_repo: ['repo']

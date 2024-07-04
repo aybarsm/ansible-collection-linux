@@ -1,50 +1,46 @@
 ---
-- name: Create temporary etc_apt directory
+- name: Create temporary directory for repo lists (Clean Upgrade)
   become: true
   ansible.builtin.tempfile:
     state: directory
-    suffix: etc_apt
+    suffix: "{{ temp_dir_suffix }}"
+  vars:
+    temp_dir_suffix: "{{ package_manager__repo_dir | trim(' /') | regex_replace('/', '_') }}"
   register: package_manager__create_temp_repo_dir
+  when: package_manager__initial_upgrade_strategy in ['clean_full', 'clean_dist']
 
-- name: Create repo list directory in temporary etc_apt directory
+- name: Create repo list directory in temporary repo list directory (Clean Upgrade)
   become: true
   ansible.builtin.file:
     state: directory
     recurse: true
     path: "{{ package_manager__create_temp_etc_apt_dir.path '/' + repo_list_dir_basename }}"
-  register: package_manager__create_temp_etc_apt_sources_dir
+  register: package_manager__create_temp_repo_list_dir
   vars:
     repo_list_dir_basename: "{{ package_manager__repo_list_dir | basename }}"
-  when: package_manager__create_temp_etc_apt_dir.path is defined
+  when:
+    - package_manager__initial_upgrade_strategy in ['clean_full', 'clean_dist']
+    - package_manager__create_temp_etc_apt_dir.path is defined
 
-- name: Check main sources.list file status
+- name: Check main repo list file status if defined (Clean Upgrade)
   become: true
   ansible.builtin.stat:
     path: "{{ package_manager__repo_list_file }}"
   register: package_manager__repo_list_file_stat
+  when:
+    - package_manager__initial_upgrade_strategy in ['clean_full', 'clean_dist']
+    - not (package_manager__repo_list_file | default(''))
 
-# - name: Debug find patterns
-#   ansible.builtin.debug:
-#     msg:
-#       base_sources: "{{ base_sources }}"
-#       base_sources_dir: "{{ base_sources_dir }}"
-#       find_patterns: "{{ find_patterns }}"
-#   vars:
-#     base_sources: "^{{ package_manager__repo_list_file | basename }}$"
-#     # base_sources_dir: "^{{ package_manager__repo_list_dir | basename }}\\/.*\\.list$"
-#     base_sources_dir: "{{ package_manager__repo_list_dir | basename | ansible.builtin.regex_escape }}\\/*"
-#     # find_patterns: "{{ [base_sources_dir] }}"
-#     find_patterns:    
-#       - "^sources\\.list$"
-#       - "^sources\\.list\\.d\\/.*\\.list$"
-
-- name: Find apt source files in repo list directory
+- name: Find repo list files in repo list directory (Clean Upgrade)
   become: true
   ansible.builtin.find:
     paths: "{{ package_manager__repo_list_dir }}"
-    patterns: [".*\\.list$"]
-    use_regex: true
+    patterns: "{{ package_manager__repo_list_patterns | default(omit) }}"
+    use_regex: "{{ package_manager__repo_list_use_regex | default(omit) }}"
   register: package_manager__repo_list_find
+  when:
+    - package_manager__initial_upgrade_strategy in ['clean_full', 'clean_dist']
+    - not (package_manager__repo_list_dir | default(''))
 
 - name: Debug find apt source files
   ansible.builtin.debug:
@@ -69,10 +65,12 @@
 #   when: systemd__network_cleanup | bool
 #   register: systemd__network_find_cleanup_files
 
-- name: Remove temporary etc_apt directory
+- name: Remove temporary directory for repo lists (Clean Upgrade)
   become: true
   ansible.builtin.tempfile:
     path: "{{ package_manager__create_temp_repo_dir.path }}"
     state: absent
-  register: package_manager__remove_temp_etc_apt_dir
-  when: package_manager__create_temp_repo_dir.path is defined
+  register: package_manager__remove_temp_repo_dir
+  when:
+    - package_manager__initial_upgrade_strategy in ['clean_full', 'clean_dist']
+    - package_manager__create_temp_repo_dir.path is defined
