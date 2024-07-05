@@ -1,35 +1,48 @@
 ---
-- name: Create temporary directory for repo lists (Clean Upgrade)
-  become: true
-  ansible.builtin.tempfile:
-    state: directory
-    suffix: clean_upgrade
-  register: package_manager__upgrade_create_temp_repo_dir
-  when: __package_manager__upgrade_clean | default(false) | bool
-
-- name: Gather main repo list file and repo list directory stats (Clean Upgrade)
+- name: Gather main repo list file stats (Clean Upgrade)
   become: true
   ansible.builtin.stat:
-    path: "{{ item }}"
-  loop: "{{ backup_targets }}"
-  vars:
-    backup_targets: "{{ (__package_manager__has_main_repo_list) |
-      ternary([package_manager__repo_list_file, package_manager__repo_list_dir], [package_manager__repo_list_dir]) }}"
-  register: package_manager__upgrade_repo_lists_file_stat
-  when: __package_manager__upgrade_clean | default(false) | bool
+    path: "{{ package_manager__repo_list_file }}"
+  register: package_manager__upgrade_main_repo_list_stat
+  when: 
+    - __package_manager__upgrade_clean | default(false) | bool
+    - __package_manager__has_main_repo_list | default(ansible_os_family | lower == 'debian') | bool
+    - package_manager__repo_list_file is defined
+
+- name: Find repo source files (Clean Upgrade)
+  become: true
+  ansible.builtin.find:
+    paths: "{{ package_manager__repo_list_dir }}"
+    patterns: "{{ package_manager__repo_list_patterns }}"
+    use_regex: "{{ package_manager__repo_list_use_regex | bool }}"
+  register: package_manager__upgrade_find_repo_list_files
+  when: 
+    - __package_manager__upgrade_clean | default(false) | bool
 
 - name: Set facts for backup and restore (Clean Upgrade)
   ansible.builtin.set_fact:
     __package_manager__clean_upgrade_backup: "{{ {'src': backup_src, 'dest': backup_dest} | aybarsm.helper.to_list_of_dicts }}"
     __package_manager__clean_upgrade_restore: "{{ {'src': backup_dest, 'dest': backup_src} | aybarsm.helper.to_list_of_dicts }}"
   vars:
-    tmp_dir: "{{ package_manager__upgrade_create_temp_repo_dir.path }}"
-    backup_src: "{{ package_manager__upgrade_repo_lists_file_stat.results | selectattr('stat.exists', 'truthy') | map(attribute='stat.path') | list }}"
-    backup_dest: "{{ [tmp_dir] | product(backup_src | map('basename')) | map('path_join') | list }}"
+    main_repo_list: "{{ 
+      (package_manager__upgrade_main_repo_list_stat.stat.exist is defined and package_manager__upgrade_main_repo_list_stat.stat.exist is truthy ) |
+      ternary(
+        [package_manager__upgrade_main_repo_list_stat.stat.path],
+        []
+      )
+      }}"
+    repo_lists: "{{ (package_manager__upgrade_find_repo_list_files.files.length > 0) |
+      ternary(
+        (package_manager__upgrade_find_repo_list_files.files | map(attribute='path') | list),
+        []
+      )
+      }}"
+    backup_src: "{{ main_repo_list + repo_lists }}"
+    backup_dest: "{{ backup_src | map('regex_replace', '^(.*)$', '\\1.' + now().utcnow().strftime('%Y%m%dT%H%M%S.%fZ') + '.disabled') }}"
   register: package_manager__upgrade_set_facts_backup_restore
   when:
     - __package_manager__upgrade_clean | default(false) | bool
-    - package_manager__upgrade_repo_lists_file_stat.results | selectattr('stat.exists', 'truthy') | list | length > 0
+    - package_manager__upgrade_main_repo_list_stat.stat.exist is defined
 
 - name: Copy (Backup) repo list files and directory (Clean Upgrade)
   become: true
@@ -39,6 +52,18 @@
     remote_src: true
   loop: "{{ __package_manager__clean_upgrade_backup }}"
   register: package_manager__upgrade_repo_list_backup
+  when:
+    - __package_manager__upgrade_clean | default(false) | bool
+    - __package_manager__clean_upgrade_backup is defined
+    - __package_manager__clean_upgrade_backup | length > 0
+
+- name: Temproarily remove repo list files and directory (Clean Upgrade)
+  become: true
+  ansible.builtin.file:
+    path: "{{ item.src }}"
+    state: absent
+  loop: "{{ __package_manager__clean_upgrade_backup }}"
+  register: package_manager__upgrade_repo_list_remove
   when:
     - __package_manager__upgrade_clean | default(false) | bool
     - __package_manager__clean_upgrade_backup is defined
