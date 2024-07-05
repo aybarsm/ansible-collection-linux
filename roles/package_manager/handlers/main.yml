@@ -1,17 +1,17 @@
 ---
-- name: Update local facts for the host upgrade
-  ansible.builtin.include_role:
-    name: aybarsm.linux.ansible
-    tasks_from: update_local_facts.yml
-  vars:
-    ansible__local_fact_updates:
-      - path: package_manager.upgrade
-        value: "{{ (__ansible__local_facts.package_manager.upgrade | default([])) + [{'timestamp': now().utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')}] }}"
-  register: package_manager__upgrade_update_local_facts
-  listen: "package_manager__upgrade_update_local_facts"
-  when:
-    - package_manager__upgrade_strategy is defined
-    - package_manager__upgrade_strategy == 'once'
+# - name: Update local facts for the host upgrade
+#   ansible.builtin.include_role:
+#     name: aybarsm.linux.ansible
+#     tasks_from: update_local_facts.yml
+#   vars:
+#     ansible__local_fact_updates:
+#       - path: package_manager.upgrade
+#         value: "{{ (__ansible__local_facts.package_manager.upgrade | default([])) + [{'timestamp': now().utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')}] }}"
+#   register: package_manager__upgrade_update_local_facts
+#   listen: "package_manager__upgrade_update_local_facts"
+#   when:
+#     - package_manager__upgrade_strategy is defined
+#     - package_manager__upgrade_strategy == 'once'
 
 - name: Update DEB repo cache
   become: true

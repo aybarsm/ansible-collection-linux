@@ -1,3 +1,5 @@
+# FIXME: This is a test file. It should be removed after the role is tested.
+
 package_manager__repo_list_templates:
   - type: default
     dest: /etc/apt/sources.list

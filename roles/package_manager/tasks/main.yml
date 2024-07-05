@@ -1,51 +1,65 @@
 ---
-- name: Load OS related variables
-  ansible.builtin.include_vars: "{{ ansible_os_family | lower }}.yml"
+# FIXME: Commented out for testing. Uncomment after testing.
+# - name: Load OS related variables
+#   ansible.builtin.include_vars: "{{ ansible_os_family | lower }}.yml"
 
-- name: Load common variables structured on OS related variables
-  ansible.builtin.include_vars: common.yml
+# HACK: This is a workaround to load the OS related variables for debug
+# - name: Load OS related variables
+#   ansible.builtin.include_vars: test.yml
 
-- name: Import aybarsm linux ansible role
-  ansible.builtin.import_role:
-    name: aybarsm.linux.ansible
+# FIXME: Commented out for testing. Uncomment after testing.
+# - name: Load common variables structured on OS related variables
+#   ansible.builtin.include_vars: common.yml
 
-- name: Set facts for package manager
-  ansible.builtin.import_tasks:
-    file: set_facts.yml
-  when: package_manager__role_enabled | default(false) | bool
+# FIXME: Commented out for testing. Uncomment after testing.
+# - name: Import aybarsm linux ansible role
+#   ansible.builtin.import_role:
+#     name: aybarsm.linux.ansible
 
-- name: Import DEB repository and repository key tasks (APT)
-  ansible.builtin.import_tasks:
-    file: deb.yml
-  when:
-    - package_manager__role_enabled | default(false) | bool
-    - ansible_os_family | lower == 'debian'
+# FIXME: Commented out for testing. Uncomment after testing.
+# - name: Set facts for package manager
+#   ansible.builtin.import_tasks:
+#     file: set_facts.yml
+#   when: package_manager__role_enabled | default(false) | bool
 
-- name: Check upgrade strategy once compliance
-  ansible.builtin.fail:
-    msg: "Upgrade strategy has been set to 'once' but the required conditions are not met. Please enable the role and manage local facts to use 'once' strategy."
-  when:
-    - package_manager__upgrade_strategy == 'once'
-    - not __package_manager__upgrade_once_eligible
+# FIXME: Commented out for testing. Uncomment after testing.
+# - name: Import DEB repository and repository key tasks (APT)
+#   ansible.builtin.import_tasks:
+#     file: deb.yml
+#   when:
+#     - package_manager__role_enabled | default(false) | bool
+#     - ansible_os_family | default('') | lower == 'debian'
 
-- name: Import upgrade tasks
-  ansible.builtin.import_tasks:
-    file: upgrade.yml
-  when:
-    - package_manager__role_enabled | default(false) | bool
-    - __package_manager__upgrade_perform
+# FIXME: Commented out for testing. Uncomment after testing.
+# - name: Check upgrade strategy once compliance
+#   ansible.builtin.fail:
+#     msg: "Upgrade strategy has been set to 'once' but the required conditions are not met. Please enable the role and manage local facts to use 'once' strategy."
+#   when:
+#     - package_manager__upgrade_strategy == 'once'
+#     - __package_manager__upgrade_once_eligible is defined
+#     - not __package_manager__upgrade_once_eligible
 
-- name: Import DEB package tasks (APT)
-  ansible.builtin.import_tasks:
-    file: deb_packages.yml
-  when:
-    - package_manager__role_enabled | default(false) | bool
-    - package_manager__package_strategy | lower == 'specific'
-    - ansible_os_family | lower == 'debian'
+# FIXME: Commented out for testing. Uncomment after testing.
+# - name: Import upgrade tasks
+#   ansible.builtin.import_tasks:
+#     file: upgrade.yml
+#   when:
+#     - package_manager__role_enabled | default(false) | bool
+#     - __package_manager__upgrade_perform
 
-- name: Import common package manager tasks
-  ansible.builtin.import_tasks:
-    file: common_packages.yml
-  when:
-    - package_manager__role_enabled | default(false) | bool
-    - package_manager__package_strategy | lower == 'common'
+# FIXME: Commented out for testing. Uncomment after testing.
+# - name: Import DEB package tasks (APT)
+#   ansible.builtin.import_tasks:
+#     file: deb_packages.yml
+#   when:
+#     - package_manager__role_enabled | default(false) | bool
+#     - package_manager__package_strategy | lower == 'specific'
+#     - ansible_os_family | default('') | lower == 'debian'
+
+# FIXME: Commented out for testing. Uncomment after testing.
+# - name: Import common package manager tasks
+#   ansible.builtin.import_tasks:
+#     file: common_packages.yml
+#   when:
+#     - package_manager__role_enabled | default(false) | bool
+#     - package_manager__package_strategy | lower == 'common'

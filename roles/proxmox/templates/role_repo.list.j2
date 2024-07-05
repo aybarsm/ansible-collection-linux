@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+
+{% set proxmox_role_segments = proxmox_role | split(':') %}
+{% set role_repo = proxmox_role_segments[0] %}
+{% set role_type = proxmox_role_segments[1] %}
+{% set role_repo_url = proxmox__repo_url_enterprise if role_type == 'enterprise' else proxmox__repo_url_no_subscription %}
+{% if role_repo in ['pve', 'pbs', 'pmg'] %}
+deb {{ role_repo_url }}/{{ role_repo }} {{ ansible_distribution_release }} {{ role_repo }}-{{ role_type }}
+{% elif role_repo.startswith('ceph-') %}
+deb {{ role_repo_url }}/{{ role_repo }} {{ ansible_distribution_release }} {{ role_type }}
+{% endif %}

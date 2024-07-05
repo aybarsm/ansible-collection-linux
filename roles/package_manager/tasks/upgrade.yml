@@ -1,13 +1,18 @@
 ---
-- name: Gather main repo list file stats (Clean Upgrade)
+- name: Deploy default main repo list files (Clean Upgrade)
   become: true
-  ansible.builtin.stat:
-    path: "{{ package_manager__repo_list_file }}"
-  register: package_manager__upgrade_main_repo_list_stat
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    backup: "{{ item.backup | default(true) | bool }}"
+  loop: "{{ package_manager__main_repo_list_files }}"
+  vars:
+    default_repo_lists: "{{ package_manager__main_repo_list_files | selectattr('type', 'defined') | selectattr('type', 'equalto', 'default') | list }}"
+  register: package_manager__upgrade_
   when: 
     - __package_manager__upgrade_clean | default(false) | bool
-    - __package_manager__has_main_repo_list | default(ansible_os_family | lower == 'debian') | bool
-    - package_manager__repo_list_file is defined
+    - package_manager__main_repo_list_files is defined
+    - package_manager__main_repo_list_files | selectattr('type', 'defined') | selectattr('type', 'equalto', 'default') | length > 0
 
 - name: Find repo source files (Clean Upgrade)
   become: true

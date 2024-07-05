@@ -5,3 +5,42 @@ ansible__local_fact_template: aybarsm_linux.json.fact.j2
 ansible__local_fact_backup: true
 ansible__local_facts_dir: "{{ (not lookup('config', 'DEFAULT_FACT_PATH')) | ternary('/etc/ansible/facts.d', lookup('config', 'DEFAULT_FACT_PATH')) }}"
 ansible__local_fact_file: "{{ ansible__local_facts_dir }}/aybarsm_linux.fact"
+
+__ansible__config:
+  modules:
+    ansible_builtin_apt:
+      uniques: ['name']
+      aliases:
+        allow_downgrade: ['allow-downgrade', 'allow_downgrades', 'allow-downgrades']
+        allow_unauthenticated: ['allow-unauthenticated']
+        default_release: ['default-release']
+        install_recommends: ['install-recommends']
+        name: ['package', 'pkg']
+        update_cache: ['update-cache']
+    ansible_builtin_apt_repository:
+      uniques: ['repo']
+      aliases:
+        update_cache: ['update-cache']
+    ansible_builtin_apt_key:
+      uniques: ['keyserver', 'url', 'id', 'file']
+    ansible_builtin_dnf:
+      uniques: ['name']
+      aliases:
+        name: ['package', 'pkg']
+        update_cache: ['expire-cache']
+    ansible_builtin_yum_repository:
+      uniques: ['name']
+      aliases:
+        attributes: ['attr']
+        sslcacert: ['ca_cert']
+        sslclientcert: ['client_cert']
+        sslclientkey: ['client_key']
+        sslverify: ['validate_certs']
+    ansible_builtin_copy:
+      uniques: ['dest']
+      aliases:
+        attributes: ['attr']
+    ansible_builtin_template:
+      uniques: ['dest']
+      aliases:
+        attributes: ['attr']

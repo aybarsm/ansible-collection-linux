@@ -1,0 +1,5 @@
+# {{ ansible_managed }}
+
+{% set ver_distrib_major_minor = ansible_distribution_version | regex_replace('(\\.[^.]*).*$', '\\1') %}
+https://dl-cdn.alpinelinux.org/alpine/v{{ ver_distrib_major_minor }}/main
+https://dl-cdn.alpinelinux.org/alpine/v{{ ver_distrib_major_minor }}/community

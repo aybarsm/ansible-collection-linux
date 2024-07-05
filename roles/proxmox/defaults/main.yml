@@ -1,6 +1,7 @@
 proxmox__role_enabled: false
 
-proxmox__clean_os_upgrade: ''
+proxmox__repo_url_enterprise: https://enterprise.proxmox.com/debian
+proxmox__repo_url_no_subscription: http://download.proxmox.com/debian
 
 proxmox__default: {}
 proxmox__group: {}

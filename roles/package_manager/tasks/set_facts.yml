@@ -4,6 +4,10 @@
     __package_manager__upgrade_once_eligible: "{{ upgrade_once_eligible }}"
     __package_manager__upgrade_perform: "{{ is_upgrade_always or (is_upgrade_once and upgrade_once_eligible and not is_upgrade_defined) }}"
     __package_manager__upgrade_clean: "{{ package_manager__upgrade_mode in __package_manager__clean_upgrade_modes }}"
+    __package_manager_default_repo_list_templates: "{{ repo_list_templates |
+      aybarsm.helper.selectattr([{when: ['type', 'defined'], ['type', 'equalto', 'default']}]) | default([]) }}"
+    __package_manager_repo_list_templates: "{{ repo_list_templates |
+      aybarsm.helper.rejectattr([{when: ['type', 'defined'], ['type', 'equalto', 'default']}]) | default([]) }}"
   vars:
     is_upgrade_once: "{{ package_manager__upgrade_strategy == 'once' }}"
     is_upgrade_always: "{{ package_manager__upgrade_strategy == 'always' }}"
@@ -12,4 +16,6 @@
     is_local_facts_defined: "{{ __ansible__local_facts is defined }}"
     is_upgrade_defined: "{{ __ansible__local_facts.package_manager.upgrade is defined }}"
     upgrade_once_eligible: "{{ is_ansible_role and is_manage_local_facts and is_local_facts_defined }}"
+    repo_list_templates: "{{ package_manager__repo_list_templates |
+      aybarsm.helper.selectattr([{when: [['src', 'defined'], ['dest', 'defined']]}]) | default([]) }}"
   register: package_manager__set_facts
