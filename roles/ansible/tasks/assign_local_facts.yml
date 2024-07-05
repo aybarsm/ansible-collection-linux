@@ -1,5 +1,0 @@
----
-- name: Assign host local facts to ansible facts
-  ansible.builtin.set_fact:
-    __ansible__local_facts: "{{ ansible__updated_local_facts }}"
-  register: ansible__local_facts_assign

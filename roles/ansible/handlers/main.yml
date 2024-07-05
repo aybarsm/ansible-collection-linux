@@ -1,7 +1,36 @@
 ---
+# REVIEW: Execute the handler without when control, let the task decide to notify or not
+- name: Settle local facts on host if changed
+  become: true
+  ansible.builtin.template:
+    src: "{{ ansible__local_fact_template }}"
+    dest: "{{ ansible__local_fact_file }}"
+    backup: "{{ ansible__local_fact_backup | default(omit) | bool }}"
+  vars:
+    on_host: "{{ ansible_local[ansible__local_fact_name] | default({}) | b64encode }}"
+    on_runtime: "{{ ansible__local_facts | default({}) | b64encode }}"
+    ansible_callback_diy_runner_on_skipped_msg: |
+          skipping: [{{ inventory_hostname }}]
+          msg: {{ (not ansible_check_mode and on_host != on_runtime) | ternary("Host local facts not changed.", "DRY-RUN") }}
+    ansible_callback_diy_runner_on_skipped_msg_color: green
+  when: on_host != on_runtime
+  register: ansible__local_facts_settle
+  listen: "ansible__local_facts_settle"
+  notify: "ansible__local_facts_reread"
+
 - name: Re-read local facts on the host
   become: true
   ansible.builtin.setup:
     filter: ansible_local
   register: ansible__local_facts_reread
   listen: "ansible__local_facts_reread"
+  notify: ansible__local_facts_assign
+
+- name: Assign host local facts to ansible facts
+  ansible.builtin.set_fact:
+    ansible__local_facts: "{{ ansible_local[ansible__local_fact_name] }}"
+  register: ansible__local_facts_assign
+  listen: "ansible__local_facts_assign"
+  when:
+    - ansible__local_fact_name is defined
+    - ansible_local[ansible__local_fact_name] is defined

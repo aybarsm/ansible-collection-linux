@@ -11,4 +11,4 @@
   ansible.builtin.import_tasks:
     file: assign_local_facts.yml
   vars:
-    ansible__updated_local_facts: "{{ ansible_local[__ansible__local_fact_name] | default({}) }}"
+    ansible__updated_local_facts: "{{ ansible_local[ansible__local_fact_name] | default({}) }}"

@@ -4,41 +4,12 @@
     updates: "{{ local_fact_updates }}"
   vars:
     update_paths: "{{  ansible__local_fact_updates | map(attribute='path') |
-      map('regex_replace', '^ansible_local\\.' + __ansible__local_fact_name + '\\.|^ansible_local\\.', '') |
+      map('regex_replace', '^ansible_local\\.' + ansible__local_fact_name + '\\.|^ansible_local\\.', '') |
       map('regex_replace', '^(?!__ansible__local_facts\\.)(.*)$', '__ansible__local_facts.\\1') }}"
     local_fact_updates: "{{ {'path': update_paths, 'value': (ansible__local_fact_updates | map(attribute='value'))} |
       aybarsm.helper.to_list_of_dicts }}"
   register: ansible__update_local_facts
-
-- name: Import assign host local facts tasks for re-assignment
-  ansible.builtin.import_tasks:
-    file: assign_local_facts.yml
-  vars:
-    ansible__updated_local_facts: "{{ ansible__update_local_facts.__ansible__local_facts }}"
-
-- name: Settle local facts on host if changed
-  become: true
-  ansible.builtin.template:
-    src: "{{ ansible__local_fact_template }}"
-    dest: "{{ ansible__local_fact_file }}"
-    backup: "{{ ansible__local_fact_backup | default(omit) | bool }}"
-  vars:
-    on_host: "{{ ansible_local[__ansible__local_fact_name] | default({}) | b64encode }}"
-    on_runtime: "{{ __ansible__local_facts | default({}) | b64encode }}"
-    ansible_callback_diy_runner_on_skipped_msg: |
-          skipping: [{{ inventory_hostname }}]
-          msg: {{ (not ansible_check_mode and on_host != on_runtime) | ternary("Host local facts not changed.", "DRY-RUN") }}
-    ansible_callback_diy_runner_on_skipped_msg_color: green
-  when: on_host != on_runtime
   notify: "ansible__local_facts_reread"
-  register: ansible__local_facts_settle
-
-# - name: Re-read local facts from the host
-#   become: true
-#   ansible.builtin.setup:
-#     filter: ansible_local
-#   register: ansible__host_facts_reread
-#   when: ansible__host_facts_settle.changed
 
 - name: Re-read local facts on the host if they have been modified
   ansible.builtin.meta: 'flush_handlers'
