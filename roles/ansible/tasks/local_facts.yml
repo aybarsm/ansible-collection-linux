@@ -1,13 +1,14 @@
 ---
-- name: Create directory on host for ansible local facts
+- name: Ensure ansible local facts directory exists on host
   become: true
   ansible.builtin.file:
     state: directory
     recurse: true
-    path: "{{ ansible__host_facts_dir }}"
+    path: "{{ ansible__local_facts_dir }}"
+  register: ansible__ensure_local_facts_dir
 
-- name: Assign local facts as ansible facts
-  ansible.builtin.set_fact:
-    __ansible__host_facts: "{{ ansible_local[fact_basename] | default({}) }}"
+- name: Import assign host local facts tasks
+  ansible.builtin.import_tasks:
+    file: assign_local_facts.yml
   vars:
-    fact_basename: "{{ ansible__local_fact_file | basename | regex_replace('\\.fact$', '') }}"
+    ansible__updated_local_facts: "{{ ansible_local[__ansible__local_fact_name] | default({}) }}"

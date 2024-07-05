@@ -1,8 +1,14 @@
+__package_manager__has_main_repo_list: true
 package_manager__repo_dir: /etc/apt
 package_manager__repo_list_file: "{{ package_manager__repo_dir}}/sources.list"
 package_manager__repo_list_dir: "{{ package_manager__repo_dir}}/sources.list.d"
-package_manager__repo_list_use_regex: true
-package_manager__repo_list_patterns: [".*\\.list$"]
+package_manager__default_repo_template: etc/apt/default.sources.list.j2
+
+package_manager__upgrade_dpkg_options: ''
+package_manager__upgrade_update_repo_cache: true
+
+__package_manager__upgrade_modes: ['full', 'safe', 'yes', 'dist']
+__package_manager__clean_upgrade_modes: "{{ ['clean_'] | product(__package_manager__upgrade_modes) | map('join') }}"
 
 __package_manager__uniques_package: ['name', 'package', 'pkg']
 __package_manager__uniques_repo: ['repo']

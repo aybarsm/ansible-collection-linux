@@ -1,0 +1,5 @@
+---
+- name: Set facts for ansible role
+  ansible.builtin.set_fact:
+    __ansible__local_fact_name: "{{ ansible__local_fact_file | basename | regex_replace('\\.fact$', '') }}"
+  register: ansible__set_facts

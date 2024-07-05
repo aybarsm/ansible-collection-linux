@@ -1,26 +1,7 @@
 ---
-- name: Re-assign host local facts to ansible facts
-  become: true
-  ansible.builtin.set_fact:
-    __ansible__host_facts: "{{ ansible__update_host_facts.__ansible__host_facts }}"
-  register: ansible__host_facts_reassign
-  listen: "ansible__host_facts_reassign"
-  notify: ansible__host_facts_settle
-
-- name: Settle local facts on host if changed
-  become: true
-  ansible.builtin.template:
-    src: "{{ ansible__local_fact_template }}"
-    dest: "{{ ansible__local_fact_file }}"
-    backup: "{{ ansible__local_fact_backup | default(omit) | bool }}"
-  register: ansible__host_facts_settle
-  listen: "ansible__host_facts_settle"
-  notify: ansible__host_facts_reread
-  when: (ansible_local.aybarsm_linux | b64encode) != (__ansible__host_facts | b64encode)
-
-- name: Re-read local facts
+- name: Re-read local facts on the host
   become: true
   ansible.builtin.setup:
     filter: ansible_local
-  register: ansible__host_facts_reread
-  listen: "ansible__host_facts_reread"
+  register: ansible__local_facts_reread
+  listen: "ansible__local_facts_reread"

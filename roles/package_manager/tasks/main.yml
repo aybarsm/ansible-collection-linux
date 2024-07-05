@@ -5,15 +5,14 @@
 - name: Load common variables structured on OS related variables
   ansible.builtin.include_vars: common.yml
 
-- name: Import DEB initial upgrade (APT)
+- name: Import aybarsm linux ansible role
+  ansible.builtin.import_role:
+    name: aybarsm.linux.ansible
+
+- name: Set facts for package manager
   ansible.builtin.import_tasks:
-    file: deb_initial_upgrade.yml
-  when:
-    - package_manager__role_enabled | default(false) | bool
-    - package_manager__initial_upgrade | default(false) | bool
-    - ansible__manage_local_facts | default(false) | bool
-    - __ansible__host_facts is defined
-    - ansible_os_family | lower == 'debian'
+    file: set_facts.yml
+  when: package_manager__role_enabled | default(false) | bool
 
 - name: Import DEB repository and repository key tasks (APT)
   ansible.builtin.import_tasks:
@@ -21,6 +20,20 @@
   when:
     - package_manager__role_enabled | default(false) | bool
     - ansible_os_family | lower == 'debian'
+
+- name: Check upgrade strategy once compliance
+  ansible.builtin.fail:
+    msg: "Upgrade strategy has been set to 'once' but the required conditions are not met. Please enable the role and manage local facts to use 'once' strategy."
+  when:
+    - package_manager__upgrade_strategy == 'once'
+    - not __package_manager__upgrade_once_eligible
+
+- name: Import upgrade tasks
+  ansible.builtin.import_tasks:
+    file: upgrade.yml
+  when:
+    - package_manager__role_enabled | default(false) | bool
+    - __package_manager__upgrade_perform
 
 - name: Import DEB package tasks (APT)
   ansible.builtin.import_tasks:

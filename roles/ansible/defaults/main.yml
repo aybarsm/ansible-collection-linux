@@ -3,5 +3,5 @@ ansible__manage_local_facts: true
 
 ansible__local_fact_template: aybarsm_linux.json.fact.j2
 ansible__local_fact_backup: true
-ansible__host_facts_dir: "{{ (not lookup('config', 'DEFAULT_FACT_PATH')) | ternary('/etc/ansible/facts.d', lookup('config', 'DEFAULT_FACT_PATH')) }}"
-ansible__local_fact_file: "{{ ansible__host_facts_dir }}/aybarsm_linux.fact"
+ansible__local_facts_dir: "{{ (not lookup('config', 'DEFAULT_FACT_PATH')) | ternary('/etc/ansible/facts.d', lookup('config', 'DEFAULT_FACT_PATH')) }}"
+ansible__local_fact_file: "{{ ansible__local_facts_dir }}/aybarsm_linux.fact"

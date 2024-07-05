@@ -1,0 +1,33 @@
+---
+- name: Update local facts for the host upgrade
+  ansible.builtin.include_role:
+    name: aybarsm.linux.ansible
+    tasks_from: update_local_facts.yml
+  vars:
+    ansible__local_fact_updates:
+      - path: package_manager.upgrade
+        value: "{{ (__ansible__local_facts.package_manager.upgrade | default([])) + [{'timestamp': now().utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')}] }}"
+  register: package_manager__upgrade_update_local_facts
+  listen: "package_manager__upgrade_update_local_facts"
+  when:
+    - package_manager__upgrade_strategy is defined
+    - package_manager__upgrade_strategy == 'once'
+
+- name: Update DEB repo cache
+  become: true
+  ansible.builtin.apt:
+    update_cache: true
+  register: package_manager__deb_update_repo_cache
+  listen: "package_manager__deb_update_repo_cache"
+  when:
+    - ansible_os_family | lower == 'debian'
+
+- name: Clean RPM repo metadata cache
+  become: true
+  ansible.builtin.command:
+    cmd: yum clean metadata
+  register: package_manager__rpm_clean_metadata_cache
+  listen: "package_manager__rpm_clean_metadata_cache"
+  when:
+    - ansible_os_family | lower == 'redhat'
+

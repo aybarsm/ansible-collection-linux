@@ -1,3 +1,9 @@
+__package_manager__has_main_repo_list: false
+package_manager__repo_list_dir: /etc/yum.repos.d
+
+__package_manager__upgrade_modes: ['full']
+__package_manager__clean_upgrade_modes: "{{ ['clean_'] | product(__package_manager__upgrade_modes) | map('join') }}"
+
 __package_manager__package_state_config:
   - attribute: state
     value: absent

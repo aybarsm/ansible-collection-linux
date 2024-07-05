@@ -1,21 +1,20 @@
 ---
 - name: Update host local facts
   ansible.utils.update_fact:
-    updates: "{{ host_fact_updates }}"
+    updates: "{{ local_fact_updates }}"
   vars:
-    fact_basename: "{{ ansible__local_fact_file | basename | regex_replace('\\.fact$', '') }}"
-    host_fact_updates: "{{ dict((
-      ansible__host_fact_updates | map(attribute='path') |
-      map('regex_replace', '^ansible_local\\.' + fact_basename + '\\.|^ansible_local\\.', '') |
-      map('regex_replace', '^(?!__ansible__host_facts\\.)(.*)$', '__ansible__host_facts.\\1')) |
-      zip(ansible__host_fact_updates | map(attribute='value'))) |
-      dict2items(key_name='path', value_name='value') }}"
-  register: ansible__update_host_facts
+    update_paths: "{{  ansible__local_fact_updates | map(attribute='path') |
+      map('regex_replace', '^ansible_local\\.' + __ansible__local_fact_name + '\\.|^ansible_local\\.', '') |
+      map('regex_replace', '^(?!__ansible__local_facts\\.)(.*)$', '__ansible__local_facts.\\1') }}"
+    local_fact_updates: "{{ {'path': update_paths, 'value': (ansible__local_fact_updates | map(attribute='value'))} |
+      aybarsm.helper.to_list_of_dicts }}"
+  register: ansible__update_local_facts
 
-- name: Re-assign host local facts to ansible facts
-  ansible.builtin.set_fact:
-    __ansible__host_facts: "{{ ansible__update_host_facts.__ansible__host_facts }}"
-  register: ansible__host_facts_reassign
+- name: Import assign host local facts tasks for re-assignment
+  ansible.builtin.import_tasks:
+    file: assign_local_facts.yml
+  vars:
+    ansible__updated_local_facts: "{{ ansible__update_local_facts.__ansible__local_facts }}"
 
 - name: Settle local facts on host if changed
   become: true
@@ -23,19 +22,23 @@
     src: "{{ ansible__local_fact_template }}"
     dest: "{{ ansible__local_fact_file }}"
     backup: "{{ ansible__local_fact_backup | default(omit) | bool }}"
-  register: ansible__host_facts_settle
   vars:
-    fact_basename: "{{ ansible__local_fact_file | basename | regex_replace('\\.fact$', '') }}"
-    on_host: "{{ ansible_local[fact_basename] | default({}) | b64encode }}"
-    on_runtime: "{{ __ansible__host_facts | default({}) | b64encode }}"
+    on_host: "{{ ansible_local[__ansible__local_fact_name] | default({}) | b64encode }}"
+    on_runtime: "{{ __ansible__local_facts | default({}) | b64encode }}"
+    ansible_callback_diy_runner_on_skipped_msg: |
+          skipping: [{{ inventory_hostname }}]
+          msg: {{ (not ansible_check_mode and on_host != on_runtime) | ternary("Host local facts not changed.", "DRY-RUN") }}
+    ansible_callback_diy_runner_on_skipped_msg_color: green
   when: on_host != on_runtime
+  notify: "ansible__local_facts_reread"
+  register: ansible__local_facts_settle
 
-- name: Re-read local facts
-  become: true
-  ansible.builtin.setup:
-    filter: ansible_local
-  register: ansible__host_facts_reread
-  when: ansible__host_facts_settle.changed
+# - name: Re-read local facts from the host
+#   become: true
+#   ansible.builtin.setup:
+#     filter: ansible_local
+#   register: ansible__host_facts_reread
+#   when: ansible__host_facts_settle.changed
 
-# - name: Settle local facts if they have been modified
-#   ansible.builtin.meta: 'flush_handlers'
+- name: Re-read local facts on the host if they have been modified
+  ansible.builtin.meta: 'flush_handlers'

@@ -1,15 +1,22 @@
 ---
 package_manager__role_enabled: false
 
+# Package Manager Strategy:
 # Change the package manager strategy to use for the system i.e. ansible.builtin.apt vs ansible.builtin.package
 # Available options: specific, common
 package_manager__package_strategy: specific
 
-package_manager__initial_upgrade: false
-# Available options: full, dist, clean_full, clean_dist
+# Upgrade Strategy:
+# Upgrade the packages on the system either always, never or once
+# Once option stores the state of the upgrade in host with ansible facts
+# Once option requires ansible__role_enabled and ansible__manage_local_facts to be enabled
+package_manager__upgrade_strategy: once
+
+# Upgrade Mode:
+# Available options for APT: full, clean_full, safe, clean_safe, yes, clean_yes, dist, clean_dist
+# Available options for DNF: full, clean_full
 # Clean options temproarily removes all repos other than OS default repos before upgrade
-package_manager__initial_upgrade_strategy: clean_full
-package_manager__deb_default_repos_template: etc/apt/default.sources.list.j2
+package_manager__upgrade_mode: clean_full
 
 # TODO: Implement this feature
 # package_manager__package_simulation: true
