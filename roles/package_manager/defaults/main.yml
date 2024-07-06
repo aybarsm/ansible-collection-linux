@@ -18,6 +18,12 @@ package_manager__upgrade_strategy: once
 # Clean options temproarily removes all repos other than OS default repos before upgrade
 package_manager__upgrade_mode: clean_full
 
+# Shared Options:
+package_manager__repo_list_disabled_template: common/repo_list_disabled.j2
+package_manager__repo_list_disabled_comment: "This repository list temporarily disabled by ansible."
+package_manager__upgrade_update_repo_cache: true
+package_manager__repo_list_use_regex: true
+
 # TODO: Implement this feature
 # package_manager__package_simulation: true
 

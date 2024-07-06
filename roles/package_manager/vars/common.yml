@@ -1,5 +1,3 @@
-__package_manager__clean_upgrade_modes: "{{ ['clean_'] | product(__package_manager__upgrade_modes) | map('join') }}"
-
 package_manager__packages_all: "{{ package_manager__all |
   aybarsm.helper.selectattr(__package_manager__config.packages.selectattr) |
   aybarsm.helper.replace_aliases(__package_manager__config.packages.replace_aliases) |
@@ -22,3 +20,33 @@ package_manager__repo_lists_all: "{{ package_manager__all |
   aybarsm.helper.selectattr(__package_manager__config.repo_lists.selectattr) |
   aybarsm.helper.unique_recursive(__package_manager__config.repo_lists.uniques) |
   default([]) }}"
+
+__package_manager__clean_upgrade_modes: "{{ ['clean_'] | product(__package_manager__upgrade_modes) | map('join') }}"
+__package_manager__repo_list_defaults: "{{ package_manager__repo_lists_all | selectattr('category', 'defined') | selectattr('category', 'equalto', 'default') | list }}"
+
+__package_manager__upgrade_clean: "{{ package_manager__upgrade_mode in __package_manager__clean_upgrade_modes }}"
+__package_manager__upgrade_mode: "{{ package_manager__upgrade_mode | regex_replace('clean_', '') }}"
+__package_manager__upgrade_clean_eligible: "{{ __package_manager__upgrade_clean and __package_manager__repo_list_defaults | length > 0 }}"
+
+__package_manager__upgrade_once: "{{ package_manager__upgrade_strategy == 'once' }}"
+__package_manager__upgrade_always: "{{ package_manager__upgrade_strategy == 'always' }}"
+__package_manager__upgrade_never: "{{ package_manager__upgrade_strategy == 'never' }}"
+__package_manager__upgrade_execute: >-
+  {%- if __package_manager__upgrade_never -%}
+  {'decision': false, 'reason': 'Upgrade strategy is set to never.'}
+  {%- elif __package_manager__upgrade_clean and not __package_manager__upgrade_clean_eligible -%}
+  {'decision': false, 'reason': 'Upgrade strategy is set to clean, but no default repo list configuration found.'}
+  {%- elif __package_manager__upgrade_once -%}
+  {%- if ansible__role_enabled is undefined -%}
+  {'decision': false, 'reason': 'Upgrade strategy once requires aybarsm.linux.ansible role included.'}
+  {%- elif not ansible__role_enabled -%}
+  {'decision': false, 'reason': 'Upgrade strategy once requires aybarsm.linux.ansible role enabled. (ansible__role_enabled: true)'}
+  {%- elif not ansible__manage_local_facts -%}
+  {'decision': false, 'reason': 'Upgrade strategy once requires aybarsm.linux.ansible role local fact management enabled. (ansible__manage_local_facts: true)'}
+
+  {%- elif __package_manager__upgrade_once and __package_manager__upgrade_once_eligible and not __package_manager__upgrade_defined -%}
+  {'decision': true, 'reason': 'Upgrade strategy is set to once, and eligible.'}
+  {%- else -%}
+  {'decision': false, 'reason': 'Upgrade strategy is not set to always or once, or not eligible.'}
+  {%- endif -%}
+  __package_manager__upgrade_always or (__package_manager__upgrade_once and __package_manager__upgrade_once_eligible and not __package_manager__upgrade_defined) }}"

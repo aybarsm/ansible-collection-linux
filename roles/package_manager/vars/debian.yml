@@ -1,5 +1,9 @@
 __package_manager__upgrade_modes: ['full', 'safe', 'yes', 'dist']
 
+package_manager__repo_list_dir: /etc/apt/sources.list.d
+package_manager__repo_list_patterns: [".*\\.list$"]
+package_manager__upgrade_dpkg_options: ''
+
 __package_manager__config:
   packages:
     selectattr:

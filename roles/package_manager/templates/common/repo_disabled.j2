@@ -1,0 +1,4 @@
+# {{ ansible_managed }}
+{% if package_manager__repo_list_disabled_comment is defined %}
+{{ package_manager__repo_list_disabled_comment | comment }}
+{% end if %}

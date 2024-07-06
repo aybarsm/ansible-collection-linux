@@ -1,3 +1,14 @@
 ---
 - name: Load role related variables
   ansible.builtin.include_vars: main.yml
+
+# - name: Include update local facts tasks for initiation
+#   ansible.builtin.include_tasks: update_local_facts.yml
+#   vars:
+#     ansible__local_fact_updates:
+#       - path: ansible.init
+#         value: 
+#   when:
+#     - linux_role_ansible_enabled | bool
+#     - linux_role_ansible_manage_local_facts | bool
+#     - ansible_local[ansible__local_fact_name] is undefined
