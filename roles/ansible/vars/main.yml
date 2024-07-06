@@ -14,7 +14,7 @@ __ansible__config:
       aliases:
         update_cache: ['update-cache']
     ansible_builtin_apt_key:
-      uniques: ['keyserver', 'url', 'id', 'file']
+      uniques: ['keyserver', 'url', 'id', 'file' ,'data']
     ansible_builtin_dnf:
       uniques: ['name']
       aliases:

@@ -1,15 +1,13 @@
 ---
-# FIXME: Commented out for testing. Uncomment after testing.
-# - name: Load OS related variables
-#   ansible.builtin.include_vars: "{{ ansible_os_family | lower }}.yml"
+- name: Import aybarsm linux ansible role
+  ansible.builtin.import_role:
+    name: aybarsm.linux.ansible
 
-# HACK: This is a workaround to load the OS related variables for debug
-# - name: Load OS related variables
-#   ansible.builtin.include_vars: test.yml
+- name: Load OS family related variables
+  ansible.builtin.include_vars: "{{ ansible_os_family | lower }}.yml"
 
-# FIXME: Commented out for testing. Uncomment after testing.
-# - name: Load common variables structured on OS related variables
-#   ansible.builtin.include_vars: common.yml
+- name: Load common variables structured on OS related variables
+  ansible.builtin.include_vars: common.yml
 
 # FIXME: Commented out for testing. Uncomment after testing.
 # - name: Import aybarsm linux ansible role
