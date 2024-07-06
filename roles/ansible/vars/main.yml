@@ -36,3 +36,8 @@ __ansible__config:
       uniques: ['dest']
       aliases:
         attributes: ['attr']
+    ansible_builtin_add_host:
+      uniques: ['name']
+      aliases:
+        groups: ['group', 'groupname']
+        name: ['host','hostname']
