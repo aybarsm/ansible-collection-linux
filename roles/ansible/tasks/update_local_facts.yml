@@ -9,53 +9,35 @@
   when:
     - ansible__role_enabled | bool
     - ansible__manage_local_facts | bool
-    - ansible__local_fact_updates | default([]) | length > 0
-
-# - name: Temporarily assign host local facts to ansible facts
-#   ansible.builtin.set_fact:
-#     __ansible__local_facts: "{{ ansible_local[ansible__local_fact_name] | default({}) }}"
-#   register: ansible__assign_local_facts
-#   when:
-#     - ansible__role_enabled | bool
-#     - ansible__manage_local_facts | bool
-#     - ansible__local_fact_updates | default([]) | length > 0
 
 - name: Update host local facts
   ansible.utils.update_fact:
     updates: "{{ local_fact_updates }}"
   vars:
-    # update_paths: "{{ ansible__local_fact_updates | map(attribute='path') |
-    #   map('regex_replace', '^ansible_local\\.' + ansible__local_fact_name + '\\.|^ansible_local\\.', '') |
-    #   map('regex_replace', '^(?!__ansible__local_facts\\.)(.*)$', '__ansible__local_facts.\\1') }}"
     path_prefix: "ansible_local.{{ ansible__local_fact_name }}."
     update_paths: "{{ ansible__local_fact_updates | map(attribute='path') |
       map('regex_replace', '^(?!' + (path_prefix | regex_escape) + ')(.*)$', path_prefix + '\\1') }}"
     local_fact_updates: "{{ {'path': update_paths, 'value': (ansible__local_fact_updates | map(attribute='value'))} |
       aybarsm.helper.to_list_of_dicts }}"
-  register: ansible__update_local_facts
-  notify: "ansible__settle_local_facts"
+  register: ansible__update_local_facts  
   when:
     - ansible__role_enabled | bool
     - ansible__manage_local_facts | bool
     - ansible__local_fact_updates | default([]) | length > 0
+    - ansible_local[ansible__local_fact_name] is defined
 
-# - name: Undefine host local facts in ansible facts
-#   ansible.builtin.set_fact:
-#     __ansible__local_facts: "{{ undef() }}"
-#   register: ansible__undefine_local_facts
-#   when:
-#     - ansible__role_enabled | bool
-#     - ansible__manage_local_facts | bool
-#     - ansible__local_fact_updates | default([]) | length > 0
-
-- name: Settle local facts on the host if they have been modified
-  ansible.builtin.meta: 'flush_handlers'
+- name: Settle updated local facts on the host
+  become: true
+  ansible.builtin.template:
+    src: "{{ ansible__local_fact_template }}"
+    dest: "{{ ansible__local_fact_file }}"
+    backup: "{{ ansible__local_fact_backup | default(omit) | bool }}"
+  register: ansible__settle_local_facts
   when:
     - ansible__role_enabled | bool
     - ansible__manage_local_facts | bool
-    - ansible__local_fact_updates | default([]) | length > 0
 
-- name: Re-read local facts on the host
+- name: Re-read updated local facts on the host
   become: true
   ansible.builtin.setup:
     filter: ansible_local
@@ -63,6 +45,5 @@
   when:
     - ansible__role_enabled | bool
     - ansible__manage_local_facts | bool
-    - ansible__local_fact_updates | default([]) | length > 0
-    - ansible__settle_local_facts is defined
-    - ansible__settle_local_facts.changed
+    - ansible__settle_local_facts.changed is defined
+    - ansible__settle_local_facts.changed | bool
