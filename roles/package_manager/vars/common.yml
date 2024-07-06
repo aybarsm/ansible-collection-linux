@@ -22,7 +22,10 @@ package_manager__repo_lists_all: "{{ package_manager__all |
   default([]) }}"
 
 __package_manager__clean_upgrade_modes: "{{ ['clean_'] | product(__package_manager__upgrade_modes) | map('join') }}"
-__package_manager__repo_list_defaults: "{{ package_manager__repo_lists_all | selectattr('category', 'defined') | selectattr('category', 'equalto', 'default') | list }}"
+
+__package_manager__repo_list_defaults: "{{ package_manager__repo_lists_all | selectattr('category', 'defined') | selectattr('category', 'equalto', 'default') | default([]) }}"
+__package_manager__repo_list_defaults_copy: "{{ __package_manager__repo_list_defaults | selectattr('source_module', 'equalto', 'copy') | default([]) }}"
+__package_manager__repo_list_defaults_template: "{{ __package_manager__repo_list_defaults | selectattr('source_module', 'equalto', 'template') | default([]) }}"
 
 __package_manager__upgrade_clean: "{{ package_manager__upgrade_mode in __package_manager__clean_upgrade_modes }}"
 __package_manager__upgrade_mode: "{{ package_manager__upgrade_mode | regex_replace('clean_', '') }}"
@@ -33,7 +36,9 @@ __package_manager__upgrade_always: "{{ package_manager__upgrade_strategy == 'alw
 __package_manager__upgrade_never: "{{ package_manager__upgrade_strategy == 'never' }}"
 __package_manager__upgrade_execute: >-
   {%- set exec_upgrade = {'decision': true, 'reason': ''} -%}
-  {%- if __package_manager__upgrade_never -%}
+  {%- if not package_manager__role_enabled -%}
+  {%- set exec_upgrade = {'decision': false, 'reason': 'Upgrade requires aybarsm.linux.package_manager role enabled. (package_manager__role_enabled: true)'} -%}
+  {%- elif __package_manager__upgrade_never -%}
   {%- set exec_upgrade = {'decision': false, 'reason': 'Upgrade strategy is set to never.'} -%}
   {%- elif __package_manager__upgrade_clean and not __package_manager__upgrade_clean_eligible -%}
   {%- set exec_upgrade = {'decision': false, 'reason': 'Upgrade strategy is set to clean, but no default repo list configuration found.'} -%}
