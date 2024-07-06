@@ -3,9 +3,9 @@
   ansible.utils.update_fact:
     updates: "{{ local_fact_updates }}"
   vars:
-    update_paths: "{{  ansible__local_fact_updates | map(attribute='path') |
+    update_paths: "{{ ansible__local_fact_updates | map(attribute='path') |
       map('regex_replace', '^ansible_local\\.' + ansible__local_fact_name + '\\.|^ansible_local\\.', '') |
-      map('regex_replace', '^(?!__ansible__local_facts\\.)(.*)$', '__ansible__local_facts.\\1') }}"
+      map('regex_replace', '^(?!ansible__local_facts\\.)(.*)$', 'ansible__local_facts.\\1') }}"
     local_fact_updates: "{{ {'path': update_paths, 'value': (ansible__local_fact_updates | map(attribute='value'))} |
       aybarsm.helper.to_list_of_dicts }}"
   register: ansible__update_local_facts
