@@ -9,22 +9,8 @@
   when:
     - ansible__role_enabled | bool
     - ansible__manage_local_facts | bool
-
-- name: Update host local facts
-  ansible.utils.update_fact:
-    updates: "{{ local_fact_updates }}"
-  vars:
-    path_prefix: "ansible_local.{{ ansible__local_fact_name }}."
-    update_paths: "{{ ansible__local_fact_updates | map(attribute='path') |
-      map('regex_replace', '^(?!' + (path_prefix | regex_escape) + ')(.*)$', path_prefix + '\\1') }}"
-    local_fact_updates: "{{ {'path': update_paths, 'value': (ansible__local_fact_updates | map(attribute='value'))} |
-      aybarsm.helper.to_list_of_dicts }}"
-  register: ansible__update_local_facts  
-  when:
-    - ansible__role_enabled | bool
-    - ansible__manage_local_facts | bool
-    - ansible__local_fact_updates | default([]) | length > 0
-    - ansible_local[ansible__local_fact_name] is defined
+    - ansible__local_fact_updates is defined
+    - ansible__local_fact_updates | type_debug == 'dict'
 
 - name: Settle updated local facts on the host
   become: true
@@ -32,10 +18,17 @@
     src: "{{ ansible__local_fact_template }}"
     dest: "{{ ansible__local_fact_file }}"
     backup: "{{ ansible__local_fact_backup | default(omit) | bool }}"
+  vars:
+    recurse_strategy: "{{ ansible__local_fact_combine_recursive | default(true) | bool }}"
+    list_merge_strategy: "{{ ansible__local_fact_combine_list_merge | default('prepend') }}"
+    host_local_facts: "{{ ansible_local[ansible__local_fact_name] | default({'init': now().utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')}) |
+      combine(ansible__local_fact_updates, recursive=recurse_strategy, list_merge=list_merge_strategy) }}"
   register: ansible__settle_local_facts
   when:
     - ansible__role_enabled | bool
     - ansible__manage_local_facts | bool
+    - ansible__local_fact_updates is defined
+    - ansible__local_fact_updates | type_debug == 'dict'
 
 - name: Re-read updated local facts on the host
   become: true

@@ -1,11 +1,1 @@
-{% if ansible_local[ansible__local_fact_name] is defined and ansible__update_local_facts is defined %}
-{% set facts_ansible_settled = ansible_local[ansible__local_fact_name] | default({}) %}
-{% set facts_role_update_settled = ansible__update_local_facts.ansible_local[ansible__local_fact_name] | default({}) %}
-{% set list_merge_strategy = ansible__local_fact_list_merge_strategy | default('prepend') %}
-{% set final_local_facts = facts_ansible_settled | combine(facts_role_update_settled, recursive=true, list_merge=list_merge_strategy) %}
-{{ final_local_facts | to_nice_json }}
-{% else %}
-{
-    "init": "{{ now().utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
-}
-{% endif %}
+{{ host_local_facts | to_nice_json }}

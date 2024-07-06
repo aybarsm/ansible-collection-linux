@@ -6,5 +6,6 @@ ansible__local_facts_dir: "{{ (not lookup('config', 'DEFAULT_FACT_PATH')) | tern
 ansible__local_fact_name: aybarsm_linux
 ansible__local_fact_file: "{{ ansible__local_facts_dir }}/{{ ansible__local_fact_name }}.fact"
 ansible__local_fact_template: "{{ ansible__local_fact_name }}.json.fact.j2"
-ansible__local_fact_list_merge_strategy: prepend
+ansible__local_fact_combine_recursive: true
+ansible__local_fact_combine_list_merge: prepend
 
