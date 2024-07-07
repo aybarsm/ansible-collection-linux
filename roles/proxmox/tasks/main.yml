@@ -1,13 +1,19 @@
 ---
-- name: Import aybarsm linux ansible role
-  ansible.builtin.import_role:
-    name: aybarsm.linux.ansible
+- name: Debug
+  ansible.builtin.debug:
+    msg:
+      role_path: "{{ role_path }}"
+      role_repos: "{{ lookup('template', proxmox__purpose_repo_template) }}"
+  delegate_to: localhost
+# - name: Import aybarsm linux ansible role
+#   ansible.builtin.import_role:
+#     name: aybarsm.linux.ansible
 
-- name: Include Debug Tasks
-  ansible.builtin.import_tasks:
-    file: debug.yml
+# - name: Include Debug Tasks
+#   ansible.builtin.import_tasks:
+#     file: debug.yml
 
-- name: Import aybarsm linux ansible role - settle local fact tasks
-  ansible.builtin.import_role:
-    name: aybarsm.linux.ansible
-    tasks_from: settle_local_facts.yml
+# - name: Import aybarsm linux ansible role - settle local fact tasks
+#   ansible.builtin.import_role:
+#     name: aybarsm.linux.ansible
+#     tasks_from: settle_local_facts.yml

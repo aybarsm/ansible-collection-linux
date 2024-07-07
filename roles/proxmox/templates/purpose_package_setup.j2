@@ -1,0 +1,30 @@
+{%- set proxmox_package_setup = [] -%}
+{%- if proxmox__all.purposes is defined -%}
+{%- set proxmox_host_purposes = proxmox__all.purposes | map('regex_replace', proxmox__purpose_separator_regex, '\\1') -%}
+{%-  for proxmox_purpose in __proxmox__purposes -%}
+{%-      set proxmox_purpose_segments = proxmox_purpose | split(proxmox__purpose_separator) -%}
+{%-      set purpose_name = proxmox_purpose_segments[0] -%}
+{%-      set purpose_type = proxmox_purpose_segments[1] -%}
+{%-      if ansible_distribution_release is undefined -%}
+{%-          set ansible_distribution_release = 'bookworm' -%}
+{%-      endif -%}
+{%-      set purpose_repo_state = 'present' if proxmox_purpose in proxmox_host_purposes else 'absent' -%}
+{%-      set purpose_name_url = proxmox__repo_url_enterprise if purpose_type == 'enterprise' else proxmox__repo_url_no_subscription -%}
+{%-      if purpose_name in ['pve', 'pbs', 'pmg'] -%}
+{%- set proxmox_package_setup = proxmox_package_setup.append({
+    'type': 'repo',
+    'repo': 'deb ' + purpose_name_url + '/' + purpose_name + ' ' + ansible_distribution_release + ' ' + purpose_name + '-' + purpose_type,
+    'filename': purpose_name + '-' + purpose_type,
+    'state': purpose_repo_state
+}) -%}
+{%-      elif purpose_name.startswith('ceph-') -%}
+{%- set proxmox_package_setup =  proxmox_package_setup.append({
+    'type': 'repo',
+    'repo': 'deb ' + purpose_name_url + '/' + purpose_name + ' ' + ansible_distribution_release + ' ' + purpose_type,
+    'filename': 'ceph',
+    'state': purpose_repo_state
+}) -%}
+{%-      endif -%}
+{%-  endfor -%}
+{%- endif -%}
+{{ proxmox_package_setup }}

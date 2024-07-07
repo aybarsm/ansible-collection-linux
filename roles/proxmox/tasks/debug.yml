@@ -2,6 +2,6 @@
 - name: Debug
   ansible.builtin.debug:
     msg:
-      proxmox__role_repos: "{{ proxmox__role_repos }}"
+      proxmox__purpose_repos: "{{ proxmox__purpose_repos }}"
       proxmox__all: "{{ proxmox__all }}"
   delegate_to: localhost
