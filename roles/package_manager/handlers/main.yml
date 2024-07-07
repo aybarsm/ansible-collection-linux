@@ -18,7 +18,7 @@
   ansible.builtin.apt:
     update_cache: true
   register: package_manager__deb_update_repo_cache
-  listen: "package_manager__deb_update_repo_cache"
+  listen: "package_manager__update_repo_cache"
   when:
     - ansible_os_family | lower == 'debian'
 
@@ -27,7 +27,7 @@
   ansible.builtin.command:
     cmd: yum clean metadata
   register: package_manager__rpm_clean_metadata_cache
-  listen: "package_manager__rpm_clean_metadata_cache"
+  listen: "package_manager__update_repo_cache"
   when:
     - ansible_os_family | lower == 'redhat'
 

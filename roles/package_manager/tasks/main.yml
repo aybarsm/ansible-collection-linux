@@ -41,7 +41,6 @@
     ansible_callback_diy_runner_on_skipped_msg: |
       skipping: [{{ inventory_hostname }}]
       msg: {{ __package_manager__upgrade_execute.reason }}
-    ansible_callback_diy_runner_on_skipped_msg_color: green
 
 # FIXME: Commented out for testing. Uncomment after testing.
 # - name: Import DEB package tasks (APT)

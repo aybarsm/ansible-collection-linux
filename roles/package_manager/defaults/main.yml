@@ -17,6 +17,8 @@ package_manager__upgrade_strategy: once
 # Available options for DNF: full, clean_full
 # Clean options temproarily removes all repos other than OS default repos before upgrade
 package_manager__upgrade_mode: clean_full
+# This option removes the backup repo list files in clean upgrade mode after upgrade
+package_manager__clean_upgrade_post_remove_backups: true
 
 # Shared Options:
 package_manager__repo_list_disabled_template: common/repo_list_disabled.j2
