@@ -32,4 +32,4 @@ package_manager__repo_list_use_regex: true
 package_manager__default: []
 package_manager__group: []
 package_manager__host: []
-package_manager__all: "{{ package_manager__default + package_manager__group + package_manager__host }}"
+package_manager__all: "{{ package_manager__host + package_manager__group + package_manager__default }}"

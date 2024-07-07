@@ -1,7 +1,0 @@
----
-- name: Perform RPM package upgrade via DNF
-  become: true
-  ansible.builtin.dnf:
-    name: "*"
-    state: latest
-  register: package_manager__rpm_upgrade

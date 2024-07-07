@@ -82,8 +82,8 @@
         state: latest
       register: package_manager__rpm_upgrade
       when: ansible_os_family | lower == 'redhat'
-
-    - name: Include update local facts tasks
+    
+    - name: Include update local facts tasks when upgrade is successful
       ansible.builtin.include_role:
         name: aybarsm.linux.ansible
         tasks_from: update_local_facts.yml
@@ -91,9 +91,11 @@
         ansible__local_fact_updates:
           package_manager:
             upgrade: ["{{ now().utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"]
+        is_deb_upgrade_success: "{{ ansible_os_family | lower == 'debian' and not package_manager__upgrade_deb.failed }}"
+        is_rpm_upgrade_success: "{{ ansible_os_family | lower == 'redhat' and not package_manager__rpm_upgrade.failed }}"
       when:
         - __package_manager__upgrade_once
-        - package_manager__upgrade_deb.success or package_manager__rpm_upgrade.success
+        - is_deb_upgrade_success or is_rpm_upgrade_success
   rescue:
       - name: Inform when errors
         ansible.builtin.debug:

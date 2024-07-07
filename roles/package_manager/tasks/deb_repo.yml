@@ -9,7 +9,7 @@
     url: "{{ item.url | default(omit) }}"
     validate_certs: "{{ item.validate_certs | default(omit) | bool }}"
   loop: "{{ package_manager__repo_keys_all }}"
-  register: package_manager__deb_repo_keys_apply
+  register: package_manager__repo_keys_deb_apply
   when:
     - package_manager__repo_keys_all | type_debug == 'list'
     - package_manager__repo_keys_all | length > 0
@@ -28,7 +28,7 @@
     update_cache_retry_max_delay: "{{ item.update_cache_retry_max_delay | default(omit) }}"
     validate_certs: "{{ item.validate_certs | default(omit) | bool }}"
   loop: "{{ package_manager__repos_all }}"
-  register: package_manager__deb_repos_apply
+  register: package_manager__repos_deb_apply
   when:
     - package_manager__repos_all | type_debug == 'list'
     - package_manager__repos_all | length > 0

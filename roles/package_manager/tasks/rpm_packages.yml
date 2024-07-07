@@ -35,7 +35,7 @@
     use_backend: "{{ item.use_backend | default(omit) }}"
     validate_certs: "{{ item.validate_certs | default(omit) | bool }}"
   loop: "{{ package_manager__packages_all }}"
-  register: package_manager__rpm_packages_apply
+  register: package_manager__packages_rpm_apply
   when:
     - package_manager__packages_all | type_debug == 'list'
     - package_manager__packages_all | length > 0

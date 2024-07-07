@@ -27,7 +27,7 @@
     update_cache_retry_max_delay: "{{ item.update_cache_retry_max_delay | default(omit) }}"
     upgrade: "{{ item.upgrade | default(omit) }}"
   loop: "{{ package_manager__packages_all }}"
-  register: package_manager__deb_packages_apply  
+  register: package_manager__packages_deb_apply
   when:
     - package_manager__packages_all | type_debug == 'list'
     - package_manager__packages_all | length > 0

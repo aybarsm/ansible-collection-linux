@@ -10,7 +10,7 @@
     sysctl_file: "{{ item.sysctl_file | default(omit) }}"
     sysctl_set: "{{ item.sysctl_set | default(omit) | bool }}"
   loop: "{{ posix__sysctl_all }}"
-  register: posix__sysctl_deploy
+  register: posix__sysctl_apply
   when:
     - posix__sysctl_all | type_debug == 'list'
     - posix__sysctl_all | length > 0
