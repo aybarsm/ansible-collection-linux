@@ -1,0 +1,21 @@
+---
+- name: Apply ssh configuration
+  become: true
+  ansible.builtin.template:
+    src: "{{ auth__ssh_config_template }}"
+    dest: "{{ auth__ssh_config_file }}"
+    backup: "{{ auth__ssh_config_backup | default(omit) | bool }}"
+    validate: "{{ auth__sshd_validate | default(omit) }}"
+  register: auth__ssh_config_apply
+  notify: "auth__ssh_config_apply_changes"
+  when:
+    - auth__ssh_config_all | type_debug == 'list'
+    - auth__ssh_config_all | length > 0
+
+- name: Effect ssh config changes
+  ansible.builtin.meta: 'flush_handlers'
+  when:
+    - auth__ssh_config_change_strategy.module is defined
+    - auth__ssh_config_change_strategy.when is defined
+    - auth__ssh_config_change_strategy.when == 'immediate'
+  

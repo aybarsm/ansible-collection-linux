@@ -1,5 +1,35 @@
 __ansible__config:
   modules:
+    ansible:
+      builtin:
+        systemd_service:
+          required: ['name']
+          uniques: ['name']
+          aliases:
+            daemon_reexec: ['daemon-reexec']
+            daemon_reload: ['daemon-reload']
+            name: ['service', 'unit']
+        service:
+          required: ['name']
+          uniques: ['name']
+          aliases:
+            arguments: ['args']
+        apt:
+          uniques: ['name']
+          aliases:
+            allow_downgrade: ['allow-downgrade', 'allow_downgrades', 'allow-downgrades']
+            allow_unauthenticated: ['allow-unauthenticated']
+            default_release: ['default-release']
+            install_recommends: ['install-recommends']
+            name: ['package', 'pkg']
+            update_cache: ['update-cache']
+        apt_repository:
+          uniques: ['repo']
+          aliases:
+            update_cache: ['update-cache']
+        apt_key:
+          uniques: ['keyserver', 'url', 'id', 'file' ,'data']
+          aliases: {}
     ansible_builtin_apt:
       uniques: ['name']
       aliases:
@@ -41,3 +71,12 @@ __ansible__config:
       aliases:
         groups: ['group', 'groupname']
         name: ['host','hostname']
+    ansible_builtin_user:
+      uniques: ['name']
+      aliases:
+        create_home: ['createhome']
+        name: ['user']
+    ansible_builtin_group:
+      uniques: ['name']
+    ansible_posix_authorized_key:
+      required: ['user', 'key']

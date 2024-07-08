@@ -1,0 +1,24 @@
+auth__role_enabled: false
+
+auth__manage_groups: false
+auth__manage_users: false
+auth__manage_authorized_keys: false
+auth__manage_ssh_config: false
+
+auth__ssh_config_dir: /etc/ssh/ssh_config.d
+auth__ssh_config_file: "{{ auth__ssh_config_dir }}/50-ansible.conf"
+auth__ssh_config_template: etc/ssh/ssh_config.d/custom.conf.j2
+auth__ssh_config_backup: true
+# module can be systemd_service or service
+# module can be left empty to skip the service restart
+# when can be immediate or at the end of the play
+auth__ssh_config_change_strategy:
+  module: systemd_service
+  when: immediate
+# auth__sshd_validate: "/usr/sbin/sshd -t -f %s"
+
+auth__default: []
+auth__group: []
+auth__host: []
+
+auth__all: "{{ auth__host + auth__group + auth__default }}"

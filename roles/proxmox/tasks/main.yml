@@ -2,8 +2,8 @@
 - name: Debug
   ansible.builtin.debug:
     msg:
-      role_path: "{{ role_path }}"
-      role_repos: "{{ lookup('template', proxmox__purpose_repo_template) }}"
+      # role_path: "{{ role_path }}"
+      purpose_package_setup: "{{ lookup('template', proxmox__purpose_package_setup_template) }}"
   delegate_to: localhost
 # - name: Import aybarsm linux ansible role
 #   ansible.builtin.import_role:

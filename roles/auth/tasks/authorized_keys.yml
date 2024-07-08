@@ -1,0 +1,19 @@
+---
+- name: Apply authorized keys configuration
+  become: true
+  ansible.posix.authorized_key:
+    comment: "{{ item.comment | default(omit) }}"
+    exclusive: "{{ item.exclusive | default(omit) | bool }}"
+    follow: "{{ item.follow | default(omit) | bool }}"
+    key: "{{ item.key }}"
+    key_options: "{{ item.key_options | default(omit) }}"
+    manage_dir: "{{ item.manage_dir | default(omit) | bool }}"
+    path: "{{ item.path | default(omit) }}"
+    state: "{{ item.state | default(omit) }}"
+    user: "{{ item.user }}"
+    validate_certs: "{{ item.validate_certs | default(omit) | bool }}"
+  loop: "{{ auth__authorized_keys_all }}"
+  register: auth__authorized_keys_apply
+  when:
+    - auth__authorized_keys_all | type_debug == 'list'
+    - auth__authorized_keys_all | length > 0

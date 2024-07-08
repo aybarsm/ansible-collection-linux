@@ -1,0 +1,52 @@
+---
+__auth__config:
+  authorized_keys:
+    selectattr:
+    - when:
+        - ['type', 'defined']
+        - ['type', 'equalto', 'authorized_key']
+        - ['user', 'defined']
+        - ['key', 'defined']
+  groups:
+  selectattr:
+  - when:
+      - ['type', 'defined']
+      - ['type', 'equalto', 'group']
+  - when: "{{ __ansible__config.modules.ansible_builtin_group.uniques | product(['defined']) | list }}"
+    logic: or
+  users:
+    selectattr:
+    - when:
+        - ['type', 'defined']
+        - ['type', 'equalto', 'user']
+    - when: "{{ __ansible__config.modules.ansible_builtin_user.uniques | product(['defined']) | list }}"
+      logic: or
+  ssh_config:
+    selectattr:
+    - when:
+        - ['type', 'defined']
+        - ['type', 'equalto', 'ssh_config']
+        - ['name', 'defined']
+        - ['value', 'defined']
+
+auth__authorized_keys_all: "{{ auth__all |
+  aybarsm.helper.selectattr(__auth__config.authorized_keys.selectattr) |
+  aybarsm.helper.unique_combinations([['user', 'key']]) |
+  default([]) }}"
+
+auth__groups_all: "{{ auth__all |
+  aybarsm.helper.selectattr(__auth__config.packages.selectattr) |
+  aybarsm.helper.unique_recursive(__ansible__config.modules.ansible_builtin_group.uniques) |
+  default([]) }}"
+
+auth__users_all: "{{ auth__all |
+  aybarsm.helper.selectattr(__auth__config.packages.selectattr) |
+  aybarsm.helper.replace_aliases(__ansible__config.modules.ansible_builtin_user.aliases) |
+  aybarsm.helper.unique_recursive(__ansible__config.modules.ansible_builtin_user.uniques) |
+  default([]) }}"
+
+auth__ssh_config_all: "{{ auth__all |
+  aybarsm.helper.selectattr(__auth__config.ssh_config.selectattr) |
+  aybarsm.helper.replace_aliases(__ansible__config.modules.ansible_builtin_user.aliases) |
+  aybarsm.helper.unique_recursive('name', 'children') |
+  default([]) }}"

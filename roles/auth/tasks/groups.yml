@@ -1,0 +1,16 @@
+---
+- name: Apply groups configuration
+  become: true
+  ansible.builtin.group:
+    force: "{{ item.force | default(omit) | bool }}"
+    gid: "{{ item.gid | default(omit) }}"
+    local: "{{ item.local | default(omit) | bool }}"
+    name: "{{ item.name }}"
+    non_unique: "{{ item.non_unique | default(omit) | bool }}"
+    state: "{{ item.state | default(omit) }}"
+    system: "{{ item.system | default(omit) | bool }}"
+  loop: "{{ auth__groups_all }}"
+  register: auth__groups_apply
+  when:
+    - auth__groups_all | type_debug == 'list'
+    - auth__groups_all | length > 0

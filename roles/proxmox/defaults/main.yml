@@ -5,14 +5,18 @@ proxmox__repo_url_no_subscription: http://download.proxmox.com/debian
 
 proxmox__purpose_names: ['pve', 'pbs', 'pmg', 'ceph-pacific', 'ceph-quincy', 'ceph-reef']
 proxmox__purpose_types: ['enterprise', 'no-subscription']
+proxmox__purpose_packages:
+  pve: pve-manager
+  pbs: proxmox-backup-server
+  pmg: proxmox-mailgateway
 
 # If enabled, the role will manage the purpose package setup for repos and package versioning.
 proxmox__manage_purpose_package_setup: true
 proxmox__purpose_package_setup_template: purpose_package_setup.j2
 
-# proxmox__default: {}
-# proxmox__group: {}
-# proxmox__host: {}
+proxmox__default: {}
+proxmox__group: {}
+proxmox__host: {}
 
 # Example configuration:
 # Purposes will be overwritten by the host configuration.
@@ -40,4 +44,4 @@ proxmox__purpose_package_setup_template: purpose_package_setup.j2
 
 # The combination strategy below is highly nested hierarchy compliant and recommended (Example provided below)
 # proxmox__host > proxmox__group > proxmox__default
-proxmox__all: "{{ proxmox__default | combine(proxmox__group, proxmox__host, recursive=true, list_merge=replace) }}"
+proxmox__all: "{{ proxmox__default | combine(proxmox__group, proxmox__host, recursive=true, list_merge='replace') }}"

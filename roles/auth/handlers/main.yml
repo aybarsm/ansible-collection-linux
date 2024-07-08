@@ -1,0 +1,45 @@
+---
+- name: Effect systemd service for ssh config changes
+  become: true
+  ansible.builtin.systemd_service:
+    daemon_reexec: "{{ change_strategy.daemon_reexec | default(omit) | bool }}"
+    daemon_reload: "{{ change_strategy.daemon_reload | default(omit) | bool }}"
+    enabled: "{{ change_strategy.enabled | default(omit) | bool }}"
+    force: "{{ change_strategy.force | default(omit) | bool }}"
+    masked: "{{ change_strategy.masked | default(omit) | bool }}"
+    name: "{{ change_strategy.name | default('ssh.service') }}"
+    no_block : "{{ change_strategy.no_block | default(omit) | bool }}"
+    scope: "{{ change_strategy.scope | default(omit) }}"
+    state: "{{ change_strategy.state | default(omit) }}"
+  vars:
+    change_strategy: "{{ (__ansible__config is defined) |
+      ternary(auth__ssh_config_change_strategy | aybarsm.helper.replace_aliases(__ansible__config.modules.ansible.builtin.systemd_service.aliases),
+      auth__ssh_config_change_strategy)
+      ) }}"
+  register: auth__ssh_config_apply_changes_systemd_service
+  listen: "auth__ssh_config_apply_changes"
+  when:
+    - change_strategy.module is defined
+    - change_strategy.module == 'systemd_service'
+
+- name: Effect service for ssh config changes
+  become: true
+  ansible.builtin.service:
+    arguments: "{{ change_strategy.arguments | default(omit) }}"
+    enabled: "{{ change_strategy.enabled | default(omit) }}"
+    name: "{{ change_strategy.name }}"
+    pattern: "{{ change_strategy.pattern | default(omit) }}"
+    runlevel: "{{ change_strategy.runlevel | default(omit) }}"
+    sleep: "{{ change_strategy.sleep | default(omit) }}"
+    state: "{{ change_strategy.state | default(omit) }}"
+    use: "{{ change_strategy.use | default(omit) }}"
+  vars:
+    change_strategy: "{{ (__ansible__config is defined) |
+      ternary(auth__ssh_config_change_strategy | aybarsm.helper.replace_aliases(__ansible__config.modules.ansible.builtin.service.aliases),
+      auth__ssh_config_change_strategy)
+      ) }}"
+  register: auth__ssh_config_apply_changes_service
+  listen: "auth__ssh_config_apply_changes"
+  when:
+    - change_strategy.module is defined
+    - change_strategy.module == 'service'

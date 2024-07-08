@@ -1,1 +1,0 @@
-__proxmox__purposes: "{{ proxmox__purpose_names | product(proxmox__purpose_types) | map('join', proxmox__purpose_separator) | list }}"
