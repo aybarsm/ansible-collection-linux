@@ -1,4 +1,5 @@
 ---
+# REVIEW: merge network_interfaces, systemd_network and posix_sysctl functionalities under single role as network?
 network_interfaces__role_enabled: false
 
 # Leave empty not to apply changes
