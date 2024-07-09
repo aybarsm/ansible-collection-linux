@@ -1,0 +1,34 @@
+---
+- name: Apply sudoers configuration template
+  become: true
+  ansible.builtin.template:
+    src: "{{ auth__ssh_config_template }}"
+    dest: "{{ auth__ssh_config_file }}"
+    backup: "{{ auth__ssh_config_backup | default(omit) | bool }}"
+    validate: "{{ auth__sshd_validate | default(omit) }}"
+  register: auth__sudoers_apply
+  when:
+    - auth__sudoers_all | type_debug == 'list'
+    - auth__sudoers_all | length > 0
+
+- name: Apply sudoers configuration via community.general.sudoers module
+  become: true
+  community.general.sudoers:
+    commands: "{{ item.commands | default(omit) }}"
+    groups: "{{ item.groups | default(omit) }}"
+    host: "{{ item.host | default(omit) }}"
+    name: "{{ item.name }}"
+    noexec: "{{ item.noexec | default(omit) | bool }}"
+    nopassword: "{{ item.nopassword | default(omit) | bool }}"
+    runas: "{{ item.runas | default(omit) }}"
+    setenv: "{{ item.setenv | default(omit) | bool }}"
+    state: "{{ item.state | default(omit) }}"
+    sudoers_path: "{{ item.sudoers_path | default(omit) }}"
+    user: "{{ item.user | default(omit) }}"
+    validation: "{{ item.validation | default(omit) }}"
+  loop: "{{ auth__sudoers_module_all }}"
+  register: auth__sudoers_module_apply
+  when:
+    - auth__sudoers_module_all | type_debug == 'list'
+    - auth__sudoers_module_all | length > 0
+  

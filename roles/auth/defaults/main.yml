@@ -4,18 +4,33 @@ auth__manage_groups: false
 auth__manage_users: false
 auth__manage_authorized_keys: false
 auth__manage_ssh_config: false
+auth__manage_sudoers: false
 
+##### BEGIN - SSH Config #####
 auth__ssh_config_dir: /etc/ssh/ssh_config.d
 auth__ssh_config_file: "{{ auth__ssh_config_dir }}/50-ansible.conf"
-auth__ssh_config_template: etc/ssh/ssh_config.d/custom.conf.j2
+auth__ssh_config_template: etc/ssh/ssh_config.d/50-ansible.conf.j2
 auth__ssh_config_backup: true
-# module can be systemd_service or service
+# module can be 'systemd_service' or 'service'
 # module can be left empty to skip the service restart
 # when can be immediate or at the end of the play
 auth__ssh_config_change_strategy:
   module: systemd_service
   when: immediate
+# Uncomment the following line to validate the sshd config
 # auth__sshd_validate: "/usr/sbin/sshd -t -f %s"
+##### END - SSH Config #####
+
+##### BEGIN - SSH Config #####
+auth__sudoers_dir: /etc/sudoers.d
+auth__sudoers_file: "{{ auth__sudoers_dir }}/50-ansible"
+auth__sudoers_template: etc/sudoers.d/50-ansible.j2
+auth__sudoers_backup: true
+# Set false to prevent consolidation of sudoers files for community.general.sudoers module
+# (Merges all sudoers module entries' name (basename of auth__sudoers_file) and sudoers_path (dirname of auth__sudoers_file) as provided above)
+# Consult https://docs.ansible.com/ansible/latest/collections/community/general/sudoers_module.html
+auth__sudoers_consolidate: true
+##### END - SSH Config #####
 
 auth__default: []
 auth__group: []

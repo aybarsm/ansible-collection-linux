@@ -13,21 +13,21 @@
     state: "{{ change_strategy.state | default(omit) }}"
   vars:
     change_strategy: "{{ (__ansible__config is defined) |
-      ternary(auth__ssh_config_change_strategy | aybarsm.helper.replace_aliases(__ansible__config.modules.ansible.builtin.systemd_service.aliases),
-      auth__ssh_config_change_strategy)
-      ) }}"
+      ternary(
+        (auth__ssh_config_change_strategy | aybarsm.helper.replace_aliases(__ansible__config.modules.ansible.builtin.systemd_service.aliases)),
+        auth__ssh_config_change_strategy) }}"
   register: auth__ssh_config_apply_changes_systemd_service
   listen: "auth__ssh_config_apply_changes"
   when:
-    - change_strategy.module is defined
-    - change_strategy.module == 'systemd_service'
+    - auth__ssh_config_change_strategy.module is defined
+    - auth__ssh_config_change_strategy.module == 'systemd_service'
 
 - name: Effect service for ssh config changes
   become: true
   ansible.builtin.service:
     arguments: "{{ change_strategy.arguments | default(omit) }}"
     enabled: "{{ change_strategy.enabled | default(omit) }}"
-    name: "{{ change_strategy.name }}"
+    name: "{{ change_strategy.name | default('ssh.service') }}"
     pattern: "{{ change_strategy.pattern | default(omit) }}"
     runlevel: "{{ change_strategy.runlevel | default(omit) }}"
     sleep: "{{ change_strategy.sleep | default(omit) }}"
@@ -35,11 +35,11 @@
     use: "{{ change_strategy.use | default(omit) }}"
   vars:
     change_strategy: "{{ (__ansible__config is defined) |
-      ternary(auth__ssh_config_change_strategy | aybarsm.helper.replace_aliases(__ansible__config.modules.ansible.builtin.service.aliases),
-      auth__ssh_config_change_strategy)
-      ) }}"
+      ternary(
+        (auth__ssh_config_change_strategy | aybarsm.helper.replace_aliases(__ansible__config.modules.ansible.builtin.service.aliases)),
+        auth__ssh_config_change_strategy) }}"
   register: auth__ssh_config_apply_changes_service
   listen: "auth__ssh_config_apply_changes"
   when:
-    - change_strategy.module is defined
-    - change_strategy.module == 'service'
+    - auth__ssh_config_change_strategy.module is defined
+    - auth__ssh_config_change_strategy.module == 'service'

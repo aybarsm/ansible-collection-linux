@@ -30,6 +30,11 @@ __ansible__config:
         apt_key:
           uniques: ['keyserver', 'url', 'id', 'file' ,'data']
           aliases: {}
+    community:
+      general:
+        sudoers:
+          required: ['name']
+          uniques: ['name']
     ansible_builtin_apt:
       uniques: ['name']
       aliases:

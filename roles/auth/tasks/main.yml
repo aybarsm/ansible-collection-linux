@@ -1,32 +1,32 @@
 ---
 # Require for configuration management
 - name: Load aybarsm ansible role main variables
-  ansible.builtin.include_vars: "../ansible/vars/main.yml"
+  ansible.builtin.include_vars: ../ansible/vars/main.yml
 
-- name: Include groups tasks
-  ansible.builtin.include_tasks:
-    file: groups.yml
-  when:
-    - auth__role_enabled | default(false) | bool
-    - auth__manage_groups | default(false) | bool
+# - name: Include groups tasks
+#   ansible.builtin.include_tasks:
+#     file: groups.yml
+#   when:
+#     - auth__role_enabled | default(false) | bool
+#     - auth__manage_groups | default(false) | bool
 
-- name: Include users tasks
-  ansible.builtin.include_tasks:
-    file: users.yml
-  when:
-    - auth__role_enabled | default(false) | bool
-    - auth__manage_users | default(false) | bool
+# - name: Include users tasks
+#   ansible.builtin.include_tasks:
+#     file: users.yml
+#   when:
+#     - auth__role_enabled | default(false) | bool
+#     - auth__manage_users | default(false) | bool
 
-- name: Include authroized keys tasks
-  ansible.builtin.include_tasks:
-    file: authorized_keys.yml
-  when:
-    - auth__role_enabled | default(false) | bool
-    - auth__manage_authorized_keys | default(false) | bool
+# - name: Include authroized keys tasks
+#   ansible.builtin.include_tasks:
+#     file: authorized_keys.yml
+#   when:
+#     - auth__role_enabled | default(false) | bool
+#     - auth__manage_authorized_keys | default(false) | bool
 
-- name: Include ssh config tasks
-  ansible.builtin.include_tasks:
-    file: ssh_config.yml
-  when:
-    - auth__role_enabled | default(false) | bool
-    - auth__manage_ssh_config | default(false) | bool
+# - name: Include ssh config tasks
+#   ansible.builtin.include_tasks:
+#     file: ssh_config.yml
+#   when:
+#     - auth__role_enabled | default(false) | bool
+#     - auth__manage_ssh_config | default(false) | bool

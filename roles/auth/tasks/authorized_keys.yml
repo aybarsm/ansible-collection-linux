@@ -1,4 +1,14 @@
 ---
+- name: Retrieve passwd database in check mode for authorized keys
+  become: true
+  ansible.builtin.getent:
+    database: passwd
+  register: auth__authorized_keys_test_user_existence
+  when:
+    - auth__authorized_keys_all | type_debug == 'list'
+    - auth__authorized_keys_all | length > 0
+    - ansible_check_mode | bool
+
 - name: Apply authorized keys configuration
   become: true
   ansible.posix.authorized_key:
@@ -17,3 +27,4 @@
   when:
     - auth__authorized_keys_all | type_debug == 'list'
     - auth__authorized_keys_all | length > 0
+    - not ansible_check_mode | bool or (ansible_check_mode and (item.user in ansible_facts['getent_passwd'] or item.path is defined))
