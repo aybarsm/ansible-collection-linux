@@ -1,0 +1,45 @@
+---
+- name: Apply ssh daemon configuration
+  become: true
+  ansible.builtin.template:
+    src: "{{ auth__sshd_config_template }}"
+    dest: "{{ auth__sshd_config_file }}"
+    backup: "{{ auth__sshd_config_backup | default(omit) | bool }}"
+    validate: "{{ auth__sshd_validate | default(omit) }}"
+  register: auth__sshd_config_apply
+  notify: "auth__ssh_apply_changes"
+  when:
+    - auth__manage_sshd_config | default(false) | bool
+    - auth__sshd_config_all | type_debug == 'list'
+    - auth__sshd_config_all | length > 0
+
+- name: Apply ssh client configuration
+  become: true
+  ansible.builtin.template:
+    src: "{{ auth__ssh_config_template }}"
+    dest: "{{ auth__ssh_config_file }}"
+    backup: "{{ auth__ssh_config_backup | default(omit) | bool }}"
+  register: auth__ssh_config_apply
+  notify: "auth__ssh_apply_changes"
+  when:
+    - auth__manage_ssh_config | default(false) | bool
+    - auth__ssh_config_all | type_debug == 'list'
+    - auth__ssh_config_all | length > 0
+
+- name: Run smart sshd configuration changes
+  ansible.builtin.command:
+    cmd: /usr/bin/true
+  changed_when: true
+  notify: "auth__ssh_apply_changes"
+  when:
+    - auth__sshd_validate is defined
+    - auth__sshd_config_apply is not change
+    - auth__ssh_config_apply is not change
+    - auth__ssh_changes_strategy.smart | default(false) | bool
+
+- name: Effect ssh changes
+  ansible.builtin.meta: 'flush_handlers'
+  when:
+    - auth__ssh_changes_strategy.module is defined
+    - auth__ssh_changes_strategy.immediate | default(false) | bool
+  

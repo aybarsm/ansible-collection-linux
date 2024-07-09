@@ -3,34 +3,46 @@ auth__role_enabled: false
 auth__manage_groups: false
 auth__manage_users: false
 auth__manage_authorized_keys: false
+auth__manage_sshd_config: false
 auth__manage_ssh_config: false
 auth__manage_sudoers: false
 
-##### BEGIN - SSH Config #####
-auth__ssh_config_dir: /etc/ssh/ssh_config.d
+##### BEGIN: SSH Config #####
+auth__ssh_dir: /etc/ssh
+# module can be 'systemd_service' or 'service'
+# module can be left empty to skip the service restart
+# immediate can be true or false (Flushes the handlers immediately)
+# smart can be true or false
+# auth__sshd_validate or /usr/sbin/sshd -t command in this sense, hijacks the sshd daemon service.
+# So, even though no changes, template module will always validate the sshd config file causing the sshd hijacked.
+# If smart enabled and auth__sshd_validate provided then a dummy command task will run to trigger ssh service handlers as provided.
+# This is a workaround to avoid using changed_when in the template module to prevent misleading output.
+auth__ssh_changes_strategy:
+  module: service
+  immediate: true
+  smart: true
+  name: 'ssh.service'
+  enabled: true
+  state: started
+# Set  auth__sshd_validate variable to validate the ssh daemon config
+# auth__sshd_validate: "/usr/sbin/sshd -t -f %s"
+auth__sshd_config_dir: "{{ auth__ssh_dir }}/sshd_config.d"
+auth__sshd_config_file: "{{ auth__sshd_config_dir }}/50-ansible.conf"
+auth__sshd_config_template: etc/ssh/sshd_config.d/50-ansible.conf.j2
+auth__sshd_config_backup: true
+auth__ssh_config_dir: "{{ auth__ssh_dir }}/ssh_config.d"
 auth__ssh_config_file: "{{ auth__ssh_config_dir }}/50-ansible.conf"
 auth__ssh_config_template: etc/ssh/ssh_config.d/50-ansible.conf.j2
 auth__ssh_config_backup: true
-# module can be 'systemd_service' or 'service'
-# module can be left empty to skip the service restart
-# when can be immediate or at the end of the play
-auth__ssh_config_change_strategy:
-  module: systemd_service
-  when: immediate
-# Uncomment the following line to validate the sshd config
-# auth__sshd_validate: "/usr/sbin/sshd -t -f %s"
-##### END - SSH Config #####
+##### END: SSH Config #####
 
-##### BEGIN - SSH Config #####
+##### BEGIN: SUDOERS Config #####
 auth__sudoers_dir: /etc/sudoers.d
 auth__sudoers_file: "{{ auth__sudoers_dir }}/50-ansible"
 auth__sudoers_template: etc/sudoers.d/50-ansible.j2
-auth__sudoers_backup: true
-# Set false to prevent consolidation of sudoers files for community.general.sudoers module
-# (Merges all sudoers module entries' name (basename of auth__sudoers_file) and sudoers_path (dirname of auth__sudoers_file) as provided above)
-# Consult https://docs.ansible.com/ansible/latest/collections/community/general/sudoers_module.html
-auth__sudoers_consolidate: true
-##### END - SSH Config #####
+# Uncomment the following line to validate the sudoers file
+# auth__sudoers_validate: "/usr/sbin/visudo -c -f %s"
+##### END: SUDOERS Config #####
 
 auth__default: []
 auth__group: []

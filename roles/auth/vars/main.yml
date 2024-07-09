@@ -3,41 +3,51 @@ __auth__config:
   authorized_keys:
     selectattr:
       - when:
-        - ['type', 'defined']
-        - ['type', 'equalto', 'authorized_key']
-        - ['user', 'defined']
-        - ['key', 'defined']
+          - ['type', 'defined']
+          - ['type', 'equalto', 'authorized_key']
+          - ['user', 'defined']
+          - ['key', 'defined']
   groups:
     selectattr:
       - when:
-        - ['type', 'defined']
-        - ['type', 'equalto', 'group']
+          - ['type', 'defined']
+          - ['type', 'equalto', 'group']
       - when: "{{ __ansible__config.modules.ansible_builtin_group.uniques | product(['defined']) | list }}"
         logic: or
   users:
     selectattr:
       - when:
-        - ['type', 'defined']
-        - ['type', 'equalto', 'user']
+          - ['type', 'defined']
+          - ['type', 'equalto', 'user']
       - when: "{{ __ansible__config.modules.ansible_builtin_user.uniques | product(['defined']) | list }}"
         logic: or
+  sshd_config:
+    selectattr:
+      - when:
+          - ['type', 'defined']
+          - ['type', 'equalto', 'sshd_config']
+          - ['name', 'defined']
+          - ['value', 'defined']
   ssh_config:
     selectattr:
       - when:
-        - ['type', 'defined']
-        - ['type', 'equalto', 'ssh_config']
-        - ['name', 'defined']
-        - ['value', 'defined']
+          - ['type', 'defined']
+          - ['type', 'equalto', 'ssh_config']
+          - ['name', 'defined']
+          - ['value', 'defined']
+  sudoers_file:
+    selectattr:
+      - when:
+          - ['type', 'defined']
+          - ['type', 'equalto', 'sudoers_file']
+          - ['entry', 'defined']
   sudoers_module:
     selectattr:
-      - when: "{{ [['type', 'defined'], ['type', 'equalto', 'sudoers_module']] +
-          ([['name', 'defined']] if (auth__sudoers_consolidate | default(true) | bool) else []) }}"
-
-auth__authorized_keys_all: "{{ auth__all |
-  aybarsm.helper.selectattr(__auth__config.authorized_keys.selectattr) |
-  aybarsm.helper.unique_combinations([['user', 'key']]) |
-  default([]) }}"
-
+      - when:
+          - ['type', 'defined']
+          - ['type', 'equalto', 'sudoers_module']
+          - ['name', 'defined']
+        
 auth__groups_all: "{{ auth__all |
   aybarsm.helper.selectattr(__auth__config.groups.selectattr) |
   aybarsm.helper.unique_recursive(__ansible__config.modules.ansible_builtin_group.uniques) |
@@ -49,10 +59,24 @@ auth__users_all: "{{ auth__all |
   aybarsm.helper.unique_recursive(__ansible__config.modules.ansible_builtin_user.uniques) |
   default([]) }}"
 
+auth__authorized_keys_all: "{{ auth__all |
+  aybarsm.helper.selectattr(__auth__config.authorized_keys.selectattr) |
+  aybarsm.helper.unique_combinations([['user', 'key']]) |
+  default([]) }}"
+
+auth__sshd_config_all: "{{ auth__all |
+  aybarsm.helper.selectattr(__auth__config.sshd_config.selectattr) |
+  aybarsm.helper.unique_recursive('name', 'children') |
+  default([]) }}"
+
 auth__ssh_config_all: "{{ auth__all |
   aybarsm.helper.selectattr(__auth__config.ssh_config.selectattr) |
-  aybarsm.helper.replace_aliases(__ansible__config.modules.ansible_builtin_user.aliases) |
   aybarsm.helper.unique_recursive('name', 'children') |
+  default([]) }}"
+
+auth__sudoers_file_all: "{{ auth__all |
+  aybarsm.helper.selectattr(__auth__config.sudoers_file.selectattr) |
+  aybarsm.helper.unique_recursive('entry') |
   default([]) }}"
 
 auth__sudoers_module_all: "{{ auth__all |

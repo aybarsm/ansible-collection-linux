@@ -1,45 +1,39 @@
 ---
-- name: Effect systemd service for ssh config changes
+- name: Effect systemd service for ssh changes
   become: true
   ansible.builtin.systemd_service:
-    daemon_reexec: "{{ change_strategy.daemon_reexec | default(omit) | bool }}"
-    daemon_reload: "{{ change_strategy.daemon_reload | default(omit) | bool }}"
-    enabled: "{{ change_strategy.enabled | default(omit) | bool }}"
-    force: "{{ change_strategy.force | default(omit) | bool }}"
-    masked: "{{ change_strategy.masked | default(omit) | bool }}"
-    name: "{{ change_strategy.name | default('ssh.service') }}"
-    no_block : "{{ change_strategy.no_block | default(omit) | bool }}"
-    scope: "{{ change_strategy.scope | default(omit) }}"
-    state: "{{ change_strategy.state | default(omit) }}"
+    daemon_reexec: "{{ service.daemon_reexec | default(omit) | bool }}"
+    daemon_reload: "{{ service.daemon_reload | default(omit) | bool }}"
+    enabled: "{{ service.enabled | default(omit) | bool }}"
+    force: "{{ service.force | default(omit) | bool }}"
+    masked: "{{ service.masked | default(omit) | bool }}"
+    name: "{{ service.name | default('ssh.service') }}"
+    no_block : "{{ service.no_block | default(omit) | bool }}"
+    scope: "{{ service.scope | default(omit) }}"
+    state: "{{ service.state | default(omit) }}"
   vars:
-    change_strategy: "{{ (__ansible__config is defined) |
-      ternary(
-        (auth__ssh_config_change_strategy | aybarsm.helper.replace_aliases(__ansible__config.modules.ansible.builtin.systemd_service.aliases)),
-        auth__ssh_config_change_strategy) }}"
-  register: auth__ssh_config_apply_changes_systemd_service
-  listen: "auth__ssh_config_apply_changes"
+    service: "{{ auth__ssh_changes_strategy | aybarsm.helper.replace_aliases(__ansible__config.modules.ansible.builtin.systemd_service.aliases) }}"
+  register: auth__ssh_apply_changes_systemd_service
+  listen: "auth__ssh_apply_changes"
   when:
-    - auth__ssh_config_change_strategy.module is defined
-    - auth__ssh_config_change_strategy.module == 'systemd_service'
+    - auth__ssh_changes_strategy.module is defined
+    - auth__ssh_changes_strategy.module == 'systemd_service'
 
-- name: Effect service for ssh config changes
+- name: Effect service for ssh changes
   become: true
   ansible.builtin.service:
-    arguments: "{{ change_strategy.arguments | default(omit) }}"
-    enabled: "{{ change_strategy.enabled | default(omit) }}"
-    name: "{{ change_strategy.name | default('ssh.service') }}"
-    pattern: "{{ change_strategy.pattern | default(omit) }}"
-    runlevel: "{{ change_strategy.runlevel | default(omit) }}"
-    sleep: "{{ change_strategy.sleep | default(omit) }}"
-    state: "{{ change_strategy.state | default(omit) }}"
-    use: "{{ change_strategy.use | default(omit) }}"
+    arguments: "{{ service.arguments | default(omit) }}"
+    enabled: "{{ service.enabled | default(omit) }}"
+    name: "{{ service.name | default('ssh.service') }}"
+    pattern: "{{ service.pattern | default(omit) }}"
+    runlevel: "{{ service.runlevel | default(omit) }}"
+    sleep: "{{ service.sleep | default(omit) }}"
+    state: "{{ service.state | default(omit) }}"
+    use: "{{ service.use | default(omit) }}"
   vars:
-    change_strategy: "{{ (__ansible__config is defined) |
-      ternary(
-        (auth__ssh_config_change_strategy | aybarsm.helper.replace_aliases(__ansible__config.modules.ansible.builtin.service.aliases)),
-        auth__ssh_config_change_strategy) }}"
-  register: auth__ssh_config_apply_changes_service
-  listen: "auth__ssh_config_apply_changes"
+    service: "{{ auth__ssh_changes_strategy | aybarsm.helper.replace_aliases(__ansible__config.modules.ansible.builtin.service.aliases) }}"
+  register: auth__ssh_apply_changes_service
+  listen: "auth__ssh_apply_changes"
   when:
-    - auth__ssh_config_change_strategy.module is defined
-    - auth__ssh_config_change_strategy.module == 'service'
+    - auth__ssh_changes_strategy.module is defined
+    - auth__ssh_changes_strategy.module == 'service'

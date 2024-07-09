@@ -1,15 +1,14 @@
 ---
-- name: Apply sudoers configuration template
+- name: Apply sudoers configuration file
   become: true
   ansible.builtin.template:
-    src: "{{ auth__ssh_config_template }}"
-    dest: "{{ auth__ssh_config_file }}"
-    backup: "{{ auth__ssh_config_backup | default(omit) | bool }}"
-    validate: "{{ auth__sshd_validate | default(omit) }}"
-  register: auth__sudoers_apply
+    src: "{{ auth__sudoers_template }}"
+    dest: "{{ auth__sudoers_file }}"
+    validate: "{{  auth__sudoers_validate | default(omit) }}"
+  register: auth__sudoers_file_apply
   when:
-    - auth__sudoers_all | type_debug == 'list'
-    - auth__sudoers_all | length > 0
+    - auth__sudoers_file_all | type_debug == 'list'
+    - auth__sudoers_file_all | length > 0
 
 - name: Apply sudoers configuration via community.general.sudoers module
   become: true

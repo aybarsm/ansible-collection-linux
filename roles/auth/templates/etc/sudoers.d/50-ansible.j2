@@ -1,0 +1,2 @@
+{{ ansible_managed | comment }}
+{{ auth__sudoers_file_all | aybarsm.helper.to_querystring(keyAttr='entry', joinChar='\n\n') }}
