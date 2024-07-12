@@ -1,0 +1,11 @@
+---
+- name: Apply hosts configuration
+  become: true
+  ansible.builtin.template:
+    src: "{{ hosts__template }}"
+    dest: "{{ hosts__file }}"
+    backup: "{{ hosts__backup | default(omit) | bool }}"
+  when:
+    - hosts__role_enabled | default(false) | bool
+    - (hosts__all_ipv4 | default([]) | length > 0) or (hosts__all_ipv6 | default([]) | length > 0)
+  register: hosts__apply
