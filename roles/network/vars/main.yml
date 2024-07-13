@@ -1,12 +1,21 @@
 ##### BEGIN: network systemd vars
 __network_systemd_available_change_modules: ['systemd_service']
 
-network__systemd_all: "{{ (network__host + network__group + network__default) |
-  selectattr('type', 'defined') | selectattr('type', 'equalto', 'systemd') |
-  selectattr('name', 'defined') | selectattr('name', 'search', '\\.(network|link|netdev)$') | selectattr('children', 'defined') |
+# REVIEW: There is room for optimisation
+__network__systemd_configs: >-
+  {%- set __configs_prepared = [] -%}
+  {%- for config in [network__default, network__group, network__host] -%}
+  {%-   set __configs_prepared = __configs_prepared.append(config | selectattr('type', 'defined') | selectattr('type', 'equalto', 'systemd') |
+  selectattr('name', 'defined') | selectattr('name', 'search', '\\.(network|link|netdev)$') | selectattr('children', 'defined')) -%}
+  {%- endfor -%}
+  {{ __configs_prepared }}
+
+network__systemd_all: "{{ __network__systemd_configs |
+  community.general.lists_mergeby('name', recursive=true, list_merge='prepend') |
   aybarsm.helper.unique_recursive(attributes='name', recurse='children') }}"
 
 __network__systemd_names: "{{ network__systemd_all | map(attribute='name') }}"
+# REVIEW: There is room for optimisation
 # Escape file names defined in network__systemd_all
 __network__systemd_cleanup_regex:
   - "^({{ __network__systemd_names | select('match', '.*\\.link$') | map('replace', '.link', '') | join('|') }})\\.link$"
@@ -22,13 +31,17 @@ network__systemd_cleanup_patterns: ["(?!{{ __network__systemd_cleanup_regex | jo
 ##### BEGIN: network interfaces vars
 __network_interfaces_available_change_modules: ['service', 'systemd_service', 'command']
 
-network__interfaces_all: "{{
-  [(network__default | selectattr('type', 'defined') | selectattr('type', 'equalto', 'interface') | selectattr('name', 'defined')),
-  (network__group | selectattr('type', 'defined') | selectattr('type', 'equalto', 'interface') | selectattr('name', 'defined')),
-  (network__host | selectattr('type', 'defined') | selectattr('type', 'equalto', 'interface') | selectattr('name', 'defined'))] |
+# REVIEW: There is room for optimisation
+__network__interfaces_configs: >-
+  {%- set __configs_prepared = [] -%}
+  {%- for config in [network__default, network__group, network__host] -%}
+  {%-   set __configs_prepared = __configs_prepared.append(config | selectattr('type', 'defined') | selectattr('type', 'equalto', 'interface') | selectattr('name', 'defined')) -%}
+  {%- endfor -%}
+  {{ __configs_prepared }}
+
+network__interfaces_all: "{{ __network__interfaces_configs |
   community.general.lists_mergeby('name', recursive=true, list_merge='prepend') |
   aybarsm.helper.unique_recursive(attributes='name', recurse='inet') | aybarsm.helper.unique_recursive(attributes='name', recurse='inet6') }}"
-##### END: network interfaces vars
 
 ##### BEGIN: network sysctl vars
 network__sysctl_all: "{{ (network__host + network__group + network__default) |
