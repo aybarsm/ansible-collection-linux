@@ -1,9 +1,15 @@
 ---
+- name: Proxmox Query
+  become: true
+  proxmox_query:
+    query: storage
+  register: proxmox__query_storage
 - name: Debug
   ansible.builtin.debug:
     msg:
+      proxmox__query_storage: "{{ proxmox__query_storage }}"
       # role_path: "{{ role_path }}"
-      purpose_package_setup: "{{ lookup('template', proxmox__purpose_package_setup_template) }}"
+      # purpose_package_setup: "{{ lookup('template', proxmox__purpose_package_setup_template) }}"
   delegate_to: localhost
 # - name: Import aybarsm linux ansible role
 #   ansible.builtin.import_role:

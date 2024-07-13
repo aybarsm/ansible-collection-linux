@@ -3,7 +3,7 @@
 {%- endif -%}
 {%- set proxmox_repos = [] -%}
 {%- set proxmox_packages = [] -%}
-{%- if proxmox__all.purposes is defined -%}
+{%- if proxmox__manage_purpose_package_setup is defined and proxmox__manage_purpose_package_setup and proxmox__all.purposes is defined -%}
 {%-  for purpose in proxmox__purpose_names -%}
 {%-     for purpose_type in proxmox__purpose_types -%}
 {%-         set host_config = proxmox__all.purposes[purpose] if purpose in proxmox__all.purposes else none -%}
@@ -29,7 +29,7 @@
 }) -%}
 {%-             endif -%}
 {%-         elif purpose.startswith('ceph-') -%}
-{%- set proxmox_repos =  proxmox_repos.append({
+{%- set proxmox_repos = proxmox_repos.append({
     'type': 'repo',
     'repo': 'deb ' + purpose_repo + '/' + purpose + ' ' + ansible_distribution_release + ' ' + purpose_type,
     'filename': 'ceph',
