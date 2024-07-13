@@ -1,19 +1,17 @@
 ---
-- name: Apply command(s) for grub_ changes
+- name: Apply grub changes via command module
   become: true
   ansible.builtin.command:
-    chdir: "{{ item.chdir | default(omit) }}"
-    cmd: "{{ item.cmd }}"
-    creates: "{{ item.creates | default(omit) }}"
-    removes: "{{ item.removes | default(omit) }}"
-    stdin: "{{ item.stdin | default(omit) }}"
-    stdin_add_newline: "{{ item.stdin_add_newline | default(omit) }}"
-    strip_empty_ends: "{{ item.strip_empty_ends | default(omit) }}"
+    chdir: "{{ grub__change_strategy.chdir | default(omit) }}"
+    cmd: "{{ grub__change_strategy.cmd }}"
+    creates: "{{ grub__change_strategy.creates | default(omit) }}"
+    removes: "{{ grub__change_strategy.removes | default(omit) }}"
+    stdin: "{{ grub__change_strategy.stdin | default(omit) }}"
+    stdin_add_newline: "{{ grub__change_strategy.stdin_add_newline | default(omit) }}"
+    strip_empty_ends: "{{ grub__change_strategy.strip_empty_ends | default(omit) }}"
   changed_when: true
-  loop: "{{ grub__change | selectattr('cmd', 'defined') }}"
   register: grub__apply_changes_command
-  listen: "grub__apply_changes_by_command"
+  listen: "grub__apply_changes"
   when:
-    - grub__change_strategy | default('') == 'command'
-    - grub__change | type_debug == 'list'
-    - grub__change | selectattr('cmd', 'defined') | length > 0
+    - grub__change_strategy.module is defined
+    - grub__change_strategy.module == 'command'

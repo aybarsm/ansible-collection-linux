@@ -19,7 +19,7 @@ network__systemd_cleanup_use_regex: true
 # Naming scheme to be used with aybarsm.linux.grub role to avoid kernel naming conflicts
 # i.e. grub cmdline :: net.naming-scheme=v252
 # Consult: https://manpages.debian.org/bookworm/systemd/systemd.net-naming-scheme.7.en.html
-network__systemd_naming_scheme: "v252"
+network__systemd_naming_scheme: v252
 network__systemd_dir: /etc/systemd/network
 network__systemd_template: etc/systemd/network/unit.j2
 network__systemd_change_strategy:

@@ -1,30 +1,20 @@
 ---
 grub__role_enabled: false
 
-grub__dir: /etc/default/grub.d
-grub__file: 50-ansible.cfg
-grub__destination: "{{ grub__dir + '/' + grub__file }}"
-
+grub__file: /etc/default/grub.d/50-ansible.cfg
+grub__template: etc/default/grub.d/grub.cfg.j2
 grub__backup: true
-grub__template: grub.cfg.j2
 
-# Currently only command strategy is supported
-# grub__change_strategy: 'command'
-# Leave empty not to apply changes
-grub__change_strategy: ''
-grub__change:
-  - cmd: update-grub
+grub__inherit_cmdlines: true
 
-grub__entry_prefix: GRUB_
-
-grub__inherit_cmdline_default: true
-grub__inherit_cmdline: true
+grub__change_strategy:
+# Available modules: command
+# Set module other than available options to disable applying changes
+  module: command
+# immediate can be true or false (Flushes the handlers immediately)
+  immediate: false
+  cmd: 'update-grub'
 
 grub__default: []
 grub__group: []
 grub__host: []
-# The combination strategy below is highly nested hierarchy compliant and recommended (Example provided below)
-# grub__host > grub__group > grub__default
-grub__all: "{{ [grub__default, grub__group, grub__host] |
-  community.general.lists_mergeby('name', recursive=true, list_merge='prepend') |
-  aybarsm.helper.unique_recursive(attributes='name', recurse='value') }}"

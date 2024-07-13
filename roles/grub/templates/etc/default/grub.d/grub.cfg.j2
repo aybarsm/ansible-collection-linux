@@ -1,0 +1,14 @@
+{{ ansible_managed | comment }}
+
+{% for param in grub__all %}
+{%  set paramName = (param.name | upper) if (param.name | upper).startswith('GRUB_') else 'GRUB_' + (param.name | upper) %}
+{%  set isCmdLine = paramName in ['GRUB_CMDLINE_LINUX', 'GRUB_CMDLINE_LINUX_DEFAULT'] %}
+{%  set paramValPrefix = '$' + paramName + ' ' if isCmdLine and (grub__inherit_cmdlines | default(true) | bool) else '' %}
+{%  if 'children' in param %}
+{{ paramName }}="{{ paramValPrefix }}{{ param.children | aybarsm.helper.to_querystring('name', 'value', '=', ' ') }}"
+{%  elif 'value' in param %}
+{{ paramName }}="{{ paramValPrefix }}{{ param.value }}"
+{%  else %}
+{{ paramName }}="{{ paramValPrefix }}"
+{%  endif %}
+{% endfor %}

@@ -1,0 +1,13 @@
+---
+__grub__available_change_modules: ['command']
+
+__grub__configs: >-
+  {%- set __configs_prepared = [] -%}
+  {%- for config in [grub__default, grub__group, grub__host] -%}
+  {%-   set __configs_prepared = __configs_prepared.append(config | selectattr('name', 'defined')) -%}
+  {%- endfor -%}
+  {{ __configs_prepared }}
+
+grub__all: "{{ __grub__configs |
+  community.general.lists_mergeby('name', recursive=true, list_merge='prepend') |
+  aybarsm.helper.unique_recursive(attributes='name', recurse='children') }}"

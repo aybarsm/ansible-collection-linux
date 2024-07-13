@@ -1,5 +1,9 @@
 ---
-- name: Import grub tasks
-  ansible.builtin.import_tasks:
+# Required for configuration management
+- name: Load aybarsm ansible role main variables
+  ansible.builtin.include_vars: ../ansible/vars/main.yml
+
+- name: Include grub tasks
+  ansible.builtin.include_tasks:
     file: grub.yml
-  when: grub__role_enabled | bool
+  when: grub__role_enabled | default(false) | bool
