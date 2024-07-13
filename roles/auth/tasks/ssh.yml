@@ -1,4 +1,5 @@
 ---
+# TODO: Renew SSH host keys only once
 - name: Apply ssh daemon configuration
   become: true
   ansible.builtin.template:
@@ -42,4 +43,3 @@
   when:
     - auth__ssh_changes_strategy.module is defined
     - auth__ssh_changes_strategy.immediate | default(false) | bool
-  

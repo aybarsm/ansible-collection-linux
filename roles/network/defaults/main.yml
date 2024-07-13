@@ -1,0 +1,83 @@
+network__role_enabled: false
+
+network__manage_systemd: false
+network__manage_interfaces: false
+network__manage_sysctl: false
+network__manage_hosts: false
+
+network__default: []
+network__group: []
+network__host: []
+
+##### BEGIN: network systemd vars
+# Ensures system manager is systemd - ansible_service_mgr == "systemd"
+network__systemd_ensure_service_manager: true
+network__systemd_apply_changes: false
+network__systemd_backup: true
+network__systemd_cleanup: false
+network__systemd_cleanup_use_regex: true
+# Naming scheme to be used with aybarsm.linux.grub role to avoid kernel naming conflicts
+# i.e. grub cmdline :: net.naming-scheme=v252
+# Consult: https://manpages.debian.org/bookworm/systemd/systemd.net-naming-scheme.7.en.html
+network__systemd_naming_scheme: "v252"
+network__systemd_dir: /etc/systemd/network
+network__systemd_template: etc/systemd/network/unit.j2
+network__systemd_change_strategy:
+# Available modules: systemd_service
+# Set module other than available options to disable applying changes
+  module: systemd_service
+# immediate can be true or false (Flushes the handlers immediately)
+  immediate: false
+# Use name for service or systemd_service module
+  name: 'systemd-networkd.service'
+  state: reloaded
+##### END: network systemd vars
+
+##### BEGIN: network interfaces vars
+network__interfaces_file: /etc/network/interfaces
+# Keep the loopback interface in the file
+network__interfaces_keep_lo: true
+# The location of the source line in the file (controversial topic)
+network__interfaces_source_position: bottom
+network__interfaces_source_line: "source /etc/network/interfaces.d/*"
+
+network__interfaces_backup: true
+network__interfaces_template: etc/network/interfaces.j2
+
+# iface XXX inet {manual|static|dhcp}
+# Manual method only INCLUDES selected options whereas static and dhcp methods EXCLUDES selected options
+network__interfaces_manual_includes: []
+network__interfaces_static_excludes: []
+network__interfaces_dhcp_excludes: [
+  'address', 'netmask', 'gateway', 'broadcast', 'network', 'dns-nameservers', 'dns-search',
+  'dns-domain', 'dns-domain-search', 'dns-options', 'dns-sortlist', 'dns-opts']
+
+network__interfaces_change_strategy:
+# Available modules: service, systemd_service, or command
+# Set module other than available options to disable applying changes
+  module: service
+# immediate can be true or false (Flushes the handlers immediately)
+  immediate: false
+# Use name for service or systemd_service module
+  name: 'networking.service'
+# Use cmd for command module
+# cmd: ifreload -a
+  state: restarted
+##### END: network interfaces vars
+
+##### BEGIN: network sysctl vars
+# No specific configuration is required for sysctl
+##### END: network sysctl vars
+
+##### BEGIN: network hosts vars
+network__hosts_file: /etc/hosts
+network__hosts_template: etc/hosts.j2
+network__hosts_backup: true
+
+# If enabled, the ansible inventory will be collected automatically
+# and will be appended to the list of hosts, when ansible_host (ip address) is defined.
+# ip: ansible_host, hostname: inventory_hostname_short, fqdn: inventory_hostname
+network__hosts_auto_discovery: false
+# Consult https://docs.ansible.com/ansible/latest/inventory_guide/intro_patterns.html for more information
+network__hosts_auto_discovery_inventories: 'webservers:&atlanta'
+##### END: network hosts vars

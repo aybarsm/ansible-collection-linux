@@ -1,0 +1,20 @@
+---
+- name: Deploy network interfaces file configuration
+  become: true
+  ansible.builtin.template:
+    src: "{{ network__interfaces_template }}"
+    dest: "{{ network__interfaces_file }}"
+    backup: "{{ network__interfaces_backup | default(omit) | bool }}"
+    mode: "0644"
+  when:
+    - network__interfaces_all | type_debug == 'list'
+    - network__interfaces_all | length > 0
+  register: network__interfaces_deploy
+  notify: "network__interfaces_apply_changes"
+
+- name: Apply network interfaces file changes
+  ansible.builtin.meta: 'flush_handlers'
+  when:
+    - network__interfaces_change_strategy.module is defined
+    - network__interfaces_change_strategy.module in __network_interfaces_available_change_modules
+    - network__interfaces_change_strategy.immediate | default(false) | bool

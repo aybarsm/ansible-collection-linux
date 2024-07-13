@@ -30,6 +30,18 @@ __ansible__config:
         apt_key:
           uniques: ['keyserver', 'url', 'id', 'file' ,'data']
           aliases: {}
+        find:
+          required: ['paths']
+          aliases:
+            excludes: ['exclude']
+            paths: ['name', 'path']
+            patterns: ['pattern']
+      posix:
+        sysctl:
+          required: ['name', 'value']
+          aliases:
+            name: ['key']
+            value: ['val']
     community:
       general:
         sudoers:

@@ -1,0 +1,15 @@
+127.0.0.1 localhost.localdomain localhost
+{% for ipv4_host in network__hosts_all_ipv4 %}
+{{ ipv4_host.ip }} {{ ipv4_host.fqdn }} {{ ipv4_host.hostname }}
+{% endfor %}
+
+# The following lines are desirable for IPv6 capable hosts
+::1     ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+ff02::3 ip6-allhosts
+{% for ipv6_host in network__hosts_all_ipv6 %}
+{{ ipv6_host.ip }} {{ ipv6_host.fqdn }} {{ ipv6_host.hostname }}
+{% endfor %}

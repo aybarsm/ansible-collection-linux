@@ -1,0 +1,48 @@
+{{ ansible_managed | comment }}
+
+{% if network__interfaces_source_position == 'top' %}
+{{ network__interfaces_source_line }}
+
+{% endif %}
+{% if network__interfaces_keep_lo | bool %}
+# The loopback network interface
+auto lo
+iface lo inet loopback
+{% endif %}
+
+{% for iface in network__interfaces_all %}
+{%  if 'mount' in iface and iface.mount != 'None' %}
+{{ iface.mount }} {{ iface.name }}
+{%  endif %}
+{%  for addr_family in ['inet', 'inet6'] %}
+{%      if addr_family in iface %}
+{%          set ifaceMethod = iface[addr_family] | selectattr('name', 'equalto', 'method') | map(attribute='value') | first | default('') %}
+{%          if ifaceMethod in ['static', 'dhcp', 'manual'] %}
+{%              set ifaceParamsExclude = ['method'] %}
+{%              set ifaceParamsInclude = [] %}
+{%              if ifaceMethod == 'static' %}
+{%                  set ifaceParamsExclude = ifaceParamsExclude + (network__interfaces_static_excludes | default([])) %}
+{%              elif ifaceMethod == 'dhcp' %}
+{%                  set ifaceParamsExclude = ifaceParamsExclude + (network__interfaces_dhcp_excludes | default([])) %}
+{%              elif ifaceMethod == 'manual' %}
+{%                  set ifaceParamsInclude = ifaceParamsInclude + (network__interfaces_manual_includes | default([])) %}
+{%              endif %}
+{%              set ifaceParams = iface[addr_family] %}
+{%              if ifaceParamsInclude | length > 0 %}
+{%                  set ifaceParams = ifaceParams | selectattr('name', 'in', ifaceParamsInclude) %}
+{%              endif %}
+{%              if ifaceParamsExclude | length > 0 %}
+{%                  set ifaceParams = ifaceParams | rejectattr('name', 'in', ifaceParamsExclude) %}
+{%              endif %}
+iface {{ iface.name }} {{ addr_family }} {{ ifaceMethod }}
+{%              if ifaceParams | length > 0 %}
+{{ ifaceParams | aybarsm.helper.to_querystring('name', 'value', ' ', '\n') | indent(4, true) }}
+{%              endif %}
+{%          endif %}
+
+{%      endif %}
+{%  endfor %}
+{% endfor %}
+{% if network__interfaces_source_position != 'top' %}
+{{ network__interfaces_source_line }}
+{% endif %}

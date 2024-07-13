@@ -1,0 +1,65 @@
+##### BEGIN: network systemd vars
+__network_systemd_available_change_modules: ['systemd_service']
+
+network__systemd_all: "{{ (network__host + network__group + network__default) |
+  selectattr('type', 'defined') | selectattr('type', 'equalto', 'systemd') |
+  selectattr('name', 'defined') | selectattr('name', 'search', '\\.(network|link|netdev)$') | selectattr('children', 'defined') |
+  aybarsm.helper.unique_recursive(attributes='name', recurse='children') }}"
+
+__network__systemd_names: "{{ network__systemd_all | map(attribute='name') }}"
+# Escape file names defined in network__systemd_all
+__network__systemd_cleanup_regex:
+  - "^({{ __network__systemd_names | select('match', '.*\\.link$') | map('replace', '.link', '') | join('|') }})\\.link$"
+  - "^({{ __network__systemd_names | select('match', '.*\\.netdev$') | map('replace', '.netdev', '') | join('|') }})\\.netdev$"
+  - "^({{ __network__systemd_names | select('match', '.*\\.network$') | map('replace', '.network', '') | join('|') }})\\.network$"
+# Escape backup files:
+  - "^.*\\.\\d+\\.\\d{4}-\\d{2}-\\d{2}@\\d{2}:\\d{2}:\\d{2}~$"
+
+# Join regex expressions
+network__systemd_cleanup_patterns: ["(?!{{ __network__systemd_cleanup_regex | join('|') }})"]
+##### END: network systemd vars
+
+##### BEGIN: network interfaces vars
+__network_interfaces_available_change_modules: ['service', 'systemd_service', 'command']
+
+network__interfaces_all: "{{
+  [(network__default | selectattr('type', 'defined') | selectattr('type', 'equalto', 'interface') | selectattr('name', 'defined')),
+  (network__group | selectattr('type', 'defined') | selectattr('type', 'equalto', 'interface') | selectattr('name', 'defined')),
+  (network__host | selectattr('type', 'defined') | selectattr('type', 'equalto', 'interface') | selectattr('name', 'defined'))] |
+  community.general.lists_mergeby('name', recursive=true, list_merge='prepend') |
+  aybarsm.helper.unique_recursive(attributes='name', recurse='inet') | aybarsm.helper.unique_recursive(attributes='name', recurse='inet6') }}"
+##### END: network interfaces vars
+
+##### BEGIN: network sysctl vars
+network__sysctl_all: "{{ (network__host + network__group + network__default) |
+  selectattr('type', 'defined') | selectattr('type', 'equalto', 'sysctl') |
+  aybarsm.helper.replace_aliases(__ansible__config.modules.ansible.posix.sysctl.aliases) |
+  selectattr('name', 'defined') | selectattr('value', 'defined') | unique(attribute='name') }}"
+##### END: network sysctl vars
+
+##### BEGIN: network hosts vars
+__network__hosts_auto_discovered: >-
+  {%- if (network__hosts_auto_discovery | default(false) | bool) and network__hosts_auto_discovery_inventories is defined and network__hosts_auto_discovery_inventories | length > 0 -%}
+  {%-   set inventory_lookup = lookup('ansible.builtin.inventory_hostnames', network__hosts_auto_discovery_inventories) -%}
+  {%-   if inventory_lookup | length > 0 -%}
+  {%-     set inventory_hosts = inventory_lookup | split(',') -%}
+  {%-     set discovered_hosts = dict(hostvars) | aybarsm.helper.only_with(inventory_hosts) | dict2items | selectattr('value.ansible_host', 'defined') -%}
+  {%-     set ips = discovered_hosts | map(attribute='value.ansible_host') -%}
+  {%-     set hostnames = discovered_hosts | map(attribute='value.inventory_hostname_short') -%}
+  {%-     set fqdns = discovered_hosts | map(attribute='value.inventory_hostname') -%}
+  {%-     set auto_discovered = {'ip': ips, 'hostname': hostnames, 'fqdn': fqdns} | aybarsm.helper.to_list_of_dicts({'type': 'host'}) -%}
+  {%-   endif -%}
+  {%- else -%}
+  {%-   set auto_discovered = [] -%}
+  {%- endif -%}
+  {{ auto_discovered }}
+
+network__hosts_all: "{{ (network__host + network__group + network__default + __network__hosts_auto_discovered) |
+  selectattr('type', 'defined') | selectattr('type', 'equalto', 'host') |
+  selectattr('ip', 'defined') | selectattr('hostname', 'defined') |
+  aybarsm.helper.replace_aliases({'fqdn': ['hostname']}) |
+  aybarsm.helper.unique_recursive(attributes=['ip', 'hostname', 'fqdn']) }}"
+
+network__hosts_all_ipv4: "{{ network__hosts_all | selectattr('ip', 'ansible.utils.ipv4') }}"
+network__hosts_all_ipv6: "{{ network__hosts_all | selectattr('ip', 'ansible.utils.ipv6') }}"
+##### END: network hosts vars

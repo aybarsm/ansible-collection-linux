@@ -1,0 +1,8 @@
+{{ ansible_managed | comment }}
+
+{% for section in item.children %}
+{% set sectionName = ('[' if (section.name | first) != '[' else '') + (section.name | title) + (']' if (section.name | last) != ']' else '') %}
+{{ sectionName }}
+{{ section.children | aybarsm.helper.to_querystring('name', 'value', '=', '\n') }}
+
+{% endfor %}

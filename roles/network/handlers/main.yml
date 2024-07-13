@@ -1,0 +1,76 @@
+---
+- name: Apply network interfaces changes via systemd service module
+  become: true
+  ansible.builtin.systemd_service:
+    daemon_reexec: "{{ service.daemon_reexec | default(omit) | bool }}"
+    daemon_reload: "{{ service.daemon_reload | default(omit) | bool }}"
+    enabled: "{{ service.enabled | default(omit) | bool }}"
+    force: "{{ service.force | default(omit) | bool }}"
+    masked: "{{ service.masked | default(omit) | bool }}"
+    name: "{{ service.name }}"
+    no_block : "{{ service.no_block | default(omit) | bool }}"
+    scope: "{{ service.scope | default(omit) }}"
+    state: "{{ service.state | default(omit) }}"
+  vars:
+    service: "{{ network__interfaces_change_strategy | aybarsm.helper.replace_aliases(__ansible__config.modules.ansible.builtin.systemd_service.aliases) }}"
+  register: network__interfaces_apply_changes_systemd_service
+  listen: "network__interfaces_apply_changes"
+  when:
+    - network__interfaces_change_strategy.module is defined
+    - network__interfaces_change_strategy.module == 'systemd_service'
+
+- name: Apply network interfaces changes via service module
+  become: true
+  ansible.builtin.service:
+    arguments: "{{ service.arguments | default(omit) }}"
+    enabled: "{{ service.enabled | default(omit) }}"
+    name: "{{ service.name }}"
+    pattern: "{{ service.pattern | default(omit) }}"
+    runlevel: "{{ service.runlevel | default(omit) }}"
+    sleep: "{{ service.sleep | default(omit) }}"
+    state: "{{ service.state | default(omit) }}"
+    use: "{{ service.use | default(omit) }}"
+  vars:
+    service: "{{ network__interfaces_change_strategy | aybarsm.helper.replace_aliases(__ansible__config.modules.ansible.builtin.service.aliases) }}"
+  register: network__interfaces_apply_changes_service
+  listen: "network__interfaces_apply_changes"
+  when:
+    - network__interfaces_change_strategy.module is defined
+    - network__interfaces_change_strategy.module == 'service'
+
+- name: Apply network interfaces changes via command module
+  become: true
+  ansible.builtin.command:
+    chdir: "{{ network__interfaces_change_strategy.chdir | default(omit) }}"
+    cmd: "{{ network__interfaces_change_strategy.cmd }}"
+    creates: "{{ network__interfaces_change_strategy.creates | default(omit) }}"
+    removes: "{{ network__interfaces_change_strategy.removes | default(omit) }}"
+    stdin: "{{ network__interfaces_change_strategy.stdin | default(omit) }}"
+    stdin_add_newline: "{{ network__interfaces_change_strategy.stdin_add_newline | default(omit) }}"
+    strip_empty_ends: "{{ network__interfaces_change_strategy.strip_empty_ends | default(omit) }}"
+  changed_when: true
+  register: network__interfaces_apply_changes_command
+  listen: "network__interfaces_apply_changes"
+  when:
+    - network__interfaces_change_strategy.module is defined
+    - network__interfaces_change_strategy.module == 'command'
+
+- name: Apply systemd network changes via systemd service module
+  become: true
+  ansible.builtin.systemd_service:
+    daemon_reexec: "{{ service.daemon_reexec | default(omit) | bool }}"
+    daemon_reload: "{{ service.daemon_reload | default(omit) | bool }}"
+    enabled: "{{ service.enabled | default(omit) | bool }}"
+    force: "{{ service.force | default(omit) | bool }}"
+    masked: "{{ service.masked | default(omit) | bool }}"
+    name: "{{ service.name }}"
+    no_block : "{{ service.no_block | default(omit) | bool }}"
+    scope: "{{ service.scope | default(omit) }}"
+    state: "{{ service.state | default(omit) }}"
+  vars:
+    service: "{{ network__systemd_change_strategy | aybarsm.helper.replace_aliases(__ansible__config.modules.ansible.builtin.systemd_service.aliases) }}"
+  register: network__systemd_apply_changes_systemd_service
+  listen: "network__systemd_apply_changes"
+  when:
+    - network__systemd_change_strategy.module is defined
+    - network__systemd_change_strategy.module == 'systemd_service'

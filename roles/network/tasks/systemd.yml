@@ -1,0 +1,42 @@
+---
+- name: Find unexpected systemd-network unit files
+  become: true
+  ansible.builtin.find:
+    paths: "{{ network__systemd_dir }}"
+    patterns: "{{ network__systemd_cleanup_patterns | default(omit) }}"
+    use_regex: "{{ network__systemd_cleanup_use_regex | default(omit) | bool }}"
+  register: network__systemd_find_cleanup_files
+  when: network__systemd_cleanup | default(false) | bool
+
+- name: Remove unexpected systemd-network unit files
+  become: true
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop: "{{ network__systemd_find_cleanup_files.files | map(attribute='path') }}"
+  register: systemd__network_cleanup_files
+  notify: network__systemd_apply_changes
+  when:
+    - network__systemd_cleanup | default(false) | bool
+    - network__systemd_find_cleanup_files.files | length > 0
+
+- name: Deploy systemd-network unit files
+  become: true
+  ansible.builtin.template:
+    src: "{{ network__systemd_template }}"
+    dest: "{{ network__systemd_dir }}/{{ item.name }}"
+    backup: "{{ network__systemd_backup | default(omit) | bool }}"
+    mode: "0644"
+  loop: "{{ network__systemd_all }}"
+  register: systemd__network_deploy
+  notify: network__systemd_apply_changes
+  when:
+    - network__systemd_all | type_debug == 'list'
+    - network__systemd_all | length > 0
+
+- name: Apply network systemd changes
+  ansible.builtin.meta: 'flush_handlers'
+  when:
+    - network__systemd_change_strategy.moduele is defined
+    - network__systemd_change_strategy.module in __network_systemd_available_change_modules
+    - network__systemd_change_strategy.immediate | default(false) | bool

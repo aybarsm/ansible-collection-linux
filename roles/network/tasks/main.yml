@@ -1,0 +1,32 @@
+---
+# Required for configuration management
+- name: Load aybarsm ansible role main variables
+  ansible.builtin.include_vars: ../ansible/vars/main.yml
+
+- name: Include systemd network tasks
+  ansible.builtin.include_tasks:
+    file: systemd.yml
+  when:
+    - network__role_enabled | default(false) | bool
+    - network__manage_systemd | default(false) | bool
+
+- name: Include interfaces tasks
+  ansible.builtin.include_tasks:
+    file: interfaces.yml
+  when:
+    - network__role_enabled | default(false) | bool
+    - network__manage_interfaces | default(false) | bool
+
+- name: Include posix sysctl tasks
+  ansible.builtin.include_tasks:
+    file: sysctl.yml
+  when:
+    - network__role_enabled | default(false) | bool
+    - network__manage_sysctl | default(false) | bool
+
+- name: Include hosts tasks
+  ansible.builtin.include_tasks:
+    file: hosts.yml
+  when:
+    - network__role_enabled | default(false) | bool
+    - network__manage_hosts | default(false) | bool
