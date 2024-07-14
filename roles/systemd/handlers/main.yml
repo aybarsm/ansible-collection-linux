@@ -1,8 +1,0 @@
----
-- name: Restart systemd-networkd service for systemd__network changes
-  become: true
-  ansible.builtin.service:
-    name: "systemd-networkd"
-    state: restarted
-  listen: "systemd__networkd_restart"
-  when: systemd__network_apply_changes | bool

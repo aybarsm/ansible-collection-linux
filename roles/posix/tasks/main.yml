@@ -1,5 +1,0 @@
----
-- name: Include posix sysctl tasks
-  ansible.builtin.include_tasks:
-    file: sysctl.yml
-  when: posix_sysctl__role_enabled | bool

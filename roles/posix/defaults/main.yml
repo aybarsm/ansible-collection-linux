@@ -1,8 +1,0 @@
-posix_sysctl__role_enabled: false
-
-posix__sysctl_default: []
-posix__sysctl_group: []
-posix__sysctl_host: []
-# The combination strategy below is highly nested hierarchy compliant and recommended.
-# posix__sysctl_host > posix__sysctl_group > posix__sysctl_default
-posix__sysctl_all: "{{ (posix__sysctl_host + posix__sysctl_group + posix__sysctl_default) | unique(attribute='name') }}"

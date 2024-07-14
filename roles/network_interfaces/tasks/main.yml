@@ -1,6 +1,0 @@
----
-- name: Import network_interfaces tasks
-  ansible.builtin.import_tasks:
-    file: network_interfaces.yml
-  when:
-    - systemd_network__role_enabled | bool
