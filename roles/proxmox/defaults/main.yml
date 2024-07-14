@@ -12,7 +12,6 @@ proxmox__purpose_packages:
 
 # If enabled, the role will manage the purpose package setup for repos and package versioning.
 proxmox__manage_purpose_package_setup: true
-proxmox__purpose_package_setup_template: purpose_package_setup.j2
 
 proxmox__default: {}
 proxmox__group: {}
