@@ -1,5 +1,18 @@
 proxmox__role_enabled: false
 
+proxmox__manage_cluster: false
+proxmox__manage_cluster_ssh_config: false
+
+proxmox__cluster_name: ''
+# For inventory specs, consult https://docs.ansible.com/ansible/latest/inventory_guide/intro_patterns.html for more information
+# i.e. proxmox__cluster_inventory: 'proxmox:&atlanta'
+proxmox__cluster_inventory: ''
+# Ip addresses for the cluster links (will be automatically prioritized regarding the posisiton in the list)
+proxmox__cluster_links: []
+# If set to any integer higher than 0, cluster links will be prioritized automatically regarding the step.
+# i.e. proxmox__cluster_links: ['10.0.0.2', 'fd00::2'] and proxmox__cluster_links_auto_priority_step: 10 will be prioritized as 10.0.0.2 = 20 and fd00::2 = 10
+proxmox__cluster_links_auto_priority_step: 0
+
 proxmox__repo_url_enterprise: https://enterprise.proxmox.com/debian
 proxmox__repo_url_no_subscription: http://download.proxmox.com/debian
 
@@ -26,7 +39,6 @@ proxmox__host: {}
 #       type: no-subscription
 #       version: latest
 # # ------------------------------------------------
-# proxmox__group:
 # proxmox__host:
 #   purposes:
 #     pve:

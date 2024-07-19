@@ -14,7 +14,7 @@
     path: "{{ item }}"
     state: absent
   loop: "{{ network__systemd_find_cleanup_files.files | map(attribute='path') }}"
-  register: systemd__network_cleanup_files
+  register: network__systemd_cleanup_files
   notify: network__systemd_apply_changes
   when:
     - network__systemd_cleanup | default(false) | bool
@@ -28,7 +28,7 @@
     backup: "{{ network__systemd_backup | default(omit) | bool }}"
     mode: "0644"
   loop: "{{ network__systemd_all }}"
-  register: systemd__network_deploy
+  register: network__systemd_deploy
   notify: network__systemd_apply_changes
   when:
     - network__systemd_all | type_debug == 'list'

@@ -27,6 +27,37 @@
     - auth__ssh_config_all | type_debug == 'list'
     - auth__ssh_config_all | length > 0
 
+- name: Apply ssh client configuration via community.general.ssh_config module
+  become: true
+  community.general.ssh_config:
+    add_keys_to_agent: "{{ item.add_keys_to_agent | default(omit) | bool }}"
+    controlmaster: "{{ item.controlmaster | default(omit) }}"
+    controlpath: "{{ item.controlpath | default(omit) }}"
+    controlpersist: "{{ item.controlpersist | default(omit) }}"
+    forward_agent: "{{ item.forward_agent | default(omit) | bool }}"
+    group: "{{ item.group | default(omit) }}"
+    host: "{{ item.host }}"
+    host_key_algorithms: "{{ item.host_key_algorithms | default(omit) }}"
+    hostname: "{{ item.hostname | default(omit) }}"
+    identities_only: "{{ item.identities_only | default(omit) | bool }}"
+    identity_file: "{{ item.identity_file | default(omit) }}"
+    port: "{{ item.port | default(omit) }}"
+    proxycommand: "{{ item.proxycommand | default(omit) }}"
+    proxyjump: "{{ item.proxyjump | default(omit) }}"
+    remote_user: "{{ item.remote_user | default(omit) }}"
+    ssh_config_file: "{{ item.ssh_config_file | default(omit) }}"
+    state: "{{ item.state | default(omit) }}"
+    strict_host_key_checking: "{{ item.strict_host_key_checking | default(omit) }}"
+    user: "{{ item.user | default(omit) }}"
+    user_known_hosts_file: "{{ item.user_known_hosts_file | default(omit) }}"
+  loop: "{{ auth__ssh_config_module_all }}"
+  register: auth__ssh_config_module_apply
+  notify: "auth__ssh_apply_changes"
+  when:
+    - auth__manage_ssh_config | default(false) | bool
+    - auth__ssh_config_module_all | type_debug == 'list'
+    - auth__ssh_config_module_all | length > 0
+
 - name: Run smart sshd configuration changes
   ansible.builtin.command:
     cmd: /usr/bin/true
@@ -34,6 +65,7 @@
   notify: "auth__ssh_apply_changes"
   when:
     - auth__sshd_validate is defined
+    - auth__sshd_validate
     - auth__sshd_config_apply is not change
     - auth__ssh_config_apply is not change
     - auth__ssh_changes_strategy.smart | default(false) | bool

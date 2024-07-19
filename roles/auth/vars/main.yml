@@ -1,4 +1,6 @@
 ---
+auth__all: "{{ auth__host + auth__group + auth__default + (auth__external | default([])) }}"
+
 __auth__config:
   authorized_keys:
     selectattr:
@@ -35,6 +37,12 @@ __auth__config:
           - ['type', 'equalto', 'ssh_config']
           - ['name', 'defined']
           - ['value', 'defined']
+  ssh_config_module:
+    selectattr:
+      - when:
+          - ['type', 'defined']
+          - ['type', 'equalto', 'ssh_config_module']
+          - ['host', 'defined']
   sudoers_file:
     selectattr:
       - when:
@@ -47,7 +55,7 @@ __auth__config:
           - ['type', 'defined']
           - ['type', 'equalto', 'sudoers_module']
           - ['name', 'defined']
-        
+
 auth__groups_all: "{{ auth__all |
   aybarsm.helper.selectattr(__auth__config.groups.selectattr) |
   aybarsm.helper.unique_recursive(__ansible__config.modules.ansible_builtin_group.uniques) |
@@ -66,12 +74,17 @@ auth__authorized_keys_all: "{{ auth__all |
 
 auth__sshd_config_all: "{{ auth__all |
   aybarsm.helper.selectattr(__auth__config.sshd_config.selectattr) |
-  aybarsm.helper.unique_recursive('name', 'children') |
+  aybarsm.helper.unique_combinations([['name', 'value']]) |
   default([]) }}"
 
 auth__ssh_config_all: "{{ auth__all |
   aybarsm.helper.selectattr(__auth__config.ssh_config.selectattr) |
-  aybarsm.helper.unique_recursive('name', 'children') |
+  aybarsm.helper.unique_combinations([['name', 'value']]) |
+  default([]) }}"
+
+auth__ssh_config_module_all: "{{ auth__all |
+  aybarsm.helper.selectattr(__auth__config.ssh_config_module.selectattr) |
+  aybarsm.helper.unique_recursive('host') |
   default([]) }}"
 
 auth__sudoers_file_all: "{{ auth__all |

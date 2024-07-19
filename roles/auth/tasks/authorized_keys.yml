@@ -1,11 +1,21 @@
 ---
+- name: Set fact for ssh key distribution to authorized keys, if any
+  set_fact:
+    auth__authorized_keys_all: "{{ (auth__authorized_keys_all | default([])) + ssh_keys_distribute }}"
+  vars:
+    distribute_query: "*.auth__users_apply.results[*] | [] | [?contains(not_null(item.distribute_ssh_key,``),`{{ inventory_hostname }}`)].{user: name, key: ssh_public_key}"
+    ssh_keys_distribute: "{{ dict(hostvars) |
+      aybarsm.helper.only_with(ansible_play_batch | difference([inventory_hostname])) |
+      community.general.json_query(distribute_query) | default([]) }}"
+  register: auth__users__ssh_key_distribution
+  when: ssh_keys_distribute | length > 0
+
 - name: Retrieve passwd database in check mode for authorized keys
   become: true
   ansible.builtin.getent:
     database: passwd
   register: auth__authorized_keys_test_user_existence
   when:
-    - auth__authorized_keys_all | type_debug == 'list'
     - auth__authorized_keys_all | length > 0
     - ansible_check_mode | bool
 
@@ -25,6 +35,5 @@
   loop: "{{ auth__authorized_keys_all }}"
   register: auth__authorized_keys_apply
   when:
-    - auth__authorized_keys_all | type_debug == 'list'
     - auth__authorized_keys_all | length > 0
     - not ansible_check_mode | bool or (ansible_check_mode and (item.user in ansible_facts['getent_passwd'] or item.path is defined))

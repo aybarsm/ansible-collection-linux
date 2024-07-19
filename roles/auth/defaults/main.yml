@@ -21,9 +21,9 @@ auth__ssh_changes_strategy:
   module: service
   immediate: true
   smart: true
-  name: 'ssh.service'
+  name: ssh.service
   enabled: true
-  state: started
+  state: restarted
 # Set  auth__sshd_validate variable to validate the ssh daemon config
 # auth__sshd_validate: "/usr/sbin/sshd -t -f %s"
 auth__sshd_config_dir: "{{ auth__ssh_dir }}/sshd_config.d"
@@ -47,5 +47,3 @@ auth__sudoers_template: etc/sudoers.d/50-ansible.j2
 auth__default: []
 auth__group: []
 auth__host: []
-
-auth__all: "{{ auth__host + auth__group + auth__default }}"

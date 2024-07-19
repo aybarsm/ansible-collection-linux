@@ -44,4 +44,3 @@
   when:
     - auth__users_all | type_debug == 'list'
     - auth__users_all | length > 0
-  

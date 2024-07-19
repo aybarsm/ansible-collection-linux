@@ -4,7 +4,7 @@ __network_systemd_available_change_modules: ['systemd_service']
 # REVIEW: There is room for optimisation
 __network__systemd_configs: >-
   {%- set __configs_prepared = [] -%}
-  {%- for config in [network__default, network__group, network__host] -%}
+  {%- for config in [network__default, network__group, network__host] if config -%}
   {%-   set __configs_prepared = __configs_prepared.append(config | selectattr('type', 'defined') | selectattr('type', 'equalto', 'systemd') |
   selectattr('name', 'defined') | selectattr('name', 'search', '\\.(network|link|netdev)$') | selectattr('children', 'defined')) -%}
   {%- endfor -%}
@@ -34,7 +34,7 @@ __network_interfaces_available_change_modules: ['service', 'systemd_service', 'c
 # REVIEW: There is room for optimisation
 __network__interfaces_configs: >-
   {%- set __configs_prepared = [] -%}
-  {%- for config in [network__default, network__group, network__host] -%}
+  {%- for config in [network__default, network__group, network__host] if config -%}
   {%-   set __configs_prepared = __configs_prepared.append(config | selectattr('type', 'defined') | selectattr('type', 'equalto', 'interface') | selectattr('name', 'defined')) -%}
   {%- endfor -%}
   {{ __configs_prepared }}

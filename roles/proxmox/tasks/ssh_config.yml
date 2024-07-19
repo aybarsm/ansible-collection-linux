@@ -1,0 +1,6 @@
+---
+- name: Create SSH directory for root
+  ansible.builtin.file:
+    path: /root/.ssh/
+    state: directory
+    mode: 0700

@@ -1,7 +1,7 @@
 ---
-# Require for configuration management
 - name: Load aybarsm ansible role main variables
   ansible.builtin.include_vars: ../ansible/vars/main.yml
+  when: __ansible__config is undefined
 
 - name: Include groups tasks
   ansible.builtin.include_tasks:
