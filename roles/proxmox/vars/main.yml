@@ -49,3 +49,6 @@ __proxmox_cluster_links: >-
     {%- set proxmox_links = [] -%}
     {%- if proxmox__manage_purpose_package_setup is defined and proxmox__manage_purpose_package_setup and proxmox__all.purposes is defined -%}
     {%- endif -%}
+
+__proxmox__cluster_query: '*.{host: inventory_hostname, fqdn: ansible_facts.fqdn, hostname: ansible_facts.hostname, links: proxmox__cluster_links} |
+    [?not_null(links) && contains(__MEMBERS__, host)]'

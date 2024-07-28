@@ -1,0 +1,7 @@
+---
+- name: Deploy hostname configuration
+  become: true
+  ansible.builtin.hostname:
+    name: "{{ network__hostname }}"
+    use: "{{ network__hostname_use | default(omit) }}"
+  register: network__hostname_deploy

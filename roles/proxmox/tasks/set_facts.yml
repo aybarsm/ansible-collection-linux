@@ -1,0 +1,26 @@
+---
+- name: Set fact for main proxmox cluster configuration
+  ansible.builtin.set_fact:
+    __proxmox__clusters: "{{ __proxmox__clusters | default([]) + cluster_config }}"
+  vars:
+    cluster_inventory: "{{ lookup('ansible.builtin.inventory_hostnames', item) | split(',') }}"
+    cluster_query: "{{ __proxmox__cluster_query | replace('__MEMBERS__', ('[`' + (cluster_inventory | join('`,`')) + '`]')) }}"
+    cluster_config: "{{ dict(hostvars) | community.general.json_query(cluster_query) | map('combine', proxmox__clusters[config_index]) }}"
+  loop: "{{ proxmox__clusters | map(attribute='target') }}"
+  loop_control:
+    index_var: config_index
+  delegate_to: localhost
+  run_once: true
+  when:
+    - proxmox__clusters is defined
+    - proxmox__clusters | length > 0
+    - __proxmox__cluster_query is defined
+
+- name: Set facts for proxmox cluster configuration
+  ansible.builtin.set_fact:
+    __proxmox__clusters: "{{ __proxmox__clusters | default([]) + cluster_config }}"
+  vars:
+    __proxmox__play: "{{ __proxmox__clusters | selectattr('host', 'equalto', inventory_hostname) | default(None) | first }}"
+  when:
+    - __proxmox__clusters | length > 0
+    - __proxmox__play is not None

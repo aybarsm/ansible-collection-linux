@@ -3,6 +3,7 @@ network__role_enabled: false
 network__manage_systemd: false
 network__manage_interfaces: false
 network__manage_sysctl: false
+network__manage_hostname: false
 network__manage_hosts: false
 
 network__default: []
@@ -68,6 +69,12 @@ network__interfaces_change_strategy:
 ##### BEGIN: network sysctl vars
 # No specific configuration is required for sysctl
 ##### END: network sysctl vars
+
+##### BEGIN: network hostname vars
+network__hostname: "{{ inventory_hostname }}"
+# Consult with https://docs.ansible.com/ansible/latest/collections/ansible/builtin/hostname_module.html
+# network__hostname_use: ''
+##### END: network hostname vars
 
 ##### BEGIN: network hosts vars
 network__hosts_file: /etc/hosts

@@ -25,6 +25,13 @@
     - network__role_enabled | default(false) | bool
     - network__manage_sysctl | default(false) | bool
 
+- name: Include hostname tasks
+  ansible.builtin.include_tasks:
+    file: hostname.yml
+  when:
+    - network__role_enabled | default(false) | bool
+    - network__manage_hostname | default(false) | bool
+
 - name: Include hosts tasks
   ansible.builtin.include_tasks:
     file: hosts.yml

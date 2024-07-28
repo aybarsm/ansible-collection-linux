@@ -3,6 +3,10 @@
   ansible.builtin.include_vars: ../ansible/vars/main.yml
   when: __ansible__config is undefined
 
+- name: Include set fact tasks
+  ansible.builtin.include_tasks:
+    file: set_facts.yml
+
 # - name: Proxmox Query
 #   become: true
 #   proxmox_query:

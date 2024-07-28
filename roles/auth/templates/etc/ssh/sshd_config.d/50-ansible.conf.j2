@@ -1,2 +1,15 @@
 {{ ansible_managed | comment }}
-{{ auth__sshd_config_all | aybarsm.helper.to_querystring('name', 'value', ' ', '\n', 'children', 4, ' ', true) }}
+
+{% for main_item in auth__sshd_config_all %}
+{% if 'value' in main_item %}
+{{ main_item.name }} {{ main_item.value }}
+{% else %}
+{{ main_item.name }}
+{% endif %}
+{% if 'children' in main_item %}
+{{ main_item.children | aybarsm.helper.to_querystring('name', 'value', ' ', '\n', 'children', 4, ' ', true) | indent(4, true) }}
+{% endif %}
+{% if main_item.name.startswith('Match ') %}
+Match all
+{% endif %}
+{% endfor %}
