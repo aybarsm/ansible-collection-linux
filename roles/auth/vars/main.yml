@@ -1,5 +1,5 @@
 ---
-auth__all: "{{ auth__host + auth__group + auth__default + (auth__external | default([])) }}"
+auth__all: "{{ auth__host + auth__group + auth__default }}"
 
 __auth__config:
   authorized_keys:

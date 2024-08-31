@@ -12,3 +12,7 @@ This code package is currently undergoing active and intensive development. It m
 By using this package, you acknowledge and understand the potential risks and agree that you are using it at your own discretion and risk. Should any issues or damage arise from its use, the responsibility rests solely with the user. We strongly advise regularly backing up any data or systems that interact with this package and frequently checking for updates.
 
 Your feedback and reports on any bugs or inconsistencies are greatly appreciated, but please proceed with caution.
+
+#TODO: Storage role
+#TODO: Storage-ZFS tasks (Params: /sys/module/zfs/parameters/zfs_arc_max, Modprobe: /etc/modprobe.d/zfs.conf)
+#TODO: Proxmox role -> Sysctl VM swappiness

@@ -7,6 +7,34 @@
   ansible.builtin.include_tasks:
     file: set_facts.yml
 
+- name: Import aybarsm package_manager role
+  ansible.builtin.import_role:
+    name: aybarsm.linux.package_manager
+  when:
+    - proxmox__role_enabled
+    - __proxmox__use_package_manager
+
+- name: Import aybarsm grub role
+  ansible.builtin.import_role:
+    name: aybarsm.linux.grub
+  when:
+    - proxmox__role_enabled
+    - proxmox__manage_grub
+
+# - name: Import aybarsm network role
+#   ansible.builtin.import_role:
+#     name: aybarsm.linux.network
+#   when: proxmox__role_enabled
+
+# - name: Reboot node and wait if upgraded, grub or network-systemd changed
+#   ansible.builtin.reboot:
+#     test_command: "uptime"
+#   vars:
+#     is_upgraded: "{{ package_manager__upgrade_deb is defined and package_manager__upgrade_deb is changed }}"
+#     is_grub: "{{ grub__deploy is defined and grub__deploy is changed }}"
+#     is_systemd: "{{ network__systemd_deploy is defined and network__systemd_deploy is changed }}"
+#   when: is_upgraded or is_grub or is_systemd
+
 # - name: Proxmox Query
 #   become: true
 #   proxmox_query:

@@ -1,0 +1,14 @@
+---
+- name: Include aybarsm package_manager role
+  ansible.builtin.include_role:
+    name: aybarsm.linux.package_manager
+  vars:
+    package_manager__role_enabled: true
+    package_manager__package_strategy: specific
+    package_manager__manage_repo_keys: "{{ proxmox__manage_repo_keys }}"
+    package_manager__manage_repos: "{{ proxmox__manage_repos }}"
+    package_manager__manage_packages: "{{ proxmox__manage_packages }}"
+    node_repo_keys: "{{ __proxmox__purpose_packages | selectattr('type', 'eq', 'repo_key') if proxmox__manage_repo_keys else [] }}"
+    node_repos: "{{ __proxmox__purpose_packages | selectattr('type', 'eq', 'repo') if proxmox__manage_repos else [] }}"
+    node_packages: "{{ __proxmox__purpose_packages | selectattr('type', 'eq', 'package') if proxmox__manage_packages else [] }}"
+    package_manager__host: "{{ node_repo_keys + node_repos + node_packages + (package_manager__host | default([])) }}"

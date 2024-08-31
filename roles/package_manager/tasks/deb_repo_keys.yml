@@ -1,0 +1,15 @@
+---
+- name: Manage DEB repository keys via APT
+  become: true
+  ansible.builtin.apt_key:
+    state: "{{ item.state | default(omit) }}"
+    data: "{{ item.data | default(omit) }}"
+    file: "{{ item.file | default(omit) }}"
+    keyring: "{{ item.keyring | default(omit) }}"
+    url: "{{ item.url | default(omit) }}"
+    validate_certs: "{{ item.validate_certs | default(omit) | bool }}"
+  loop: "{{ package_manager__repo_keys_all }}"
+  register: package_manager__repo_keys_deb_apply
+  when:
+    - package_manager__repo_keys_all | type_debug == 'list'
+    - package_manager__repo_keys_all | length > 0

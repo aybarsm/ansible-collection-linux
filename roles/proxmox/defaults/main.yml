@@ -1,34 +1,53 @@
 proxmox__role_enabled: false
 
-proxmox__manage_cluster: false
-proxmox__manage_cluster_hosts: false
-proxmox__manage_cluster_ssh_config: false
+# TODO: Implement managing the purpose package setup for repos and package versioning.
+# proxmox__manage_repo_keys: false
+# proxmox__manage_repos: false
+# proxmox__manage_packages: false
+# proxmox__manage_grub: false
+# proxmox__manage_hostname: false
+# proxmox__manage_hosts: false
+# proxmox__manage_sshd_config: false
+# proxmox__manage_ssh_config: false
+# proxmox__manage_cluster: false
 
 # Cluster configuration
 # For target inventory specs, consult https://docs.ansible.com/ansible/latest/inventory_guide/intro_patterns.html for more information
+# If init node not provided, the init node will be designated as the first node regarding ascending sorted of inventory_hostname
 # proxmox__clusters:
 #   - name: 'pve-london01'
 #     target: 'proxmox:&london'
 #   - name: 'pve-atlanta01'
 #     target: 'proxmox:&atlanta'
+#     init: 'pve01-atlanta01'
 proxmox__clusters: []
-# Ip addresses for the cluster links for the host (will be automatically prioritized regarding the posisiton in the list)
+# Ip addresses for the cluster links for the host
 proxmox__cluster_links: []
-# If set to any integer higher than 0, cluster links will be prioritized automatically regarding the step.
-# i.e. proxmox__cluster_links: ['10.0.0.2', 'fd00::2'] and proxmox__cluster_links_auto_priority_step: 10 will be prioritized as 10.0.0.2 = 20 and fd00::2 = 10
-proxmox__cluster_links_auto_priority_step: 0
+# If set as a dict, with integer keys, keys will be used as link priority. Consult: https://pve.proxmox.com/pve-docs/pvecm.1.html
+# i.e. proxmox__cluster_links: {'10': '10.0.0.2', '20': 'fd00::2'}
 
 proxmox__ssh_port: 22
 
 proxmox__repo_url_enterprise: https://enterprise.proxmox.com/debian
 proxmox__repo_url_no_subscription: http://download.proxmox.com/debian
+proxmox__repo_keys:
+  bookworm:
+    url: https://enterprise.proxmox.com/debian/proxmox-release-bookworm.gpg
+    keyring: /etc/apt/trusted.gpg.d/proxmox-release-bookworm.gpg
+  bullseye:
+    url: https://enterprise.proxmox.com/debian/proxmox-release-bullseye.gpg
+    keyring: /etc/apt/trusted.gpg.d/proxmox-release-bullseye.gpg
 
-proxmox__purpose_names: ['pve', 'pbs', 'pmg', 'ceph_pacific', 'ceph_quincy', 'ceph_reef']
+proxmox__purpose_names: ['pve', 'pbs', 'pmg', 'ceph_pacific', 'ceph_quincy', 'ceph_reef', 'zfs']
 proxmox__purpose_types: ['enterprise', 'no-subscription']
 proxmox__purpose_packages:
-  pve: pve-manager
-  pbs: proxmox-backup-server
-  pmg: proxmox-mailgateway
+  pve: ['pve-manager']
+  pbs: ['proxmox-backup-server']
+  pmg: ['proxmox-mailgateway']
+  ceph_pacific: ['ceph', 'ceph-common', 'ceph-mds', 'ceph-fuse']
+  ceph_quincy: ['ceph', 'ceph-common', 'ceph-mds', 'ceph-fuse']
+  ceph_reef: ['ceph', 'ceph-common', 'ceph-mds', 'ceph-fuse']
+  zfs: ['zfsutils-linux', 'zfs-initramfs', 'zfs-zed']
 
 # If enabled, the role will manage the purpose package setup for repos and package versioning.
 proxmox__manage_purpose_package_setup: true

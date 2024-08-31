@@ -39,9 +39,12 @@ __network__interfaces_configs: >-
   {%- endfor -%}
   {{ __configs_prepared }}
 
+# Sort interfaces by name to avoid unneccessary changes
 network__interfaces_all: "{{ __network__interfaces_configs |
   community.general.lists_mergeby('name', recursive=true, list_merge='prepend') |
-  aybarsm.helper.unique_recursive(attributes='name', recurse='inet') | aybarsm.helper.unique_recursive(attributes='name', recurse='inet6') }}"
+  aybarsm.helper.unique_recursive(attributes='name', recurse='inet') |
+  aybarsm.helper.unique_recursive(attributes='name', recurse='inet6') |
+  sort(attribute='name') }}"
 
 ##### BEGIN: network sysctl vars
 network__sysctl_all: "{{ (network__host + network__group + network__default) |
