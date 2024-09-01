@@ -1,15 +1,19 @@
 proxmox__role_enabled: false
 
 # TODO: Implement managing the purpose package setup for repos and package versioning.
-# proxmox__manage_repo_keys: false
-# proxmox__manage_repos: false
-# proxmox__manage_packages: false
-# proxmox__manage_grub: false
-# proxmox__manage_hostname: false
-# proxmox__manage_hosts: false
-# proxmox__manage_sshd_config: false
-# proxmox__manage_ssh_config: false
-# proxmox__manage_cluster: false
+proxmox__manage_repo_keys: false
+proxmox__manage_repos: false
+proxmox__manage_packages: false
+proxmox__manage_grub: false
+proxmox__manage_hostname: false
+proxmox__manage_hosts: false
+proxmox__manage_sshd_config: false
+proxmox__manage_ssh_config: false
+proxmox__manage_cluster: false
+
+# Hostname configuration
+proxmox__hostname: "{{ inventory_hostname_short }}"
+proxmox__domain: local
 
 # Cluster configuration
 # For target inventory specs, consult https://docs.ansible.com/ansible/latest/inventory_guide/intro_patterns.html for more information

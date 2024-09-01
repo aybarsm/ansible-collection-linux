@@ -7,19 +7,56 @@
   ansible.builtin.include_tasks:
     file: set_facts.yml
 
-- name: Import aybarsm package_manager role
-  ansible.builtin.import_role:
-    name: aybarsm.linux.package_manager
-  when:
-    - proxmox__role_enabled
-    - __proxmox__use_package_manager
+# - name: Import aybarsm package_manager role
+#   ansible.builtin.import_role:
+#     name: aybarsm.linux.package_manager
+#   when:
+#     - proxmox__role_enabled
+#     - proxmox__manage_repo_keys or proxmox__manage_repos or proxmox__manage_packages
 
-- name: Import aybarsm grub role
-  ansible.builtin.import_role:
-    name: aybarsm.linux.grub
-  when:
-    - proxmox__role_enabled
-    - proxmox__manage_grub
+# - name: Import aybarsm grub role
+#   ansible.builtin.import_role:
+#     name: aybarsm.linux.grub
+#   when:
+#     - proxmox__role_enabled
+#     - proxmox__manage_grub
+
+# - name: Include package manager tasks
+#   ansible.builtin.include_tasks:
+#     file: package_manager.yml
+#   when:
+#     - proxmox__role_enabled
+#     - proxmox__manage_repo_keys or proxmox__manage_repos or proxmox__manage_packages
+
+# - name: Import aybarsm package_manager role
+#   ansible.builtin.import_role:
+#     name: aybarsm.linux.package_manager
+#   vars:
+#     package_manager__role_enabled: false
+#     package_manager__default: "{{ __proxmox__purpose_packages }}"
+
+# - name: Include package manager tasks
+#   ansible.builtin.include_tasks:
+#     file: package_manager.yml
+#   vars:
+#     node_repo_keys: "{{ __proxmox__purpose_packages | selectattr('type', 'eq', 'repo_key') if proxmox__manage_repo_keys else [] }}"
+#     node_repos: "{{ __proxmox__purpose_packages | selectattr('type', 'eq', 'repo') if proxmox__manage_repos else [] }}"
+#     node_packages: "{{ __proxmox__purpose_packages | selectattr('type', 'eq', 'package') if proxmox__manage_packages else [] }}"
+#     use_package_manager: "{{ proxmox__manage_repo_keys or proxmox__manage_repos or proxmox__manage_packages }}"
+#     package_manager__role_enabled: "{{ use_package_manager if use_package_manager else omit }}"
+#     package_manager__manage_repo_keys: "{{ proxmox__manage_repo_keys }}"
+#     package_manager__manage_repos: "{{ proxmox__manage_repos }}"
+#     package_manager__manage_packages: "{{ proxmox__manage_packages }}"
+#     package_manager__host: "{{ node_repo_keys + node_repos + node_packages + (package_manager__host | default([])) if use_package_manager else omit }}"
+
+# - name: Import aybarsm package_manager role
+#   ansible.builtin.import_role:
+#     name: aybarsm.linux.package_manager
+#   when:
+#     - proxmox__role_enabled
+#     - proxmox__manage_repo_keys or proxmox__manage_repos or proxmox__manage_packages
+
+
 
 # - name: Import aybarsm network role
 #   ansible.builtin.import_role:

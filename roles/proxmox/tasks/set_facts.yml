@@ -1,16 +1,15 @@
 ---
-- name: Set fact for main proxmox cluster configuration
+- name: Set main fact for main proxmox cluster configuration
   ansible.builtin.set_fact:
     __proxmox__cluster_configs: "{{ (__proxmox__cluster_configs | default([]) + cluster_config) | sort(attribute='name,host') }}"
   vars:
-    cluster_inventory: "{{ lookup('ansible.builtin.inventory_hostnames', item.target) | split(',') }}"
-    cluster_query: "{{ __proxmox__cluster_query | replace('__MEMBERS__', ('[`' + (cluster_inventory | join('`,`')) + '`]')) }}"
+    cluster_inventory: "{{ lookup('ansible.builtin.inventory_hostnames', item.target) }}"
+    # cluster_query: "{{ __proxmox__cluster_query | replace('__MEMBERS__', ('[`' + (cluster_inventory | join('`,`')) + '`]')) }}"
+    cluster_query: "{{ __proxmox__cluster_query | replace('__MEMBERS__', ('[`' + (cluster_inventory | replace(',', '`,`')) + '`]')) }}"
     cluster_node_config: "{{ dict(hostvars) | community.general.json_query(cluster_query) | sort(attribute='host') }}"
     cluster_default_init: "{{ cluster_node_config | map(attribute='host') | first }}"
     cluster_config: "{{ cluster_node_config | map('combine', ({'init': cluster_default_init} | combine(item))) }}"
   loop: "{{ proxmox__clusters }}"
-  loop_control:
-    index_var: config_index
   delegate_to: localhost
   run_once: true
   when:
@@ -18,52 +17,58 @@
     - proxmox__clusters | length > 0
     - __proxmox__cluster_query is defined
 
-- name: Set facts for proxmox cluster configuration
-  ansible.builtin.set_fact:
-    __proxmox__cluster: "{{ {'members': cluster_members} | combine(cluster_play) if cluster_play else None }}"
-    __proxmox__cluster_eligible: "{{ cluster_eligible }}"
+# - name: Set facts for proxmox cluster configuration
+#   ansible.builtin.set_fact:
+#     __proxmox__cluster: "{{ {'members': cluster_members} | combine(cluster_play) if cluster_play else None }}"
+#     __proxmox__cluster_eligible: "{{ cluster_eligible }}"
 
-    __proxmox__use_package_manager: "{{ use_package_manager }}"
-    package_manager__role_enabled: "{{ use_package_manager if use_package_manager else omit }}"
-    package_manager__host: "{{ node_repo_keys + node_repos + node_packages + (package_manager__host | default([])) if use_package_manager else omit }}"
+#     package_manager__role_enabled: "{{ use_package_manager if use_package_manager else omit }}"
+#     package_manager__manage_repo_keys: "{{ proxmox__manage_repo_keys }}"
+#     package_manager__manage_repos: "{{ proxmox__manage_repos }}"
+#     package_manager__manage_packages: "{{ proxmox__manage_packages }}"
+#     package_manager__host: "{{ node_repo_keys + node_repos + node_packages + (package_manager__host | default([])) if use_package_manager else omit }}"
 
-    grub__role_enabled: "{{ proxmox__manage_grub if proxmox__manage_grub else omit }}"
-    grub__change_strategy: "{{ __proxmox__grub_change_strategy if proxmox__manage_grub else omit }}"
+#     grub__role_enabled: "{{ proxmox__manage_grub if proxmox__manage_grub else omit }}"
+#     grub__change_strategy: "{{ __proxmox__grub_change_strategy if proxmox__manage_grub else omit }}"
 
-    network__hosts_auto_discovery: False
-    network__hostname: "{{ cluster_play.fqdn | default(cluster_play.hostname) if cluster_play and proxmox__manage_hostname else omit }}"
-    network__host: "{{ node_hosts + (network__host | default([])) }}"
-    auth__host: "{{ [(node_auth_default | combine(node_auth))] + (auth__host | default([])) if cluster_eligible else (auth__host | default([])) }}"
-  vars:
-    cluster_play: "{{ __proxmox__cluster_configs |
-      selectattr('host', 'eq', inventory_hostname) | first | default(None) }}"
-    cluster_members: "{{ __proxmox__cluster_configs |
-      selectattr('name', 'eq', cluster_play.name) |
-      rejectattr('host', 'eq', inventory_hostname) |
-      aybarsm.helper.only_with(['host', 'fqdn', 'hostname', 'links']) if cluster_play else None }}"
-    cluster_required: "{{ [inventory_hostname] + (cluster_members | map(attribute='host') | list) if cluster_play else None }}"
-    cluster_eligible: "{{ ansible_play_batch | intersect(cluster_required) | length == cluster_required | length if cluster_play else False }}"
+#     network__role_enabled: "{{ use_network if use_network else omit }}"
+#     network__manage_hostname: "{{ proxmox__manage_hostname }}"
+#     network__manage_hosts: "{{ proxmox__manage_hosts if proxmox__manage_hosts else omit }}"
+#     network__hosts_auto_discovery: "{{ False if proxmox__manage_hosts else omit }}"
+#     network__hostname: "{{ cluster_play.fqdn | default(cluster_play.hostname) if network__hostname is undefined and proxmox__manage_hostname else omit }}"
+#     network__host: "{{ node_hosts + (network__host | default([])) if cluster_play and proxmox__manage_hosts else omit }}"
 
-    use_package_manager: "{{ proxmox__manage_repo_keys or proxmox__manage_repos or proxmox__manage_packages }}"
-    use_grub: "{{ proxmox__manage_grub }}"
+#     auth__host: "{{ [(node_auth_default | combine(node_auth))] + (auth__host | default([])) if cluster_eligible else (auth__host | default([])) }}"
+#   vars:
+#     cluster_play: "{{ __proxmox__cluster_configs |
+#       selectattr('host', 'eq', inventory_hostname) | first | default(None) }}"
+#     cluster_members: "{{ __proxmox__cluster_configs |
+#       selectattr('name', 'eq', cluster_play.name) |
+#       rejectattr('host', 'eq', inventory_hostname) |
+#       aybarsm.helper.only_with(['host', 'fqdn', 'hostname', 'links']) if cluster_play else None }}"
+#     cluster_required: "{{ [inventory_hostname] + (cluster_members | map(attribute='host') | list) if cluster_play else None }}"
+#     cluster_eligible: "{{ ansible_play_batch | intersect(cluster_required) | length == cluster_required | length if cluster_play else False }}"
 
-    node_repo_keys: "{{ __proxmox__purpose_packages | selectattr('type', 'eq', 'repo_key') if proxmox__manage_repo_keys else [] }}"
-    node_repos: "{{ __proxmox__purpose_packages | selectattr('type', 'eq', 'repo') if proxmox__manage_repos else [] }}"
-    node_packages: "{{ __proxmox__purpose_packages | selectattr('type', 'eq', 'package') if proxmox__manage_packages else [] }}"
+#     use_package_manager: "{{ proxmox__manage_repo_keys or proxmox__manage_repos or proxmox__manage_packages }}"
+#     use_network: "{{ proxmox__manage_hostname or proxmox__manage_hosts }}"
 
-    cluster_hosts: "{{ [cluster_play | aybarsm.helper.only_with(['hostname', 'fqdn', 'links'])] + cluster_members if cluster_play else None }}"
-    node_hosts: "{{ {
-      'ip': (cluster_hosts | map(attribute='links') | map('first')),
-      'hostname': (cluster_hosts | map(attribute='hostname')),
-      'fqdn': (cluster_hosts | map(attribute='fqdn'))
-      } | aybarsm.helper.to_list_of_dicts({'type': 'host'}) if cluster_play and proxmox__manage_hosts else [] }}"
-    node_auth_all: "{{ (auth__host | default([])) + (auth__group | default([])) + (auth__default | default([])) }}"
-    node_auth_default: "{{ node_auth_all | aybarsm.helper.selectattr(__proxmox__auth_selectattr) | first if cluster_play else {} }}"
-    node_auth:
-      type: user
-      name: root
-      generate_ssh_key: true
-      ssh_key_comment: "{{ node_auth_default.ssh_key_comment | default('root@' + inventory_hostname_short) }}"
-      distribute_ssh_key: "{{ cluster_required | difference([inventory_hostname]) if cluster_play else [] }}"
-  when:
-    - __proxmox__cluster_configs | length > 0
+#     node_repo_keys: "{{ __proxmox__purpose_packages | selectattr('type', 'eq', 'repo_key') if proxmox__manage_repo_keys else [] }}"
+#     node_repos: "{{ __proxmox__purpose_packages | selectattr('type', 'eq', 'repo') if proxmox__manage_repos else [] }}"
+#     node_packages: "{{ __proxmox__purpose_packages | selectattr('type', 'eq', 'package') if proxmox__manage_packages else [] }}"
+
+#     cluster_hosts: "{{ [cluster_play | aybarsm.helper.only_with(['hostname', 'fqdn', 'links'])] + cluster_members if cluster_play else None }}"
+#     node_hosts: "{{ {
+#       'ip': (cluster_hosts | map(attribute='links') | map('first')),
+#       'hostname': (cluster_hosts | map(attribute='hostname')),
+#       'fqdn': (cluster_hosts | map(attribute='fqdn'))
+#       } | aybarsm.helper.to_list_of_dicts({'type': 'host'}) if cluster_play and proxmox__manage_hosts else [] }}"
+#     node_auth_all: "{{ (auth__host | default([])) + (auth__group | default([])) + (auth__default | default([])) }}"
+#     node_auth_default: "{{ node_auth_all | aybarsm.helper.selectattr(__proxmox__auth_selectattr) | first if cluster_play else {} }}"
+#     node_auth:
+#       type: user
+#       name: root
+#       generate_ssh_key: true
+#       ssh_key_comment: "{{ node_auth_default.ssh_key_comment | default('root@' + inventory_hostname_short) }}"
+#       distribute_ssh_key: "{{ cluster_required | difference([inventory_hostname]) if cluster_play else [] }}"
+#   when:
+#     - __proxmox__cluster_configs | length > 0
