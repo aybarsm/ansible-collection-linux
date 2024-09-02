@@ -61,25 +61,31 @@ auth__groups_all: "{{ auth__all |
   aybarsm.helper.unique_recursive(__ansible__config.modules.ansible_builtin_group.uniques) |
   default([]) }}"
 
-auth__users_all: "{{ auth__all |
-  aybarsm.helper.selectattr(__auth__config.users.selectattr) |
-  aybarsm.helper.replace_aliases(__ansible__config.modules.ansible_builtin_user.aliases) |
-  aybarsm.helper.unique_recursive(__ansible__config.modules.ansible_builtin_user.uniques) |
-  default([]) }}"
+# Use lists_mergeby to combine all sections and sort by name for better output readability
+auth__users_all: "{{ [auth__default, auth__group, auth__host] |
+  map('selectattr', 'type', 'defined') | map('selectattr', 'type', 'equalto', 'user') |
+  map('aybarsm.helper.replace_aliases', __ansible__config.modules.ansible.builtin.user.aliases) |
+  map('selectattr', 'name', 'defined') |
+  community.general.lists_mergeby('name', recursive=false, list_merge='prepend') |
+  sort(attribute='name') | default([]) }}"
 
 auth__authorized_keys_all: "{{ auth__all |
   aybarsm.helper.selectattr(__auth__config.authorized_keys.selectattr) |
   aybarsm.helper.unique_combinations([['user', 'key']]) |
   default([]) }}"
 
+# Sort name and value to avoid unneccessary changes
 auth__sshd_config_all: "{{ auth__all |
   aybarsm.helper.selectattr(__auth__config.sshd_config.selectattr) |
   aybarsm.helper.unique_combinations([['name', 'value']]) |
+  sort(attribute='value', reverse=true) | sort(attribute='name', reverse=false) |
   default([]) }}"
 
+# Sort name and value to avoid unneccessary changes
 auth__ssh_config_all: "{{ auth__all |
   aybarsm.helper.selectattr(__auth__config.ssh_config.selectattr) |
   aybarsm.helper.unique_combinations([['name', 'value']]) |
+  sort(attribute='value', reverse=true) | sort(attribute='name', reverse=false) |
   default([]) }}"
 
 auth__ssh_config_module_all: "{{ auth__all |

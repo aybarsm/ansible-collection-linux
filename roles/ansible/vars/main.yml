@@ -2,6 +2,12 @@ __ansible__config:
   modules:
     ansible:
       builtin:
+        user:
+          required: ['name']
+          uniques: ['name']
+          aliases:
+            create_home: ['createhome']
+            name: ['user']
         systemd_service:
           required: ['name']
           uniques: ['name']

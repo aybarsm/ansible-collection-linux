@@ -7,7 +7,7 @@ __proxmox__purpose_packages: >-
     {%- set proxmox_repos = [] -%}
     {%- set proxmox_packages = [] -%}
     {%- set purpose_packages_done = [] -%}
-    {%- if proxmox__manage_purpose_package_setup is defined and proxmox__manage_purpose_package_setup and proxmox__all.purposes is defined -%}
+    {%- if proxmox__all.purposes is defined -%}
     {%-  for purpose in proxmox__purpose_names -%}
     {%-     for purpose_type in proxmox__purpose_types -%}
     {%-         set host_config = proxmox__all.purposes[purpose] if purpose in proxmox__all.purposes else none -%}
@@ -50,19 +50,10 @@ __proxmox__purpose_packages: >-
     {%- endif -%}
     {{ proxmox_repo_keys + proxmox_repos + proxmox_packages }}
 
-TODO: Remove this block after testing
-# __proxmox_cluster_links: >-
-#     {%- set proxmox_links = [] -%}
-#     {%- if proxmox__manage_purpose_package_setup is defined and proxmox__manage_purpose_package_setup and proxmox__all.purposes is defined -%}
-#     {%- endif -%}
-
 __proxmox__grub_change_strategy:
     module: command
     cmd: 'proxmox-boot-tool refresh'
     immediate: true
-
-# __proxmox__cluster_query: '*.{host: inventory_hostname, fqdn: ansible_facts.fqdn, hostname: ansible_facts.hostname, links: proxmox__cluster_links} |
-#     [?not_null(links) && contains(__MEMBERS__, host)]'
 
 __proxmox__cluster_query: '*.{
     host: inventory_hostname,
@@ -72,9 +63,32 @@ __proxmox__cluster_query: '*.{
     links: proxmox__cluster_links} |
     [?not_null(hostname) && not_null(domain) && not_null(links) && contains(__MEMBERS__, host)]'
 
-__proxmox__auth_selectattr:
+__proxmox__root_user_selector:
     - when:
         - ['type', 'defined']
         - ['type', 'equalto', 'user']
         - ['name', 'defined']
         - ['name', 'equalto', 'root']
+
+__proxmox__root_user:
+    type: user
+    name: root
+    generate_ssh_key: true
+
+__proxmox__ssh_config:
+    type: ssh_config
+    name: Host
+    value: ''
+    children:
+      - name: IdentityFile
+        value: /root/.ssh/id_rsa
+      - name: Port
+        value: "{{ proxmox__ssh_port | default(22) }}"
+
+__proxmox__sshd_config:
+    type: sshd_config
+    name: 'Match Address'
+    value: ''
+    children:
+      - name: PermitRootLogin
+        value: prohibit-password

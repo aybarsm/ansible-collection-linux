@@ -76,6 +76,7 @@ network__hosts_all: "{{ (network__host + network__group + network__default + __n
   aybarsm.helper.replace_aliases({'fqdn': ['hostname']}) |
   aybarsm.helper.unique_recursive(attributes=['ip', 'hostname', 'fqdn']) }}"
 
-network__hosts_all_ipv4: "{{ network__hosts_all | selectattr('ip', 'ansible.utils.ipv4') }}"
-network__hosts_all_ipv6: "{{ network__hosts_all | selectattr('ip', 'ansible.utils.ipv6') }}"
+# Sort hosts by hostname to avoid unneccessary changes
+network__hosts_all_ipv4: "{{ network__hosts_all | selectattr('ip', 'ansible.utils.ipv4') | sort(attribute='hostname') }}"
+network__hosts_all_ipv6: "{{ network__hosts_all | selectattr('ip', 'ansible.utils.ipv6') | sort(attribute='hostname') }}"
 ##### END: network hosts vars

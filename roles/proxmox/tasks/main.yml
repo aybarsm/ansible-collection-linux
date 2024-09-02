@@ -7,92 +7,49 @@
   ansible.builtin.include_tasks:
     file: set_facts.yml
 
-# - name: Import aybarsm package_manager role
-#   ansible.builtin.import_role:
-#     name: aybarsm.linux.package_manager
-#   when:
-#     - proxmox__role_enabled
-#     - proxmox__manage_repo_keys or proxmox__manage_repos or proxmox__manage_packages
+- name: Inform when host not cluster eligible
+  ansible.builtin.debug:
+    msg: 'Host is not cluster eligible.'
+  when: not __proxmox__cluster_eligible
+  delegate_to: localhost
 
-# - name: Import aybarsm grub role
-#   ansible.builtin.import_role:
-#     name: aybarsm.linux.grub
-#   when:
-#     - proxmox__role_enabled
-#     - proxmox__manage_grub
+- name: Import aybarsm package_manager role
+  ansible.builtin.import_role:
+    name: aybarsm.linux.package_manager
+  when:
+    - proxmox__role_enabled
+    - proxmox__manage_repo_keys or proxmox__manage_repos or proxmox__manage_packages
 
-# - name: Include package manager tasks
-#   ansible.builtin.include_tasks:
-#     file: package_manager.yml
-#   when:
-#     - proxmox__role_enabled
-#     - proxmox__manage_repo_keys or proxmox__manage_repos or proxmox__manage_packages
+- name: Import aybarsm grub role
+  ansible.builtin.import_role:
+    name: aybarsm.linux.grub
+  when:
+    - proxmox__role_enabled
+    - proxmox__manage_grub
 
-# - name: Import aybarsm package_manager role
-#   ansible.builtin.import_role:
-#     name: aybarsm.linux.package_manager
-#   vars:
-#     package_manager__role_enabled: false
-#     package_manager__default: "{{ __proxmox__purpose_packages }}"
+- name: Import aybarsm network role
+  ansible.builtin.import_role:
+    name: aybarsm.linux.network
+  when:
+    - proxmox__role_enabled
+    - proxmox__manage_hostname or proxmox__manage_hosts
 
-# - name: Include package manager tasks
-#   ansible.builtin.include_tasks:
-#     file: package_manager.yml
-#   vars:
-#     node_repo_keys: "{{ __proxmox__purpose_packages | selectattr('type', 'eq', 'repo_key') if proxmox__manage_repo_keys else [] }}"
-#     node_repos: "{{ __proxmox__purpose_packages | selectattr('type', 'eq', 'repo') if proxmox__manage_repos else [] }}"
-#     node_packages: "{{ __proxmox__purpose_packages | selectattr('type', 'eq', 'package') if proxmox__manage_packages else [] }}"
-#     use_package_manager: "{{ proxmox__manage_repo_keys or proxmox__manage_repos or proxmox__manage_packages }}"
-#     package_manager__role_enabled: "{{ use_package_manager if use_package_manager else omit }}"
-#     package_manager__manage_repo_keys: "{{ proxmox__manage_repo_keys }}"
-#     package_manager__manage_repos: "{{ proxmox__manage_repos }}"
-#     package_manager__manage_packages: "{{ proxmox__manage_packages }}"
-#     package_manager__host: "{{ node_repo_keys + node_repos + node_packages + (package_manager__host | default([])) if use_package_manager else omit }}"
+- name: Reboot node and wait if upgraded, grub or network-hostname,systemd,interfaces changed
+  ansible.builtin.reboot:
+    test_command: "uptime"
+  vars:
+    chk_upgrade: "{{ package_manager__upgrade_deb is defined and package_manager__upgrade_deb is changed }}"
+    chk_grub: "{{ grub__deploy is defined and grub__deploy is changed }}"
+    chk_hostname: "{{ network__hostname_deploy is defined and network__hostname_deploy is changed }}"
+    chk_systemd: "{{ network__systemd_deploy is defined and network__systemd_deploy is changed }}"
+    chk_interfaces: "{{ network__interfaces_deploy is defined and network__interfaces_deploy is changed }}"
+  register: proxmox__primary_reboot
+  when: chk_upgrade or chk_grub or chk_hostname or chk_systemd or chk_interfaces
 
-# - name: Import aybarsm package_manager role
-#   ansible.builtin.import_role:
-#     name: aybarsm.linux.package_manager
-#   when:
-#     - proxmox__role_enabled
-#     - proxmox__manage_repo_keys or proxmox__manage_repos or proxmox__manage_packages
-
-
-
-# - name: Import aybarsm network role
-#   ansible.builtin.import_role:
-#     name: aybarsm.linux.network
-#   when: proxmox__role_enabled
-
-# - name: Reboot node and wait if upgraded, grub or network-systemd changed
-#   ansible.builtin.reboot:
-#     test_command: "uptime"
-#   vars:
-#     is_upgraded: "{{ package_manager__upgrade_deb is defined and package_manager__upgrade_deb is changed }}"
-#     is_grub: "{{ grub__deploy is defined and grub__deploy is changed }}"
-#     is_systemd: "{{ network__systemd_deploy is defined and network__systemd_deploy is changed }}"
-#   when: is_upgraded or is_grub or is_systemd
-
-# - name: Proxmox Query
-#   become: true
-#   proxmox_query:
-#     query: storage
-#   register: proxmox__query_storage
-# - name: Debug
-#   ansible.builtin.debug:
-#     msg:
-#       proxmox__query_storage: "{{ proxmox__query_storage }}"
-#       # role_path: "{{ role_path }}"
-#       # purpose_package_setup: "{{ lookup('template', proxmox__purpose_package_setup_template) }}"
-#   delegate_to: localhost
-# - name: Import aybarsm linux ansible role
-#   ansible.builtin.import_role:
-#     name: aybarsm.linux.ansible
-
-# - name: Include Debug Tasks
-#   ansible.builtin.import_tasks:
-#     file: debug.yml
-
-# - name: Import aybarsm linux ansible role - settle local fact tasks
-#   ansible.builtin.import_role:
-#     name: aybarsm.linux.ansible
-#     tasks_from: settle_local_facts.yml
+- name: Import aybarsm auth role
+  ansible.builtin.import_role:
+    name: aybarsm.linux.auth
+  when:
+    - proxmox__role_enabled
+    - __proxmox__cluster_eligible
+    - proxmox__manage_root_access or proxmox__manage_sshd_config or proxmox__manage_ssh_config

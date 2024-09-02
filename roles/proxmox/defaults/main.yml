@@ -1,23 +1,25 @@
 proxmox__role_enabled: false
 
-# TODO: Implement managing the purpose package setup for repos and package versioning.
 proxmox__manage_repo_keys: false
 proxmox__manage_repos: false
 proxmox__manage_packages: false
 proxmox__manage_grub: false
 proxmox__manage_hostname: false
 proxmox__manage_hosts: false
+# This option force root user to generate ssh key and distribute to all hosts within the cluster
+proxmox__manage_root_access: false
 proxmox__manage_sshd_config: false
 proxmox__manage_ssh_config: false
 proxmox__manage_cluster: false
 
-# Hostname configuration
+# Hostname and FQDN configuration
 proxmox__hostname: "{{ inventory_hostname_short }}"
 proxmox__domain: local
 
 # Cluster configuration
 # For target inventory specs, consult https://docs.ansible.com/ansible/latest/inventory_guide/intro_patterns.html for more information
 # If init node not provided, the init node will be designated as the first node regarding ascending sorted of inventory_hostname
+# proxmox__clusters variables has been designed to be managed from a single source of truth, i.e. group_vars/all.yml However, it can be overwritten from the host vars.
 # proxmox__clusters:
 #   - name: 'pve-london01'
 #     target: 'proxmox:&london'
@@ -26,9 +28,9 @@ proxmox__domain: local
 #     init: 'pve01-atlanta01'
 proxmox__clusters: []
 # Ip addresses for the cluster links for the host
+# i.e. proxmox__cluster_links: ['10.0.0.2', 'fd00::2']
+# If more than one ip provided, the first link ip will be used as the cluster ip for the hosts file
 proxmox__cluster_links: []
-# If set as a dict, with integer keys, keys will be used as link priority. Consult: https://pve.proxmox.com/pve-docs/pvecm.1.html
-# i.e. proxmox__cluster_links: {'10': '10.0.0.2', '20': 'fd00::2'}
 
 proxmox__ssh_port: 22
 
@@ -52,9 +54,6 @@ proxmox__purpose_packages:
   ceph_quincy: ['ceph', 'ceph-common', 'ceph-mds', 'ceph-fuse']
   ceph_reef: ['ceph', 'ceph-common', 'ceph-mds', 'ceph-fuse']
   zfs: ['zfsutils-linux', 'zfs-initramfs', 'zfs-zed']
-
-# If enabled, the role will manage the purpose package setup for repos and package versioning.
-proxmox__manage_purpose_package_setup: true
 
 proxmox__default: {}
 proxmox__group: {}
@@ -82,3 +81,5 @@ proxmox__host: {}
 #     pmg:
 #       type: no-subscription
 #       version: 8.1.0
+#     zfs:
+#       version: 2.2.4-pve1
