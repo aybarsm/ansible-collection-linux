@@ -1,0 +1,28 @@
+---
+- name: Load/Unload persistent ZFS module
+  community.general.modprobe:
+    name: zfs
+    params: "{{ proxmox__all.purposes.zfs.params | default(omit) }}"
+    persistent: "{{ 'present' if proxmox__all.purposes.zfs is defined else 'absent' }}"
+    state: "{{ 'present' if proxmox__all.purposes.zfs is defined else 'absent' }}"
+  register: proxmox__zfs_modprobe
+
+- name: Enable/Disable email address for ZFS event daemon notifications
+  ansible.builtin.lineinfile:
+    dest: /etc/zfs/zed.d/zed.rc
+    line: '{{ line_prefix }}"{{ zed_email }}"'
+    regexp: '^#?ZED_EMAIL_ADDR='
+  vars:
+    is_enabled: "{{ proxmox__all.purposes.zfs.zed_email is defined and proxmox__all.purposes.zfs.zed_email | length > 0 }}"
+    line_prefix: "{{ is_enabled | ternary('', '#') }}ZED_EMAIL_ADDR="
+    zed_email: "{{ is_enabled | ternary(proxmox__all.purposes.zfs.zed_email, '') }}"
+  register: proxmox__zfs_zed_email
+  notify: "proxmox__zfs_zed_apply_changes"
+
+- name: HOOK - Run ZFS post-install hook tasks
+  ansible.builtin.include_tasks:
+    file: "{{ proxmox__all.purposes.zfs.post_install }}"
+  register: proxmox__zfs_post_install
+  when:
+    - proxmox__all.purposes.zfs.post_install is defined
+    - proxmox__all.purposes.zfs.post_install | length > 0

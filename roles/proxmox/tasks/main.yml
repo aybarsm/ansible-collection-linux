@@ -7,49 +7,72 @@
   ansible.builtin.include_tasks:
     file: set_facts.yml
 
-- name: Inform when host not cluster eligible
-  ansible.builtin.debug:
-    msg: 'Host is not cluster eligible.'
-  when: not __proxmox__cluster_eligible
-  delegate_to: localhost
+# - name: Inform when host not cluster eligible
+#   ansible.builtin.debug:
+#     msg: 'Host is not cluster eligible.'
+#   when: not __proxmox__cluster_eligible
+#   delegate_to: localhost
 
-- name: Import aybarsm package_manager role
-  ansible.builtin.import_role:
-    name: aybarsm.linux.package_manager
-  when:
-    - proxmox__role_enabled
-    - proxmox__manage_repo_keys or proxmox__manage_repos or proxmox__manage_packages
+# - name: Import aybarsm package_manager role
+#   ansible.builtin.import_role:
+#     name: aybarsm.linux.package_manager
+#   when:
+#     - proxmox__role_enabled
+#     - proxmox__manage_repo_keys or proxmox__manage_repos or proxmox__manage_packages
 
-- name: Import aybarsm grub role
-  ansible.builtin.import_role:
-    name: aybarsm.linux.grub
-  when:
-    - proxmox__role_enabled
-    - proxmox__manage_grub
+# - name: Import aybarsm grub role
+#   ansible.builtin.import_role:
+#     name: aybarsm.linux.grub
+#   when:
+#     - proxmox__role_enabled
+#     - proxmox__manage_grub
 
-- name: Import aybarsm network role
-  ansible.builtin.import_role:
-    name: aybarsm.linux.network
-  when:
-    - proxmox__role_enabled
-    - proxmox__manage_hostname or proxmox__manage_hosts
+# - name: Import aybarsm network role
+#   ansible.builtin.import_role:
+#     name: aybarsm.linux.network
+#   when:
+#     - proxmox__role_enabled
+#     - proxmox__manage_hostname or proxmox__manage_hosts
 
-- name: Reboot node and wait if upgraded, grub or network-hostname,systemd,interfaces changed
-  ansible.builtin.reboot:
-    test_command: "uptime"
-  vars:
-    chk_upgrade: "{{ package_manager__upgrade_deb is defined and package_manager__upgrade_deb is changed }}"
-    chk_grub: "{{ grub__deploy is defined and grub__deploy is changed }}"
-    chk_hostname: "{{ network__hostname_deploy is defined and network__hostname_deploy is changed }}"
-    chk_systemd: "{{ network__systemd_deploy is defined and network__systemd_deploy is changed }}"
-    chk_interfaces: "{{ network__interfaces_deploy is defined and network__interfaces_deploy is changed }}"
-  register: proxmox__primary_reboot
-  when: chk_upgrade or chk_grub or chk_hostname or chk_systemd or chk_interfaces
+# - name: Reboot node and wait if upgraded, grub or network-hostname,systemd,interfaces changed
+#   ansible.builtin.reboot:
+#     test_command: "uptime"
+#   vars:
+#     chk_upgrade: "{{ package_manager__upgrade_deb is defined and package_manager__upgrade_deb is changed }}"
+#     chk_grub: "{{ grub__deploy is defined and grub__deploy is changed }}"
+#     chk_hostname: "{{ network__hostname_deploy is defined and network__hostname_deploy is changed }}"
+#     chk_systemd: "{{ network__systemd_deploy is defined and network__systemd_deploy is changed }}"
+#     chk_interfaces: "{{ network__interfaces_deploy is defined and network__interfaces_deploy is changed }}"
+#   register: proxmox__primary_reboot
+#   when: chk_upgrade or chk_grub or chk_hostname or chk_systemd or chk_interfaces
 
-- name: Import aybarsm auth role
-  ansible.builtin.import_role:
-    name: aybarsm.linux.auth
-  when:
-    - proxmox__role_enabled
-    - __proxmox__cluster_eligible
-    - proxmox__manage_root_access or proxmox__manage_sshd_config or proxmox__manage_ssh_config
+# - name: Include auth tasks
+#   ansible.builtin.include_tasks:
+#     file: auth.yml
+#   when:
+#     - proxmox__role_enabled
+#     - __proxmox__cluster_eligible
+
+# - name: Remove subscription check wrapper function in web UI
+#   ansible.builtin.lineinfile:
+#     path: /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
+#     line: '        orig_cmd(); return;'
+#     insertafter: '^\s+checked_command: function\(orig_cmd\) {$'
+#     firstmatch: yes
+#     backup: yes
+#   when:
+#     - proxmox__role_enabled
+#     - proxmox__remove_subscription_warning
+
+#TODO: Remove old kernel packages
+#TODO: IPMI Watchdog
+
+- name: Gather package facts
+  ansible.builtin.package_facts:
+    manager: auto
+  register: proxmox__package_facts
+
+- name: Include ZFS tasks
+  ansible.builtin.include_tasks:
+    file: zfs.yml
+  when: proxmox__role_enabled

@@ -1,0 +1,15 @@
+---
+- name: Import aybarsm auth role
+  ansible.builtin.import_role:
+    name: aybarsm.linux.auth
+  when: proxmox__manage_root_access or proxmox__manage_sshd_config or proxmox__manage_ssh_config
+
+- name: Add proxmox provided ciphers to SSH client config for root
+  ansible.builtin.lineinfile:
+    line: "Ciphers {{ proxmox__ssh_ciphers }}"
+    regexp: "^Ciphers .*"
+    insertbefore: BOF
+    create: yes
+    mode: 0644
+    dest: /root/.ssh/config
+  when: proxmox__manage_ssh_config

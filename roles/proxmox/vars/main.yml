@@ -1,6 +1,6 @@
 # The combination strategy below is highly nested hierarchy compliant and recommended (Example provided below)
 # proxmox__host > proxmox__group > proxmox__default
-proxmox__all: "{{ proxmox__default | combine(proxmox__group, proxmox__host, recursive=true, list_merge='replace') }}"
+proxmox__all: "{{ {'purposes': {}} | combine(proxmox__default, proxmox__group, proxmox__host, recursive=true, list_merge='replace') }}"
 
 __proxmox__purpose_packages: >-
     {%- set proxmox_repo_keys = [proxmox__repo_keys[ansible_distribution_release] | combine({'type': 'repo_key', 'state': 'present'})] -%}

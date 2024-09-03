@@ -1,0 +1,8 @@
+---
+- name: Restart zfs-zed
+  ansible.builtin.service:
+    name: zfs-zed
+    state: restarted
+  register: proxmox__zfs_zed_apply_changes_service
+  listen: "proxmox__zfs_zed_apply_changes"
+  when: "'zfs-zed' in ansible_facts.packages"

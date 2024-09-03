@@ -58,7 +58,12 @@
 
     node_repo_keys: "{{ __proxmox__purpose_packages | selectattr('type', 'eq', 'repo_key') if proxmox__manage_repo_keys else [] }}"
     node_repos: "{{ __proxmox__purpose_packages | selectattr('type', 'eq', 'repo') if proxmox__manage_repos else [] }}"
-    node_packages: "{{ __proxmox__purpose_packages | selectattr('type', 'eq', 'package') if proxmox__manage_packages else [] }}"
+    node_packages: "{{ __proxmox__purpose_packages | selectattr('type', 'eq', 'package') + [{
+      'type': 'package',
+      'name': 'os-prober',
+      'state': 'absent',
+      'update_cache': true
+      }] if proxmox__manage_packages else [] }}"
 
     cluster_hosts: "{{ [cluster_play | aybarsm.helper.only_with(['hostname', 'fqdn', 'links'])] + cluster_members if cluster_eligible else None }}"
     node_hosts: "{{ {

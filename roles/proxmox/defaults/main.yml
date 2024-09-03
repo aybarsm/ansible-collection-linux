@@ -33,6 +33,8 @@ proxmox__clusters: []
 proxmox__cluster_links: []
 
 proxmox__ssh_port: 22
+proxmox__ssh_ciphers: "aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com"
+proxmox__remove_subscription_warning: false
 
 proxmox__repo_url_enterprise: https://enterprise.proxmox.com/debian
 proxmox__repo_url_no_subscription: http://download.proxmox.com/debian
@@ -62,6 +64,8 @@ proxmox__host: {}
 # Example configuration:
 # Purposes will be overwritten by the host configuration.
 # The type can be set other than the provided list to rule out.
+## ZFS Consult with: https://pve.proxmox.com/wiki/ZFS_on_Linux#sysadmin_zfs_limit_memory_usage
+## ZFS Consult with: https://pve.proxmox.com/wiki/ZFS_on_Linux#_configure_e_mail_notification
 # proxmox__default:
 #   purposes:
 #     pve:
@@ -83,3 +87,6 @@ proxmox__host: {}
 #       version: 8.1.0
 #     zfs:
 #       version: 2.2.4-pve1
+#       params: 'zfs_arc_max=2147483648'
+#       zed_email: 'noc@example.com'
+#       post_install: "{{ playbook_dir }}/tasks/zfs_post_install.yml"
