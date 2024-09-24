@@ -14,7 +14,8 @@ package_manager__package_strategy: specific
 # Upgrade the packages on the system either always, never or once
 # Once option stores the state of the upgrade in host with ansible facts
 # Once option requires ansible__role_enabled and ansible__manage_local_facts to be enabled
-package_manager__upgrade_strategy: once
+# package_manager__upgrade_strategy: once
+package_manager__upgrade_strategy: never
 
 # Upgrade Mode:
 # Available options for APT: full, clean_full, safe, clean_safe, yes, clean_yes, dist, clean_dist

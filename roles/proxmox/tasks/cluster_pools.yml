@@ -1,0 +1,9 @@
+---
+- name: Deploy Proxmox cluster pools
+  aybarsm.linux.proxmox_pool:
+    name: "{{ item.name }}"
+    state: "{{ item.state | default('present') }}"
+    comment: "{{ item.comment | default(omit) }}"
+  with_items: "{{ __proxmox__cluster.pools }}"
+  when: __proxmox__cluster.pools | default([]) | length > 0
+  register: proxmox__cluster_pools_deploy

@@ -4,11 +4,11 @@
   ansible.posix.sysctl:
     name: "{{ item.name }}"
     value: "{{ item.value }}"
-    ignoreerrors: "{{ item.ignoreerrors | default(omit) | bool }}"
-    reload: "{{ item.reload | default(omit) | bool }}"
+    ignoreerrors: "{{ item.ignoreerrors | default(omit) }}"
+    reload: "{{ item.reload | default(omit) }}"
     state: "{{ item.state | default(omit) }}"
     sysctl_file: "{{ item.sysctl_file | default(omit) }}"
-    sysctl_set: "{{ item.sysctl_set | default(omit) | bool }}"
+    sysctl_set: "{{ item.sysctl_set | default(omit) }}"
   loop: "{{ network__sysctl_all }}"
   register: network__sysctl_deploy
   when:

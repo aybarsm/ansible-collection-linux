@@ -102,3 +102,6 @@ auth__sudoers_module_all: "{{ auth__all |
   aybarsm.helper.selectattr(__auth__config.sudoers_module.selectattr) |
   aybarsm.helper.unique_recursive('name') |
   default([]) }}"
+
+__auth__key_distribute_query: "*.auth__users_apply.results[*] | [] |
+  [?contains(not_null(item.distribute_ssh_key,``),`{{ inventory_hostname }}`)].{user: name, key: ssh_public_key}"

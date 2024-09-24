@@ -1,0 +1,22 @@
+---
+#TODO: Implement handler for udev rules
+- name: Ensure udev rules network configuration is removed
+  become: true
+  ansible.builtin.file:
+    path: "{{ network__udev_rules_file }}"
+    state: absent
+  register: network__udev_rules_remove
+  when: network__udev_rules_remove | default(false) | bool
+
+- name: Deploy udev rules configuration
+  become: true
+  ansible.builtin.template:
+    src: "{{ network__udev_rules_template }}"
+    dest: "{{ network__udev_rules_file }}"
+    backup: "{{ network__udev_rules_backup | default(omit) }}"
+    mode: "0644"
+  register: network__udev_rules_deploy
+  when:
+    - not network__udev_rules_remove | default(false) | bool
+    - network__udev_rules_all | default([]) | length > 0
+  # notify: "network__interfaces_apply_changes"

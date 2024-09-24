@@ -11,6 +11,13 @@
     - network__role_enabled | default(false) | bool
     - network__manage_systemd | default(false) | bool
 
+- name: Include udev rules tasks
+  ansible.builtin.include_tasks:
+    file: udev_rules.yml
+  when:
+    - network__role_enabled | default(false) | bool
+    - network__manage_udev_rules | default(false) | bool
+
 - name: Include interfaces tasks
   ansible.builtin.include_tasks:
     file: interfaces.yml
@@ -38,3 +45,10 @@
   when:
     - network__role_enabled | default(false) | bool
     - network__manage_hosts | default(false) | bool
+
+- name: Include iptables tasks
+  ansible.builtin.include_tasks:
+    file: iptables.yml
+  when:
+    - network__role_enabled | default(false) | bool
+    - network__manage_iptables | default(false) | bool

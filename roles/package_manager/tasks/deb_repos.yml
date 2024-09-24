@@ -6,12 +6,12 @@
     state: "{{ item.state | default(omit) }}"
     codename: "{{ item.codename | default(omit) }}"
     filename: "{{ item.filename | default(omit) }}"
-    install_python_apt: "{{ item.install_python_apt | default(omit) | bool }}"
+    install_python_apt: "{{ item.install_python_apt | default(omit) }}"
     mode: "{{ item.mode | default(omit) }}"
-    update_cache: "{{ item.update_cache | default(omit) | bool }}"
+    update_cache: "{{ item.update_cache | default(omit) }}"
     update_cache_retries: "{{ item.update_cache_retries | default(omit) }}"
     update_cache_retry_max_delay: "{{ item.update_cache_retry_max_delay | default(omit) }}"
-    validate_certs: "{{ item.validate_certs | default(omit) | bool }}"
+    validate_certs: "{{ item.validate_certs | default(omit) }}"
   loop: "{{ package_manager__repos_all }}"
   register: package_manager__repos_deb_apply
   when:

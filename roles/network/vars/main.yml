@@ -1,14 +1,25 @@
 ##### BEGIN: network systemd vars
-__network_systemd_available_change_modules: ['systemd_service']
-
+__network_systemd_available_change_modules: ['systemd_service', 'command']
+__network__systemd_link_name: '{"type":"systemd","name":"__SYSTEMD_LINK_NAME__","children":[{"name":"Match","children":[{"name":"MACAddress","value":"__MAC_ADDRESS__"},{"name":"Type","value":"ether"}]},{"name":"Link","children":[{"name":"NamePolicy","value":""},{"name":"Name","value":"__LINK_NAME__"}]}]}'
 # REVIEW: There is room for optimisation
 __network__systemd_configs: >-
-  {%- set __configs_prepared = [] -%}
-  {%- for config in [network__default, network__group, network__host] if config -%}
-  {%-   set __configs_prepared = __configs_prepared.append(config | selectattr('type', 'defined') | selectattr('type', 'equalto', 'systemd') |
+  {%- set __cfgs = [] -%}
+  {%- for cfg in [network__default, network__group, network__host] if cfg -%}
+  {%-   set __cfgs_grp = (cfg | selectattr('type', 'defined') | selectattr('type', 'eq', 'systemd') |
   selectattr('name', 'defined') | selectattr('name', 'search', '\\.(network|link|netdev)$') | selectattr('children', 'defined')) -%}
+  {%-   set __cfgs_rnm = (cfg | selectattr('type', 'defined') | selectattr('type', 'eq', 'systemd_link_rename') |
+  selectattr('name', 'defined') | selectattr('name', 'search', '^(?:[0-9]|[1-9][0-9])-[a-zA-Z]+\\d+\\.link$') |
+  selectattr('macaddress', 'defined') | selectattr('macaddress', 'ansible.utils.mac') | default([])) -%}
+  {%-   if __cfgs_rnm | length > 0 -%}
+  {%-     for cfgrnm in __cfgs_rnm if cfgrnm -%}
+  {%-       set __cfgs_grp = __cfgs_grp.append(__network__systemd_link_name |
+    replace('__SYSTEMD_LINK_NAME__', cfgrnm.name) | replace('__MAC_ADDRESS__', cfgrnm.macaddress) |
+    replace('__LINK_NAME__', (cfgrnm.name | regex_replace('^(?:[0-9]|[1-9][0-9])-(.*).link$', '\\1'))) | from_json) -%}
+  {%-     endfor -%}
+  {%-   endif -%}
+  {%-   set __cfgs = __cfgs.append(__cfgs_grp) -%}
   {%- endfor -%}
-  {{ __configs_prepared }}
+  {{ __cfgs }}
 
 network__systemd_all: "{{ __network__systemd_configs |
   community.general.lists_mergeby('name', recursive=true, list_merge='prepend') |
@@ -35,7 +46,7 @@ __network_interfaces_available_change_modules: ['service', 'systemd_service', 'c
 __network__interfaces_configs: >-
   {%- set __configs_prepared = [] -%}
   {%- for config in [network__default, network__group, network__host] if config -%}
-  {%-   set __configs_prepared = __configs_prepared.append(config | selectattr('type', 'defined') | selectattr('type', 'equalto', 'interface') | selectattr('name', 'defined')) -%}
+  {%-   set __configs_prepared = __configs_prepared.append(config | selectattr('type', 'defined') | selectattr('type', 'eq', 'interface') | selectattr('name', 'defined')) -%}
   {%- endfor -%}
   {{ __configs_prepared }}
 
@@ -80,3 +91,14 @@ network__hosts_all: "{{ (network__host + network__group + network__default + __n
 network__hosts_all_ipv4: "{{ network__hosts_all | selectattr('ip', 'ansible.utils.ipv4') | sort(attribute='hostname') }}"
 network__hosts_all_ipv6: "{{ network__hosts_all | selectattr('ip', 'ansible.utils.ipv6') | sort(attribute='hostname') }}"
 ##### END: network hosts vars
+
+##### BEGIN: network iptables vars
+network__iptables_all: "{{ (network__host + network__group + network__default) |
+  selectattr('type', 'defined') | selectattr('type', 'equalto', 'iptables') }}"
+##### END: network iptables vars
+
+##### BEGIN: network udev rules vars
+network__udev_rules_all: "{{ (network__host + network__group + network__default) |
+  selectattr('type', 'defined') | selectattr('type', 'equalto', 'udev_rule') |
+  selectattr('entries', 'defined') }}"
+##### END: network udev rules vars

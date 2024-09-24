@@ -1,6 +1,6 @@
 {{ ansible_managed | comment }}
 
-{% if network__interfaces_source_position == 'top' %}
+{% if network__interfaces_keep_source and network__interfaces_source_position == 'top' %}
 {{ network__interfaces_source_line }}
 
 {% endif %}
@@ -43,6 +43,6 @@ iface {{ iface.name }} {{ addr_family }} {{ ifaceMethod }}
 {%      endif %}
 {%  endfor %}
 {% endfor %}
-{% if network__interfaces_source_position != 'top' %}
+{% if network__interfaces_keep_source and network__interfaces_source_position != 'top' %}
 {{ network__interfaces_source_line }}
 {% endif %}

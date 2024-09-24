@@ -18,7 +18,8 @@ auth__ssh_dir: /etc/ssh
 # If smart enabled and auth__sshd_validate provided then a dummy command task will run to trigger ssh service handlers as provided.
 # This is a workaround to avoid using changed_when in the template module to prevent misleading output.
 auth__ssh_changes_strategy:
-  module: service
+  # module: service
+  module: None
   immediate: true
   smart: true
   name: ssh.service
@@ -30,16 +31,22 @@ auth__sshd_config_dir: "{{ auth__ssh_dir }}/sshd_config.d"
 auth__sshd_config_file: "{{ auth__sshd_config_dir }}/50-ansible.conf"
 auth__sshd_config_template: etc/ssh/sshd_config.d/50-ansible.conf.j2
 auth__sshd_config_backup: true
+auth__sshd_config_cleanup: false
 auth__ssh_config_dir: "{{ auth__ssh_dir }}/ssh_config.d"
 auth__ssh_config_file: "{{ auth__ssh_config_dir }}/50-ansible.conf"
 auth__ssh_config_template: etc/ssh/ssh_config.d/50-ansible.conf.j2
 auth__ssh_config_backup: true
+auth__ssh_config_cleanup: false
+auth__renew_ssh_host_keys_once: false
+auth__ssh_host_keys_use_regex: true
+auth__ssh_host_keys_patterns: '^ssh_host_.*_key'
 ##### END: SSH Config #####
 
 ##### BEGIN: SUDOERS Config #####
 auth__sudoers_dir: /etc/sudoers.d
 auth__sudoers_file: "{{ auth__sudoers_dir }}/50-ansible"
 auth__sudoers_template: etc/sudoers.d/50-ansible.j2
+auth__sudoers_cleanup: false
 # Uncomment the following line to validate the sudoers file
 # auth__sudoers_validate: "/usr/sbin/visudo -c -f %s"
 ##### END: SUDOERS Config #####

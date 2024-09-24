@@ -7,72 +7,139 @@
   ansible.builtin.include_tasks:
     file: set_facts.yml
 
-# - name: Inform when host not cluster eligible
+- name: Inform when host not cluster eligible
+  ansible.builtin.debug:
+    msg: 'Host is not cluster eligible.'
+  when: not __proxmox__cluster_eligible
+  delegate_to: localhost
+
+# - name: Inform cluster configuration
 #   ansible.builtin.debug:
-#     msg: 'Host is not cluster eligible.'
-#   when: not __proxmox__cluster_eligible
+#     msg: "{{ __proxmox__cluster }}"
+#   when: __proxmox__cluster_eligible
 #   delegate_to: localhost
 
-# - name: Import aybarsm package_manager role
-#   ansible.builtin.import_role:
-#     name: aybarsm.linux.package_manager
-#   when:
-#     - proxmox__role_enabled
-#     - proxmox__manage_repo_keys or proxmox__manage_repos or proxmox__manage_packages
+- name: Import aybarsm package_manager role
+  ansible.builtin.import_role:
+    name: aybarsm.linux.package_manager
+  when:
+    - proxmox__role_enabled
+    - proxmox__manage_repo_keys or proxmox__manage_repos or proxmox__manage_packages
 
-# - name: Import aybarsm grub role
-#   ansible.builtin.import_role:
-#     name: aybarsm.linux.grub
-#   when:
-#     - proxmox__role_enabled
-#     - proxmox__manage_grub
+- name: Import aybarsm grub role
+  ansible.builtin.import_role:
+    name: aybarsm.linux.grub
+  when:
+    - proxmox__role_enabled
+    - proxmox__manage_grub
 
-# - name: Import aybarsm network role
-#   ansible.builtin.import_role:
-#     name: aybarsm.linux.network
-#   when:
-#     - proxmox__role_enabled
-#     - proxmox__manage_hostname or proxmox__manage_hosts
+- name: Import aybarsm network role
+  ansible.builtin.import_role:
+    name: aybarsm.linux.network
+  when:
+    - proxmox__role_enabled
+    - proxmox__manage_hostname or proxmox__manage_hosts or proxmox__manage_iptables
 
-# - name: Reboot node and wait if upgraded, grub or network-hostname,systemd,interfaces changed
-#   ansible.builtin.reboot:
-#     test_command: "uptime"
-#   vars:
-#     chk_upgrade: "{{ package_manager__upgrade_deb is defined and package_manager__upgrade_deb is changed }}"
-#     chk_grub: "{{ grub__deploy is defined and grub__deploy is changed }}"
-#     chk_hostname: "{{ network__hostname_deploy is defined and network__hostname_deploy is changed }}"
-#     chk_systemd: "{{ network__systemd_deploy is defined and network__systemd_deploy is changed }}"
-#     chk_interfaces: "{{ network__interfaces_deploy is defined and network__interfaces_deploy is changed }}"
-#   register: proxmox__primary_reboot
-#   when: chk_upgrade or chk_grub or chk_hostname or chk_systemd or chk_interfaces
+- name: Update grub and initramfs when systemd network and/or grub changed
+  become: true
+  ansible.builtin.command:
+    cmd: "{{ item }}"
+  with_items:
+    - update-grub
+    - proxmox-boot-tool refresh
+    - update-initramfs -u -k all
+  when: (grub__deploy is defined and grub__deploy is changed) or
+    (network__systemd_deploy is defined and network__systemd_deploy is changed)
 
-# - name: Include auth tasks
-#   ansible.builtin.include_tasks:
-#     file: auth.yml
-#   when:
-#     - proxmox__role_enabled
-#     - __proxmox__cluster_eligible
+- name: Reboot node and wait if upgraded, grub, network-hostname,systemd, or interfaces changed
+  become: true
+  ansible.builtin.reboot:
+    test_command: "uptime"
+  vars:
+    chk_upgrade: "{{ package_manager__upgrade_deb is defined and package_manager__upgrade_deb is changed }}"
+    chk_grub: "{{ grub__deploy is defined and grub__deploy is changed }}"
+    chk_hostname: "{{ network__hostname_deploy is defined and network__hostname_deploy is changed }}"
+    chk_systemd: "{{ network__systemd_deploy is defined and network__systemd_deploy is changed }}"
+    chk_interfaces: "{{ network__interfaces_deploy is defined and network__interfaces_deploy is changed }}"
+  register: proxmox__primary_reboot
+  when: chk_upgrade or chk_grub or chk_hostname or chk_systemd or chk_interfaces
 
-# - name: Remove subscription check wrapper function in web UI
-#   ansible.builtin.lineinfile:
-#     path: /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
-#     line: '        orig_cmd(); return;'
-#     insertafter: '^\s+checked_command: function\(orig_cmd\) {$'
-#     firstmatch: yes
-#     backup: yes
-#   when:
-#     - proxmox__role_enabled
-#     - proxmox__remove_subscription_warning
+- name: Include auth tasks
+  ansible.builtin.include_tasks:
+    file: auth.yml
+  when:
+    - proxmox__role_enabled
+    - __proxmox__cluster_eligible
+
+- name: Remove subscription check wrapper function in web UI
+  become: true
+  ansible.builtin.lineinfile:
+    path: /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
+    line: '        orig_cmd(); return;'
+    insertafter: '^\s+checked_command: function\(orig_cmd\) {$'
+    firstmatch: yes
+    backup: yes
+  when:
+    - proxmox__role_enabled
+    - proxmox__remove_subscription_warning
+
+- name: Include Proxmox cluster pool tasks
+  ansible.builtin.include_tasks:
+    file: cluster_pools.yml
+  when:
+    - proxmox__role_enabled
+    - __proxmox__cluster_eligible
+    - __proxmox__cluster.manage_pools | default(false) | bool
+    - inventory_hostname == __proxmox__cluster.init
+
+- name: Include Proxmox cluster roles tasks
+  ansible.builtin.include_tasks:
+    file: cluster_roles.yml
+  when:
+    - proxmox__role_enabled
+    - __proxmox__cluster_eligible
+    - __proxmox__cluster.manage_roles | default(false) | bool
+    - inventory_hostname == __proxmox__cluster.init
+
+- name: Include Proxmox cluster groups tasks
+  ansible.builtin.include_tasks:
+    file: cluster_groups.yml
+  when:
+    - proxmox__role_enabled
+    - __proxmox__cluster_eligible
+    - __proxmox__cluster.manage_groups | default(false) | bool
+    - inventory_hostname == __proxmox__cluster.init
+
+- name: Include Proxmox cluster users tasks
+  ansible.builtin.include_tasks:
+    file: cluster_users.yml
+  when:
+    - proxmox__role_enabled
+    - __proxmox__cluster_eligible
+    - __proxmox__cluster.manage_users | default(false) | bool
+    - inventory_hostname == __proxmox__cluster.init
+
+- name: Include Proxmox cluster ACLs tasks
+  ansible.builtin.include_tasks:
+    file: cluster_acls.yml
+  when:
+    - proxmox__role_enabled
+    - __proxmox__cluster_eligible
+    - __proxmox__cluster.manage_acls | default(false) | bool
+    - inventory_hostname == __proxmox__cluster.init
+
 
 #TODO: Remove old kernel packages
 #TODO: IPMI Watchdog
 
-- name: Gather package facts
-  ansible.builtin.package_facts:
-    manager: auto
-  register: proxmox__package_facts
+# - name: Gather package facts
+#   ansible.builtin.package_facts:
+#     manager: auto
+#   register: proxmox__package_facts
 
-- name: Include ZFS tasks
-  ansible.builtin.include_tasks:
-    file: zfs.yml
-  when: proxmox__role_enabled
+# - name: Include ZFS tasks
+#   ansible.builtin.include_tasks:
+#     file: zfs.yml
+#   when: proxmox__role_enabled
+
+# #TODO: Kernel module cleanup

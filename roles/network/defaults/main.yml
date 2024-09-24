@@ -5,6 +5,8 @@ network__manage_interfaces: false
 network__manage_sysctl: false
 network__manage_hostname: false
 network__manage_hosts: false
+network__manage_iptables: false
+network__manage_udev_rules: false
 
 network__default: []
 network__group: []
@@ -26,7 +28,8 @@ network__systemd_template: etc/systemd/network/unit.j2
 network__systemd_change_strategy:
 # Available modules: systemd_service
 # Set module other than available options to disable applying changes
-  module: systemd_service
+  # module: systemd_service
+  module: None
 # immediate can be true or false (Flushes the handlers immediately)
   immediate: false
 # Use name for service or systemd_service module
@@ -36,8 +39,13 @@ network__systemd_change_strategy:
 
 ##### BEGIN: network interfaces vars
 network__interfaces_file: /etc/network/interfaces
+network__interfacesd_dir: /etc/network/interfaces.d
 # Keep the loopback interface in the file
 network__interfaces_keep_lo: true
+# Keep the source in the file
+network__interfaces_keep_source: true
+# Cleanup the interfaces.d directory
+network__interfacesd_cleanup: false
 # The location of the source line in the file (controversial topic)
 network__interfaces_source_position: bottom
 network__interfaces_source_line: "source /etc/network/interfaces.d/*"
@@ -56,7 +64,8 @@ network__interfaces_dhcp_excludes: [
 network__interfaces_change_strategy:
 # Available modules: service, systemd_service, or command
 # Set module other than available options to disable applying changes
-  module: service
+  # module: service
+  module: None
 # immediate can be true or false (Flushes the handlers immediately)
   immediate: false
 # Use name for service or systemd_service module
@@ -88,3 +97,10 @@ network__hosts_auto_discovery: false
 # Consult https://docs.ansible.com/ansible/latest/inventory_guide/intro_patterns.html for more information
 network__hosts_auto_discovery_inventories: 'webservers:&atlanta'
 ##### END: network hosts vars
+
+##### BEGIN: network udev rules vars
+network__udev_rules_file: /etc/udev/rules.d/70-persistent-net.rules
+network__udev_rules_template: etc/udev/rules.d/70-persistent-net.rules.j2
+network__udev_rules_backup: true
+network__udev_rules_remove: false
+##### END: network udev rules vars

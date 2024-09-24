@@ -61,8 +61,8 @@ group:
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils._text import to_text
-from ansible.module_utils.pvesh import ProxmoxShellError
-import ansible.module_utils.pvesh as pvesh
+from ansible_collections.aybarsm.linux.plugins.module_utils.pvesh import ProxmoxShellError
+import ansible_collections.aybarsm.linux.plugins.module_utils.pvesh as pvesh
 
 class ProxmoxGroup(object):
     def __init__(self, module):

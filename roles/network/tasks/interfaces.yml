@@ -1,14 +1,34 @@
 ---
+- name: Cleanup network interfaces.d directory
+  block:
+    - name: Find network interfaces.d cleanup files
+      become: true
+      ansible.builtin.find:
+        paths: "{{ network__interfacesd_dir }}"
+        hidden: true
+        recurse: true
+        file_type: any
+      register: network__interfacesd_find_cleanup_files
+
+    - name: Remove network interfaces.d cleanup files
+      become: true
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop: "{{ network__interfacesd_find_cleanup_files.files | map(attribute='path') }}"
+      register: network__interfacesd_cleanup_files
+      notify: "network__interfaces_apply_changes"
+      when: network__interfacesd_find_cleanup_files.files | default([]) | length > 0
+  when: network__interfacesd_cleanup | default(false) | bool
+
 - name: Deploy network interfaces file configuration
   become: true
   ansible.builtin.template:
     src: "{{ network__interfaces_template }}"
     dest: "{{ network__interfaces_file }}"
-    backup: "{{ network__interfaces_backup | default(omit) | bool }}"
+    backup: "{{ network__interfaces_backup | default(omit) }}"
     mode: "0644"
-  when:
-    - network__interfaces_all | type_debug == 'list'
-    - network__interfaces_all | length > 0
+  when: network__interfaces_all | default([]) | length > 0
   register: network__interfaces_deploy
   notify: "network__interfaces_apply_changes"
 

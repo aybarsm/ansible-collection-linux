@@ -1,11 +1,22 @@
 ---
-- name: Load/Unload persistent ZFS module
+- name: Load persistent ZFS module
   community.general.modprobe:
     name: zfs
-    params: "{{ proxmox__all.purposes.zfs.params | default(omit) }}"
-    persistent: "{{ 'present' if proxmox__all.purposes.zfs is defined else 'absent' }}"
-    state: "{{ 'present' if proxmox__all.purposes.zfs is defined else 'absent' }}"
-  register: proxmox__zfs_modprobe
+    params: "{{ proxmox__all.purposes.zfs.params | default('') }}"
+    persistent: present
+    state: present
+  register: proxmox__zfs_load_modprobe
+  when: proxmox__all.purposes.zfs is defined
+
+- name: Unload persistent ZFS module and remove ZFS modprobe configuration
+  ansible.builtin.file:
+    dest: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/modprobe.d/zfs.conf
+    - /etc/modules-load.d/zfs.conf
+  register: proxmox__zfs_unload_modprobe
+  when: proxmox__all.purposes.zfs is undefined
 
 - name: Enable/Disable email address for ZFS event daemon notifications
   ansible.builtin.lineinfile:
@@ -15,7 +26,7 @@
   vars:
     is_enabled: "{{ proxmox__all.purposes.zfs.zed_email is defined and proxmox__all.purposes.zfs.zed_email | length > 0 }}"
     line_prefix: "{{ is_enabled | ternary('', '#') }}ZED_EMAIL_ADDR="
-    zed_email: "{{ is_enabled | ternary(proxmox__all.purposes.zfs.zed_email, '') }}"
+    zed_email: "{{ is_enabled | ternary(proxmox__all.purposes.zfs.zed_email, 'root') }}"
   register: proxmox__zfs_zed_email
   notify: "proxmox__zfs_zed_apply_changes"
 

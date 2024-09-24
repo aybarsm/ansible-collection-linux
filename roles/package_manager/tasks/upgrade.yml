@@ -20,7 +20,7 @@
       loop: "{{ __package_manager__repo_list_defaults_copy }}"
       register: package_manager__upgrade_clean_default_repo_list_copies
       notify: "package_manager__update_repo_cache"
-      when: 
+      when:
         - __package_manager__upgrade_clean | default(false) | bool
         - __package_manager__repo_list_defaults_copy | length > 0
 
@@ -49,7 +49,7 @@
     - name: Update package manager cache after repo list changes (Clean Upgrade)
       ansible.builtin.meta: 'flush_handlers'
       when: package_manager__upgrade_clean_default_repo_list_copies.changed or package_manager__upgrade_clean_default_repo_list_templates.changed
-      
+
     - name: Perform DEB package upgrade via APT
       become: true
       ansible.builtin.apt:
@@ -82,7 +82,7 @@
         state: latest
       register: package_manager__rpm_upgrade
       when: ansible_os_family | lower == 'redhat'
-    
+
     - name: Include update local facts tasks when upgrade is successful
       ansible.builtin.include_role:
         name: aybarsm.linux.ansible

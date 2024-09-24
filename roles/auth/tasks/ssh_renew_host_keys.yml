@@ -1,0 +1,62 @@
+---
+#TODO: Assert ansible__role_enabled and ansible__manage_local_facts
+- name: Ensure ansible role enabled for one time ssh host key renewal
+  ansible.builtin.assert:
+    that:
+      - ansible__role_enabled | default(false) | bool
+      - ansible__manage_local_facts | default(false) | bool
+      - ansible__local_fact_name is defined
+    fail_msg: "aybarsm.linux.ansible role, local fact management must be enabled and local fact name needs to be defined. \
+      (ansible__role_enabled: true & ansible__manage_local_facts: true & ansible__local_fact_name is defined)"
+    success_msg: "Ansible requirements are met for one time ssh host key renewal."
+  register: auth__ssh_host_keys_assert_ansible_role
+  when: auth__renew_ssh_host_keys_once
+
+- name: Renew host keys once
+  block:
+  - name: Find SSH host key files
+    become: true
+    ansible.builtin.find:
+      paths: "{{ auth__ssh_dir }}"
+      patterns: "{{ auth__ssh_host_keys_patterns | default(omit) }}"
+      use_regex: "{{ auth__ssh_host_keys_use_regex | default(omit) }}"
+    register: auth__find_ssh_host_key_files
+
+  - name: Remove found SSH host key files
+    become: true
+    ansible.builtin.file:
+      path: "{{ item }}"
+      state: absent
+    loop: "{{ auth__find_ssh_host_key_files.files | map(attribute='path') }}"
+    register: auth__remove_ssh_host_key_files
+    when: auth__find_ssh_host_key_files.files | default([]) | length > 0
+
+  - name: Regenerate SSH host keys according to found files
+    become: true
+    ansible.builtin.command:
+      cmd: "ssh-keygen -q -N \"\" -t {{ key_type }} -f {{ item }}"
+    vars:
+      key_type: "{{ item | basename | regex_replace('^ssh_host_', '') | regex_replace('_key$', '') | trim }}"
+    loop: "{{ auth__find_ssh_host_key_files.files | map(attribute='path') | select('match', '.*/ssh_host_.*_key$') }}"
+    register: auth__regen_found_ssh_host_keys
+    notify: "auth__ssh_apply_changes"
+    when: auth__find_ssh_host_key_files.files | default([]) | length > 0
+
+  - name: Regenerate SSH host keys generically when no files found
+    become: true
+    ansible.builtin.command:
+      cmd: "ssh-keygen -A"
+    register: auth__regen_generic_ssh_host_keys
+    notify: "auth__ssh_apply_changes"
+    when: auth__find_ssh_host_key_files.files | default([]) | length == 0
+
+  - name: Include update local facts tasks when ssh host keys renewed
+    ansible.builtin.include_role:
+      name: aybarsm.linux.ansible
+      tasks_from: update_local_facts.yml
+    vars:
+      ansible__local_fact_updates:
+        auth:
+          ssh_host_keys_renewed: ["{{ now().utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"]
+
+  when: not auth__ssh_host_keys_assert_ansible_role.failed

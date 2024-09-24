@@ -2,13 +2,13 @@
 - name: Apply network interfaces changes via systemd service module
   become: true
   ansible.builtin.systemd_service:
-    daemon_reexec: "{{ service.daemon_reexec | default(omit) | bool }}"
-    daemon_reload: "{{ service.daemon_reload | default(omit) | bool }}"
-    enabled: "{{ service.enabled | default(omit) | bool }}"
-    force: "{{ service.force | default(omit) | bool }}"
-    masked: "{{ service.masked | default(omit) | bool }}"
+    daemon_reexec: "{{ service.daemon_reexec | default(omit) }}"
+    daemon_reload: "{{ service.daemon_reload | default(omit) }}"
+    enabled: "{{ service.enabled | default(omit) }}"
+    force: "{{ service.force | default(omit) }}"
+    masked: "{{ service.masked | default(omit) }}"
     name: "{{ service.name }}"
-    no_block : "{{ service.no_block | default(omit) | bool }}"
+    no_block : "{{ service.no_block | default(omit) }}"
     scope: "{{ service.scope | default(omit) }}"
     state: "{{ service.state | default(omit) }}"
   vars:
@@ -41,13 +41,14 @@
 - name: Apply network interfaces changes via command module
   become: true
   ansible.builtin.command:
-    chdir: "{{ network__interfaces_change_strategy.chdir | default(omit) }}"
-    cmd: "{{ network__interfaces_change_strategy.cmd }}"
-    creates: "{{ network__interfaces_change_strategy.creates | default(omit) }}"
-    removes: "{{ network__interfaces_change_strategy.removes | default(omit) }}"
-    stdin: "{{ network__interfaces_change_strategy.stdin | default(omit) }}"
-    stdin_add_newline: "{{ network__interfaces_change_strategy.stdin_add_newline | default(omit) }}"
-    strip_empty_ends: "{{ network__interfaces_change_strategy.strip_empty_ends | default(omit) }}"
+    chdir: "{{ item.chdir | default(omit) }}"
+    cmd: "{{ item.cmd }}"
+    creates: "{{ item.creates | default(omit) }}"
+    removes: "{{ item.removes | default(omit) }}"
+    stdin: "{{ item.stdin | default(omit) }}"
+    stdin_add_newline: "{{ item.stdin_add_newline | default(omit) }}"
+    strip_empty_ends: "{{ item.strip_empty_ends | default(omit) }}"
+  loop: "{{ network__interfaces_change_strategy.cmds | default([network__interfaces_change_strategy]) }}"
   changed_when: true
   register: network__interfaces_apply_changes_command
   listen: "network__interfaces_apply_changes"
@@ -58,13 +59,13 @@
 - name: Apply systemd network changes via systemd service module
   become: true
   ansible.builtin.systemd_service:
-    daemon_reexec: "{{ service.daemon_reexec | default(omit) | bool }}"
-    daemon_reload: "{{ service.daemon_reload | default(omit) | bool }}"
-    enabled: "{{ service.enabled | default(omit) | bool }}"
-    force: "{{ service.force | default(omit) | bool }}"
-    masked: "{{ service.masked | default(omit) | bool }}"
+    daemon_reexec: "{{ service.daemon_reexec | default(omit) }}"
+    daemon_reload: "{{ service.daemon_reload | default(omit) }}"
+    enabled: "{{ service.enabled | default(omit) }}"
+    force: "{{ service.force | default(omit) }}"
+    masked: "{{ service.masked | default(omit) }}"
     name: "{{ service.name }}"
-    no_block : "{{ service.no_block | default(omit) | bool }}"
+    no_block : "{{ service.no_block | default(omit) }}"
     scope: "{{ service.scope | default(omit) }}"
     state: "{{ service.state | default(omit) }}"
   vars:
@@ -74,3 +75,20 @@
   when:
     - network__systemd_change_strategy.module is defined
     - network__systemd_change_strategy.module == 'systemd_service'
+
+- name: Apply systemd network changes via command module
+  become: true
+  ansible.builtin.command:
+    chdir: "{{ item.chdir | default(omit) }}"
+    cmd: "{{ item.cmd }}"
+    creates: "{{ item.creates | default(omit) }}"
+    removes: "{{ item.removes | default(omit) }}"
+    stdin: "{{ item.stdin | default(omit) }}"
+    stdin_add_newline: "{{ item.stdin_add_newline | default(omit) }}"
+    strip_empty_ends: "{{ item.strip_empty_ends | default(omit) }}"
+  loop: "{{ network__systemd_change_strategy.cmds | default([network__systemd_change_strategy]) }}"
+  register: network__systemd_apply_changes_command
+  listen: "network__systemd_apply_changes"
+  when:
+    - network__systemd_change_strategy.module is defined
+    - network__systemd_change_strategy.module == 'command'

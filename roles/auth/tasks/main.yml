@@ -24,6 +24,14 @@
     - auth__role_enabled | default(false) | bool
     - auth__manage_authorized_keys | default(false) | bool
 
+# TODO: Renew SSH host keys only once
+- name: Include ssh renew host keys tasks
+  ansible.builtin.include_tasks:
+    file: ssh_renew_host_keys.yml
+  when:
+    - auth__role_enabled | default(false) | bool
+    - auth__renew_ssh_host_keys_once | default(false) | bool
+
 - name: Include ssh config tasks
   ansible.builtin.include_tasks:
     file: ssh.yml

@@ -1,0 +1,11 @@
+---
+- name: Deploy Proxmox cluster ACLs
+  aybarsm.linux.proxmox_acl:
+    path: "{{ item.path }}"
+    roles: "{{ item.roles }}"
+    state: "{{ item.state | default('present') }}"
+    groups: "{{ item.groups | default([]) }}"
+    users: "{{ item.users | default([]) }}"
+  with_items: "{{ __proxmox__cluster.acls }}"
+  when: __proxmox__cluster.acls | default([]) | length > 0
+  register: proxmox__cluster_acls_deploy

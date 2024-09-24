@@ -10,7 +10,8 @@ grub__inherit_cmdlines: true
 grub__change_strategy:
 # Available modules: command
 # Set module other than available options to disable applying changes
-  module: command
+  # module: command
+  module: None
 # immediate can be true or false (Flushes the handlers immediately)
   immediate: false
   cmd: 'update-grub'

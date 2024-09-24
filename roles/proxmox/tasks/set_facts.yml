@@ -7,7 +7,7 @@
     cluster_query: "{{ __proxmox__cluster_query | replace('__MEMBERS__', ('[`' + (cluster_inventory | replace(',', '`,`')) + '`]')) }}"
     cluster_node_config: "{{ dict(hostvars) | community.general.json_query(cluster_query) | sort(attribute='host') }}"
     cluster_default_init: "{{ cluster_node_config | map(attribute='host') | first }}"
-    cluster_config: "{{ cluster_node_config | map('combine', ({'init': cluster_default_init} | combine(item))) }}"
+    cluster_config: "{{ cluster_node_config | map('combine', ({'init': cluster_default_init} | combine(__proxmox__default_cluster_config, item))) }}"
   loop: "{{ proxmox__clusters }}"
   delegate_to: localhost
   run_once: true
@@ -33,6 +33,7 @@
     network__role_enabled: "{{ use_network if use_network else omit }}"
     network__manage_hostname: "{{ proxmox__manage_hostname if proxmox__manage_hostname else omit }}"
     network__manage_hosts: "{{ proxmox__manage_hosts if proxmox__manage_hosts else omit }}"
+    network__manage_iptables: "{{ proxmox__manage_iptables if proxmox__manage_iptables else omit }}"
     network__hosts_auto_discovery: "{{ False if proxmox__manage_hosts else omit }}"
     network__hostname: "{{ proxmox__hostname + '.' + proxmox__domain if proxmox__manage_hostname else omit }}"
     network__host: "{{ node_hosts + (network__host | default([])) if cluster_eligible and proxmox__manage_hosts else omit }}"
@@ -53,7 +54,7 @@
     cluster_eligible: "{{ (ansible_play_batch | intersect(cluster_required) | length) == (cluster_required | length) if cluster_play else False }}"
 
     use_package_manager: "{{ proxmox__manage_repo_keys or proxmox__manage_repos or proxmox__manage_packages }}"
-    use_network: "{{ proxmox__manage_hostname or proxmox__manage_hosts }}"
+    use_network: "{{ proxmox__manage_hostname or proxmox__manage_hosts or proxmox__manage_iptables }}"
     use_auth: "{{ proxmox__manage_root_access or proxmox__manage_sshd_config or proxmox__manage_ssh_config }}"
 
     node_repo_keys: "{{ __proxmox__purpose_packages | selectattr('type', 'eq', 'repo_key') if proxmox__manage_repo_keys else [] }}"
@@ -77,7 +78,7 @@
     node_root_default: "{{ node_auth_all | aybarsm.helper.selectattr(__proxmox__root_user_selector) | first | default({}) if cluster_eligible else {} }}"
     node_root_modification:
       ssh_key_comment: "{{ node_root_default.ssh_key_comment | default('root@' + (cluster_play.hostname if cluster_eligible else inventory_hostname_short)) }}"
-      distribute_ssh_key: "{{ cluster_required | difference([inventory_hostname]) if cluster_eligible else [] }}"
+      distribute_ssh_key: "{{ cluster_required if cluster_eligible else [] }}"
     node_root_user: "{{ node_root_default | combine(__proxmox__root_user, node_root_modification) }}"
 
     node_ssh_hosts: "{{ cluster_members | map(attribute='links') | map('join', ' ') | join(' ') if cluster_eligible else '' }}"

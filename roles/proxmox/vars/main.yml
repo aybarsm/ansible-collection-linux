@@ -92,3 +92,10 @@ __proxmox__sshd_config:
     children:
       - name: PermitRootLogin
         value: prohibit-password
+
+__proxmox__default_cluster_config:
+    manage_pools: false
+    manage_roles: false
+    manage_groups: false
+    manage_users: false
+    manage_acls: false

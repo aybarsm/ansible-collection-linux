@@ -1,0 +1,5 @@
+{{ ansible_managed | comment }}
+
+{% for rule in network__udev_rules_all %}
+{{ rule.entries | aybarsm.helper.to_querystring('name', 'value', '=="', '", ') }}"
+{% endfor %}

@@ -7,7 +7,7 @@
     file: "{{ item.file | default(omit) }}"
     keyring: "{{ item.keyring | default(omit) }}"
     url: "{{ item.url | default(omit) }}"
-    validate_certs: "{{ item.validate_certs | default(omit) | bool }}"
+    validate_certs: "{{ item.validate_certs | default(omit) }}"
   loop: "{{ package_manager__repo_keys_all }}"
   register: package_manager__repo_keys_deb_apply
   when:

@@ -3,32 +3,29 @@
   become: true
   ansible.builtin.apt:
     name: "{{ item.name }}"
-    allow_change_held_packages: "{{ item.allow_change_held_packages | default(omit) | bool }}"
-    allow_downgrade: "{{ item.allow_downgrade | default(omit) | bool }}"
-    allow_unauthenticated: "{{ item.allow_unauthenticated | default(omit) | bool }}"
-    autoclean: "{{ item.autoclean | default(omit) | bool }}"
-    autoremove: "{{ item.autoremove | default(omit) | bool }}"
+    allow_change_held_packages: "{{ item.allow_change_held_packages | default(omit) }}"
+    allow_downgrade: "{{ item.allow_downgrade | default(omit) }}"
+    allow_unauthenticated: "{{ item.allow_unauthenticated | default(omit) }}"
+    autoclean: "{{ item.autoclean | default(omit) }}"
+    autoremove: "{{ item.autoremove | default(omit) }}"
     cache_valid_time: "{{ item.cache_valid_time | default(omit) }}"
-    clean: "{{ item.clean | default(omit) | bool }}"
+    clean: "{{ item.clean | default(omit) }}"
     deb: "{{ item.deb | default(omit) }}"
     default_release: "{{ item.default_release | default(omit) }}"
     dpkg_options: "{{ item.dpkg_options | default(omit) }}"
-    fail_on_autoremove: "{{ item.fail_on_autoremove | default(omit) | bool }}"
-    force: "{{ item.force | default(omit) | bool }}"
-    force_apt_get: "{{ item.force_apt_get | default(omit) | bool }}"
-    install_recommends: "{{ item.install_recommends | default(omit) | bool }}"
+    fail_on_autoremove: "{{ item.fail_on_autoremove | default(omit) }}"
+    force: "{{ item.force | default(omit) }}"
+    force_apt_get: "{{ item.force_apt_get | default(omit) }}"
+    install_recommends: "{{ item.install_recommends | default(omit) }}"
     lock_timeout: "{{ item.lock_timeout | default(omit) }}"
-    only_upgrade: "{{ item.only_upgrade | default(omit) | bool }}"
+    only_upgrade: "{{ item.only_upgrade | default(omit) }}"
     policy_rc_d: "{{ item.policy_rc_d | default(omit) }}"
-    purge: "{{ item.purge | default(omit) | bool }}"
+    purge: "{{ item.purge | default(omit) }}"
     state: "{{ item.state | default(omit) }}"
-    update_cache: "{{ item.update_cache | default(omit) | bool }}"
+    update_cache: "{{ item.update_cache | default(omit) }}"
     update_cache_retries: "{{ item.update_cache_retries | default(omit) }}"
     update_cache_retry_max_delay: "{{ item.update_cache_retry_max_delay | default(omit) }}"
     upgrade: "{{ item.upgrade | default(omit) }}"
   loop: "{{ package_manager__packages_all }}"
-  register: package_manager__packages_deb_apply
-  when:
-    - package_manager__manage_packages | default(false) | bool
-    - package_manager__packages_all | type_debug == 'list'
-    - package_manager__packages_all | length > 0
+  register: package_manager__packages_deb_deploy
+  when: package_manager__packages_all | default([]) | length > 0

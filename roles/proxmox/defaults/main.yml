@@ -1,3 +1,4 @@
+##### BEGIN: proxmox per host/node configuration
 proxmox__role_enabled: false
 
 proxmox__manage_repo_keys: false
@@ -6,16 +7,26 @@ proxmox__manage_packages: false
 proxmox__manage_grub: false
 proxmox__manage_hostname: false
 proxmox__manage_hosts: false
+proxmox__manage_iptables: false
 # This option force root user to generate ssh key and distribute to all hosts within the cluster
 proxmox__manage_root_access: false
 proxmox__manage_sshd_config: false
 proxmox__manage_ssh_config: false
 proxmox__manage_cluster: false
-
-# Hostname and FQDN configuration
 proxmox__hostname: "{{ inventory_hostname_short }}"
 proxmox__domain: local
 
+# Ip addresses for the cluster links for the host
+# i.e. proxmox__cluster_links: ['10.0.0.2', 'fd00::2']
+# If more than one ip provided, the first link ip will be used as the cluster ip for the hosts file
+proxmox__cluster_links: []
+proxmox__ssh_port: 22
+proxmox__ssh_ciphers: "aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com"
+proxmox__remove_subscription_warning: false
+#TODO: pveproxy configuration -> /etc/default/pveproxy
+##### END: proxmox per host/node configuration
+
+##### BEGIN: proxmox shared configuration
 # Cluster configuration
 # For target inventory specs, consult https://docs.ansible.com/ansible/latest/inventory_guide/intro_patterns.html for more information
 # If init node not provided, the init node will be designated as the first node regarding ascending sorted of inventory_hostname
@@ -23,18 +34,20 @@ proxmox__domain: local
 # proxmox__clusters:
 #   - name: 'pve-london01'
 #     target: 'proxmox:&london'
-#   - name: 'pve-atlanta01'
-#     target: 'proxmox:&atlanta'
-#     init: 'pve01-atlanta01'
+#     manage_pools: true
+#     manage_roles: true
+#     manage_groups: false
+#     manage_users: false
+#     manage_acls: false
+#   - name: 'pve-atlanta01'# (required)
+#     target: 'proxmox:&atlanta'# (required)
+#     init: 'pve01-atlanta01'# (optional | default: first of asc sorted inventory_hostname)
+#     manage_pools: true# (optional | default: false)
+#     manage_roles: true# (optional | default: false)
+#     manage_groups: false# (optional | default: false)
+#     manage_users: false# (optional | default: false)
+#     manage_acls: false# (optional | default: false)
 proxmox__clusters: []
-# Ip addresses for the cluster links for the host
-# i.e. proxmox__cluster_links: ['10.0.0.2', 'fd00::2']
-# If more than one ip provided, the first link ip will be used as the cluster ip for the hosts file
-proxmox__cluster_links: []
-
-proxmox__ssh_port: 22
-proxmox__ssh_ciphers: "aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com"
-proxmox__remove_subscription_warning: false
 
 proxmox__repo_url_enterprise: https://enterprise.proxmox.com/debian
 proxmox__repo_url_no_subscription: http://download.proxmox.com/debian
@@ -90,3 +103,4 @@ proxmox__host: {}
 #       params: 'zfs_arc_max=2147483648'
 #       zed_email: 'noc@example.com'
 #       post_install: "{{ playbook_dir }}/tasks/zfs_post_install.yml"
+##### END: proxmox shared configuration

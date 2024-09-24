@@ -2,13 +2,13 @@
 - name: Effect systemd service for ssh changes
   become: true
   ansible.builtin.systemd_service:
-    daemon_reexec: "{{ service.daemon_reexec | default(omit) | bool }}"
-    daemon_reload: "{{ service.daemon_reload | default(omit) | bool }}"
-    enabled: "{{ service.enabled | default(omit) | bool }}"
-    force: "{{ service.force | default(omit) | bool }}"
-    masked: "{{ service.masked | default(omit) | bool }}"
+    daemon_reexec: "{{ service.daemon_reexec | default(omit) }}"
+    daemon_reload: "{{ service.daemon_reload | default(omit) }}"
+    enabled: "{{ service.enabled | default(omit) }}"
+    force: "{{ service.force | default(omit) }}"
+    masked: "{{ service.masked | default(omit) }}"
     name: "{{ service.name | default('ssh.service') }}"
-    no_block : "{{ service.no_block | default(omit) | bool }}"
+    no_block : "{{ service.no_block | default(omit) }}"
     scope: "{{ service.scope | default(omit) }}"
     state: "{{ service.state | default(omit) }}"
   vars:

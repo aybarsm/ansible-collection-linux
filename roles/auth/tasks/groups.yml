@@ -2,13 +2,13 @@
 - name: Apply groups configuration
   become: true
   ansible.builtin.group:
-    force: "{{ item.force | default(omit) | bool }}"
+    force: "{{ item.force | default(omit) }}"
     gid: "{{ item.gid | default(omit) }}"
-    local: "{{ item.local | default(omit) | bool }}"
+    local: "{{ item.local | default(omit) }}"
     name: "{{ item.name }}"
-    non_unique: "{{ item.non_unique | default(omit) | bool }}"
+    non_unique: "{{ item.non_unique | default(omit) }}"
     state: "{{ item.state | default(omit) }}"
-    system: "{{ item.system | default(omit) | bool }}"
+    system: "{{ item.system | default(omit) }}"
   loop: "{{ auth__groups_all }}"
   register: auth__groups_apply
   when:
