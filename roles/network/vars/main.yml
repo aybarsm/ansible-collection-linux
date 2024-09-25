@@ -1,13 +1,15 @@
+network__all: "{{ (network__host + network__group + network__default) | selectattr('type', 'defined') | rejectattr('entry__skip', 'defined') }}"
+
 ##### BEGIN: network systemd vars
 __network_systemd_available_change_modules: ['systemd_service', 'command']
 __network__systemd_link_name: '{"type":"systemd","name":"__SYSTEMD_LINK_NAME__","children":[{"name":"Match","children":[{"name":"MACAddress","value":"__MAC_ADDRESS__"},{"name":"Type","value":"ether"}]},{"name":"Link","children":[{"name":"NamePolicy","value":""},{"name":"Name","value":"__LINK_NAME__"}]}]}'
 # REVIEW: There is room for optimisation
 __network__systemd_configs: >-
   {%- set __cfgs = [] -%}
-  {%- for cfg in [network__default, network__group, network__host] if cfg -%}
-  {%-   set __cfgs_grp = (cfg | selectattr('type', 'defined') | selectattr('type', 'eq', 'systemd') |
+  {%- for cfg in network__all | reverse if cfg -%}
+  {%-   set __cfgs_grp = (cfg | selectattr('type', 'eq', 'systemd') |
   selectattr('name', 'defined') | selectattr('name', 'search', '\\.(network|link|netdev)$') | selectattr('children', 'defined')) -%}
-  {%-   set __cfgs_rnm = (cfg | selectattr('type', 'defined') | selectattr('type', 'eq', 'systemd_link_rename') |
+  {%-   set __cfgs_rnm = (cfg | selectattr('type', 'eq', 'systemd_link_rename') |
   selectattr('name', 'defined') | selectattr('name', 'search', '^(?:[0-9]|[1-9][0-9])-[a-zA-Z]+\\d+\\.link$') |
   selectattr('macaddress', 'defined') | selectattr('macaddress', 'ansible.utils.mac') | default([])) -%}
   {%-   if __cfgs_rnm | length > 0 -%}
@@ -51,7 +53,8 @@ __network__interfaces_configs: >-
   {{ __configs_prepared }}
 
 # Sort interfaces by name to avoid unneccessary changes
-network__interfaces_all: "{{ __network__interfaces_configs |
+network__interfaces_all: "{{ network__all | reverse |
+  selectattr('type', 'eq', 'interface') | selectattr('name', 'defined') |
   community.general.lists_mergeby('name', recursive=true, list_merge='prepend') |
   aybarsm.helper.unique_recursive(attributes='name', recurse='inet') |
   aybarsm.helper.unique_recursive(attributes='name', recurse='inet6') |
@@ -60,7 +63,7 @@ network__interfaces_all: "{{ __network__interfaces_configs |
 ##### BEGIN: network sysctl vars
 network__sysctl_all: "{{ (network__host + network__group + network__default) |
   selectattr('type', 'defined') | selectattr('type', 'equalto', 'sysctl') |
-  aybarsm.helper.replace_aliases(__ansible__config.modules.ansible.posix.sysctl.aliases) |
+  aybarsm.helper.replace_aliases(__ansible.modules.ansible_posix_sysctl.aliases) |
   selectattr('name', 'defined') | selectattr('value', 'defined') | unique(attribute='name') }}"
 ##### END: network sysctl vars
 

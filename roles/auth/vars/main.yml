@@ -1,7 +1,12 @@
 ---
-auth__all: "{{ auth__host + auth__group + auth__default }}"
+auth__all: "{{ (auth__host + auth__group + auth__default) | selectattr('type', 'defined') }}"
 
 __auth__config:
+  groups:
+    selectattr:
+      - when: [['type', 'eq', 'group']]
+      - when: "{{ __ansible.modules.ansible_builtin_group.uniques | product(['defined']) | list }}"
+        logic: or
   authorized_keys:
     selectattr:
       - when:
@@ -9,19 +14,12 @@ __auth__config:
           - ['type', 'equalto', 'authorized_key']
           - ['user', 'defined']
           - ['key', 'defined']
-  groups:
-    selectattr:
-      - when:
-          - ['type', 'defined']
-          - ['type', 'equalto', 'group']
-      - when: "{{ __ansible__config.modules.ansible_builtin_group.uniques | product(['defined']) | list }}"
-        logic: or
   users:
     selectattr:
       - when:
           - ['type', 'defined']
           - ['type', 'equalto', 'user']
-      - when: "{{ __ansible__config.modules.ansible_builtin_user.uniques | product(['defined']) | list }}"
+      - when: "{{ __ansible.modules.ansible_builtin_user.uniques | product(['defined']) | list }}"
         logic: or
   sshd_config:
     selectattr:
@@ -58,13 +56,13 @@ __auth__config:
 
 auth__groups_all: "{{ auth__all |
   aybarsm.helper.selectattr(__auth__config.groups.selectattr) |
-  aybarsm.helper.unique_recursive(__ansible__config.modules.ansible_builtin_group.uniques) |
+  aybarsm.helper.unique_recursive(__ansible.modules.ansible_builtin_group.uniques) |
   default([]) }}"
 
 # Use lists_mergeby to combine all sections and sort by name for better output readability
 auth__users_all: "{{ [auth__default, auth__group, auth__host] |
   map('selectattr', 'type', 'defined') | map('selectattr', 'type', 'equalto', 'user') |
-  map('aybarsm.helper.replace_aliases', __ansible__config.modules.ansible.builtin.user.aliases) |
+  map('aybarsm.helper.replace_aliases', __ansible.modules.ansible_builtin_user.aliases) |
   map('selectattr', 'name', 'defined') |
   community.general.lists_mergeby('name', recursive=false, list_merge='prepend') |
   sort(attribute='name') | default([]) }}"

@@ -12,7 +12,7 @@
     scope: "{{ service.scope | default(omit) }}"
     state: "{{ service.state | default(omit) }}"
   vars:
-    service: "{{ auth__ssh_changes_strategy | aybarsm.helper.replace_aliases(__ansible__config.modules.ansible.builtin.systemd_service.aliases) }}"
+    service: "{{ auth__ssh_changes_strategy | aybarsm.helper.replace_aliases(__ansible.modules.ansible_builtin_systemd_service.aliases) }}"
   register: auth__ssh_apply_changes_systemd_service
   listen: "auth__ssh_apply_changes"
   when:
@@ -31,7 +31,7 @@
     state: "{{ service.state | default(omit) }}"
     use: "{{ service.use | default(omit) }}"
   vars:
-    service: "{{ auth__ssh_changes_strategy | aybarsm.helper.replace_aliases(__ansible__config.modules.ansible.builtin.service.aliases) }}"
+    service: "{{ auth__ssh_changes_strategy | aybarsm.helper.replace_aliases(__ansible.modules.ansible_builtin_service.aliases) }}"
   register: auth__ssh_apply_changes_service
   listen: "auth__ssh_apply_changes"
   when:
