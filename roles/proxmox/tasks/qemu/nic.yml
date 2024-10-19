@@ -1,5 +1,5 @@
 ---
-- name: Proxmox QEMU Nic
+- name: Proxmox QEMU NIC
   community.general.proxmox_nic:
     api_host: "{{ qemu_nic.api_host }}"
     api_password: "{{ qemu_nic.api_password | default(omit, true) }}"

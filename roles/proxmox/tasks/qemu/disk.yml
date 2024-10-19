@@ -1,5 +1,5 @@
 ---
-- name: Proxmox QEMU Disk
+- name: Proxmox QEMU DISK
   community.general.proxmox_disk:
     aio: "{{ qemu_disk.aio | default(omit, true) }}"
     api_host: "{{ qemu_disk.api_host | default(omit, true) }}"

@@ -1,0 +1,17 @@
+---
+- name: Proxmox VM Info
+  community.general.proxmox_vm_info:
+    api_host: "{{ vm_info.api_host }}"
+    api_password: "{{ vm_info.api_password | default(omit, true) }}"
+    api_port: "{{ vm_info.api_port | default(omit, true) }}"
+    api_token_id: "{{ vm_info.api_token_id | default(omit, true) }}"
+    api_token_secret: "{{ vm_info.api_token_secret | default(omit, true) }}"
+    api_user: "{{ vm_info.api_user }}"
+    config: "{{ vm_info.config | default(omit, true) }}"
+    name: "{{ vm_info.name | default(omit, true) }}"
+    network: "{{ vm_info.network | default(omit, true) }}"
+    node: "{{ vm_info.node | default(omit, true) }}"
+    type: "{{ vm_info.type | default(omit, true) }}"
+    validate_certs: "{{ vm_info.validate_certs | default(omit, true) }}"
+    vmid: "{{ vm_info.vmid | default(omit, true) }}"
+  register: proxmox__info_vm

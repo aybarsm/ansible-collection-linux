@@ -9,3 +9,4 @@ __proxmox__module_vars:
   api_port: "{{ __proxmox__cluster.api.port | default(omit, true) }}"
   api_token_id: "{{ __proxmox__cluster.api.token.id | default(omit, true) }}"
   api_token_secret: "{{ __proxmox__cluster.api.token.secret | default(omit, true) }}"
+  validate_certs: "{{ __proxmox__cluster.validate_certs | default(omit, true) }}"
