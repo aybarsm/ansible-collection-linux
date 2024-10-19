@@ -85,7 +85,7 @@
 
     - name: Include update local facts tasks when upgrade is successful
       ansible.builtin.include_role:
-        name: aybarsm.linux.ansible
+        name: aybarsm.helper.ansible
         tasks_from: update_local_facts.yml
       vars:
         ansible__local_fact_updates:

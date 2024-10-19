@@ -1,5 +1,5 @@
 ---
-- name: Import aybarsm auth role
+- name: Import aybarsm.linux.auth role
   ansible.builtin.import_role:
     name: aybarsm.linux.auth
   when: proxmox__manage_root_access or proxmox__manage_sshd_config or proxmox__manage_ssh_config

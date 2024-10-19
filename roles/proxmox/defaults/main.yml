@@ -12,7 +12,9 @@ proxmox__manage_iptables: false
 proxmox__manage_root_access: false
 proxmox__manage_sshd_config: false
 proxmox__manage_ssh_config: false
+proxmox__manage_files: false
 proxmox__manage_cluster: false
+
 proxmox__hostname: "{{ inventory_hostname_short }}"
 proxmox__domain: local
 

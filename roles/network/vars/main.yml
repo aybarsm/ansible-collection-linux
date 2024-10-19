@@ -1,29 +1,26 @@
-network__all: "{{ (network__host + network__group + network__default) | selectattr('type', 'defined') | rejectattr('entry__skip', 'defined') }}"
+network__all: "{{ (network__host + network__group + network__default) |
+  map('aybarsm.helper.combine_reverse', {'keep__entry': true, 'skip__entry': false}) |
+  rejectattr('keep__entry', 'eq', false) | rejectattr('skip__entry', 'eq', true) | rejectattr('type', 'undefined') |
+  aybarsm.helper.all_except(['keep__entry', 'skip__entry']) }}"
 
 ##### BEGIN: network systemd vars
 __network_systemd_available_change_modules: ['systemd_service', 'command']
 __network__systemd_link_name: '{"type":"systemd","name":"__SYSTEMD_LINK_NAME__","children":[{"name":"Match","children":[{"name":"MACAddress","value":"__MAC_ADDRESS__"},{"name":"Type","value":"ether"}]},{"name":"Link","children":[{"name":"NamePolicy","value":""},{"name":"Name","value":"__LINK_NAME__"}]}]}'
-# REVIEW: There is room for optimisation
-__network__systemd_configs: >-
-  {%- set __cfgs = [] -%}
-  {%- for cfg in network__all | reverse if cfg -%}
-  {%-   set __cfgs_grp = (cfg | selectattr('type', 'eq', 'systemd') |
-  selectattr('name', 'defined') | selectattr('name', 'search', '\\.(network|link|netdev)$') | selectattr('children', 'defined')) -%}
-  {%-   set __cfgs_rnm = (cfg | selectattr('type', 'eq', 'systemd_link_rename') |
-  selectattr('name', 'defined') | selectattr('name', 'search', '^(?:[0-9]|[1-9][0-9])-[a-zA-Z]+\\d+\\.link$') |
-  selectattr('macaddress', 'defined') | selectattr('macaddress', 'ansible.utils.mac') | default([])) -%}
-  {%-   if __cfgs_rnm | length > 0 -%}
-  {%-     for cfgrnm in __cfgs_rnm if cfgrnm -%}
-  {%-       set __cfgs_grp = __cfgs_grp.append(__network__systemd_link_name |
-    replace('__SYSTEMD_LINK_NAME__', cfgrnm.name) | replace('__MAC_ADDRESS__', cfgrnm.macaddress) |
-    replace('__LINK_NAME__', (cfgrnm.name | regex_replace('^(?:[0-9]|[1-9][0-9])-(.*).link$', '\\1'))) | from_json) -%}
-  {%-     endfor -%}
-  {%-   endif -%}
-  {%-   set __cfgs = __cfgs.append(__cfgs_grp) -%}
+__network__systemd_rename: >-
+  {%- set __rtr = [] -%}
+  {%- set __cfgs = (network__all | selectattr('type', 'eq', 'systemd_link_rename') |
+  selectattr('name', 'defined') | selectattr('name', 'match', '^(?:[0-9]|[1-9][0-9])-[a-zA-Z]+\\d+\\.link$') |
+  selectattr('macaddress', 'defined') | selectattr('macaddress', 'match', '^([0-9A-Fa-f]{2}([:])?){5}([0-9A-Fa-f]{2})$') | default([])) -%}
+  {%- for cfg in __cfgs if cfg -%}
+  {%-   set __rtr = __rtr.append(__network__systemd_link_name |
+    replace('__SYSTEMD_LINK_NAME__', cfg.name) | replace('__MAC_ADDRESS__', cfg.macaddress) |
+    replace('__LINK_NAME__', (cfg.name | regex_replace('^(?:[0-9]|[1-9][0-9])-(.*).link$', '\\1'))) | from_json) -%}
   {%- endfor -%}
-  {{ __cfgs }}
+  {{ __rtr }}
 
-network__systemd_all: "{{ __network__systemd_configs |
+network__systemd_all: "{{ ((network__all | selectattr('type', 'eq', 'systemd') |
+  selectattr('name', 'defined') | selectattr('name', 'search', '\\.(network|link|netdev)$') |
+  selectattr('children', 'defined') | default([])) + __network__systemd_rename) | reverse |
   community.general.lists_mergeby('name', recursive=true, list_merge='prepend') |
   aybarsm.helper.unique_recursive(attributes='name', recurse='children') }}"
 
@@ -44,14 +41,6 @@ network__systemd_cleanup_patterns: ["(?!{{ __network__systemd_cleanup_regex | jo
 ##### BEGIN: network interfaces vars
 __network_interfaces_available_change_modules: ['service', 'systemd_service', 'command']
 
-# REVIEW: There is room for optimisation
-__network__interfaces_configs: >-
-  {%- set __configs_prepared = [] -%}
-  {%- for config in [network__default, network__group, network__host] if config -%}
-  {%-   set __configs_prepared = __configs_prepared.append(config | selectattr('type', 'defined') | selectattr('type', 'eq', 'interface') | selectattr('name', 'defined')) -%}
-  {%- endfor -%}
-  {{ __configs_prepared }}
-
 # Sort interfaces by name to avoid unneccessary changes
 network__interfaces_all: "{{ network__all | reverse |
   selectattr('type', 'eq', 'interface') | selectattr('name', 'defined') |
@@ -61,7 +50,7 @@ network__interfaces_all: "{{ network__all | reverse |
   sort(attribute='name') }}"
 
 ##### BEGIN: network sysctl vars
-network__sysctl_all: "{{ (network__host + network__group + network__default) |
+network__sysctl_all: "{{ network__all |
   selectattr('type', 'defined') | selectattr('type', 'equalto', 'sysctl') |
   aybarsm.helper.replace_aliases(__ansible.modules.ansible_posix_sysctl.aliases) |
   selectattr('name', 'defined') | selectattr('value', 'defined') | unique(attribute='name') }}"
@@ -84,11 +73,9 @@ __network__hosts_auto_discovered: >-
   {%- endif -%}
   {{ auto_discovered }}
 
-network__hosts_all: "{{ (network__host + network__group + network__default + __network__hosts_auto_discovered) |
-  selectattr('type', 'defined') | selectattr('type', 'equalto', 'host') |
-  selectattr('ip', 'defined') | selectattr('hostname', 'defined') |
-  aybarsm.helper.replace_aliases({'fqdn': ['hostname']}) |
-  aybarsm.helper.unique_recursive(attributes=['ip', 'hostname', 'fqdn']) }}"
+network__hosts_all: "{{ (network__all + __network__hosts_auto_discovered) |
+  selectattr('type', 'eq', 'host') | selectattr('ip', 'defined') | selectattr('hostname', 'defined') |
+  aybarsm.helper.replace_aliases({'fqdn': ['hostname']}) | unique(attribute='ip') }}"
 
 # Sort hosts by hostname to avoid unneccessary changes
 network__hosts_all_ipv4: "{{ network__hosts_all | selectattr('ip', 'ansible.utils.ipv4') | sort(attribute='hostname') }}"
@@ -96,12 +83,9 @@ network__hosts_all_ipv6: "{{ network__hosts_all | selectattr('ip', 'ansible.util
 ##### END: network hosts vars
 
 ##### BEGIN: network iptables vars
-network__iptables_all: "{{ (network__host + network__group + network__default) |
-  selectattr('type', 'defined') | selectattr('type', 'equalto', 'iptables') }}"
+network__iptables_all: "{{ network__all | selectattr('type', 'eq', 'iptables') }}"
 ##### END: network iptables vars
 
 ##### BEGIN: network udev rules vars
-network__udev_rules_all: "{{ (network__host + network__group + network__default) |
-  selectattr('type', 'defined') | selectattr('type', 'equalto', 'udev_rule') |
-  selectattr('entries', 'defined') }}"
+network__udev_rules_all: "{{ network__all | selectattr('type', 'eq', 'udev_rule') | selectattr('entries', 'defined') }}"
 ##### END: network udev rules vars

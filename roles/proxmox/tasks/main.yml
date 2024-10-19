@@ -15,26 +15,33 @@
 #   when: __proxmox__cluster_eligible
 #   delegate_to: localhost
 
-- name: Import aybarsm package_manager role
+- name: Import aybarsm.linux.package_manager role
   ansible.builtin.import_role:
     name: aybarsm.linux.package_manager
   when:
     - proxmox__role_enabled
     - proxmox__manage_repo_keys or proxmox__manage_repos or proxmox__manage_packages
 
-- name: Import aybarsm grub role
+- name: Import aybarsm.linux.grub role
   ansible.builtin.import_role:
     name: aybarsm.linux.grub
   when:
     - proxmox__role_enabled
     - proxmox__manage_grub
 
-- name: Import aybarsm network role
+- name: Import aybarsm.linux.network role
   ansible.builtin.import_role:
     name: aybarsm.linux.network
   when:
     - proxmox__role_enabled
     - proxmox__manage_hostname or proxmox__manage_hosts or proxmox__manage_iptables
+
+- name: Import aybarsm.helper.file_mgr role
+  ansible.builtin.import_role:
+    name: aybarsm.helper.file_mgr
+  when:
+    - proxmox__role_enabled
+    - proxmox__manage_files
 
 - name: Update grub and initramfs when systemd network and/or grub changed
   become: true
@@ -47,7 +54,7 @@
   when: (grub__deploy is defined and grub__deploy is changed) or
     (network__systemd_deploy is defined and network__systemd_deploy is changed)
 
-- name: Reboot node and wait if upgraded, grub, network-hostname,systemd, or interfaces changed
+- name: Reboot node and wait if upgraded, grub, network-hostname, systemd, or interfaces changed
   become: true
   ansible.builtin.reboot:
     test_command: "uptime"
@@ -59,6 +66,7 @@
     chk_interfaces: "{{ network__interfaces_deploy is defined and network__interfaces_deploy is changed }}"
   register: proxmox__primary_reboot
   when: chk_upgrade or chk_grub or chk_hostname or chk_systemd or chk_interfaces
+  throttle: 1
 
 - name: Include auth tasks
   ansible.builtin.include_tasks:
@@ -73,8 +81,8 @@
     path: /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
     line: '        orig_cmd(); return;'
     insertafter: '^\s+checked_command: function\(orig_cmd\) {$'
-    firstmatch: yes
-    backup: yes
+    firstmatch: true
+    backup: true
   when:
     - proxmox__role_enabled
     - proxmox__remove_subscription_warning

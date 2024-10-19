@@ -39,11 +39,11 @@ __package_manager__upgrade_execute: >-
   {%- set exec_upgrade = {'decision': false, 'reason': 'Upgrade strategy is set to clean, but no default repo list configuration found.'} -%}
   {%- elif __package_manager__upgrade_once -%}
   {%-   if ansible__local_fact_name is undefined -%}
-  {%- set exec_upgrade = {'decision': false, 'reason': 'Upgrade strategy once requires aybarsm.linux.ansible role imported.'} -%}
+  {%- set exec_upgrade = {'decision': false, 'reason': 'Upgrade strategy once requires aybarsm.helper.ansible role imported.'} -%}
   {%-   elif ansible__role_enabled is undefined or not ansible__role_enabled -%}
-  {%- set exec_upgrade = {'decision': false, 'reason': 'Upgrade strategy once requires aybarsm.linux.ansible role enabled. (ansible__role_enabled: true)'} -%}
+  {%- set exec_upgrade = {'decision': false, 'reason': 'Upgrade strategy once requires aybarsm.helper.ansible role enabled. (ansible__role_enabled: true)'} -%}
   {%-   elif not ansible__manage_local_facts -%}
-  {%- set exec_upgrade = {'decision': false, 'reason': 'Upgrade strategy once requires aybarsm.linux.ansible role local fact management enabled. (ansible__manage_local_facts: true)'} -%}
+  {%- set exec_upgrade = {'decision': false, 'reason': 'Upgrade strategy once requires aybarsm.helper.ansible role local fact management enabled. (ansible__manage_local_facts: true)'} -%}
   {%-   elif ansible_local[ansible__local_fact_name].package_manager.upgrade is defined -%}
   {%- set exec_upgrade = {'decision': false, 'reason': 'Host already upgraded.'} -%}
   {%-   endif -%}

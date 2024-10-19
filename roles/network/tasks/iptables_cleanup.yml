@@ -1,0 +1,26 @@
+---
+- name: "Cleanup iptables {{ iptables_cleanup_ip_ver }} rules"
+  block:
+    - name: "Save iptables {{ iptables_cleanup_ip_ver }} rules"
+      community.general.iptables_state:
+        ip_version: "{{ iptables_cleanup_ip_ver }}"
+        path: "{{ iptables_cleanup_state_file }}"
+        state: saved
+    - name: "Cleanup iptables {{ iptables_cleanup_ip_ver }} rules"
+      ansible.builtin.lineinfile:
+        path: "{{ iptables_cleanup_state_file }}"
+        regexp: "{{ item }}"
+        state: absent
+      loop: "{{ iptables_cleanup_regex }}"
+    - name: "Assert check mode for restoring iptables {{ iptables_cleanup_ip_ver }} rules"
+      ansible.builtin.assert:
+        that: True
+        success_msg: "{{ 'Check mode is %s. Iptables rule restore errors will %s.' | format(*format_args) }}"
+      vars:
+        format_args: "{{ ['on', 'be ignored'] if ansible_check_mode else ['off', 'not be ignored'] }}"
+    - name: "Restore iptables {{ iptables_cleanup_ip_ver }} rules"
+      community.general.iptables_state:
+        ip_version: "{{ iptables_cleanup_ip_ver }}"
+        path: "{{ iptables_cleanup_state_file }}"
+        state: restored
+      ignore_errors: "{{ ansible_check_mode }}"

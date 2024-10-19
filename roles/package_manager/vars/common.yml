@@ -1,3 +1,8 @@
+package_manager__all: "{{ (package_manager__host + package_manager__group + package_manager__default) |
+  map('aybarsm.helper.combine_reverse', {'keep__entry': true, 'skip__entry': false}) |
+  rejectattr('keep__entry', 'eq', false) | rejectattr('skip__entry', 'eq', true) | rejectattr('type', 'undefined') |
+  aybarsm.helper.all_except(['keep__entry', 'skip__entry']) }}"
+
 package_manager__packages_all: "{{ package_manager__all |
   aybarsm.helper.selectattr(__package_manager__config.packages.selectattr) |
   aybarsm.helper.replace_aliases(__package_manager__config.packages.replace_aliases) |
@@ -44,11 +49,11 @@ __package_manager__upgrade_execute: >-
   {%- set exec_upgrade = {'decision': false, 'reason': 'Upgrade strategy is set to clean, but no default repo list configuration found.'} -%}
   {%- elif __package_manager__upgrade_once -%}
   {%-   if ansible__local_fact_name is undefined -%}
-  {%- set exec_upgrade = {'decision': false, 'reason': 'Upgrade strategy once requires aybarsm.linux.ansible role imported.'} -%}
+  {%- set exec_upgrade = {'decision': false, 'reason': 'Upgrade strategy once requires aybarsm.helper.ansible role imported.'} -%}
   {%-   elif ansible__role_enabled is undefined or not ansible__role_enabled -%}
-  {%- set exec_upgrade = {'decision': false, 'reason': 'Upgrade strategy once requires aybarsm.linux.ansible role enabled. (ansible__role_enabled: true)'} -%}
+  {%- set exec_upgrade = {'decision': false, 'reason': 'Upgrade strategy once requires aybarsm.helper.ansible role enabled. (ansible__role_enabled: true)'} -%}
   {%-   elif not ansible__manage_local_facts -%}
-  {%- set exec_upgrade = {'decision': false, 'reason': 'Upgrade strategy once requires aybarsm.linux.ansible role local fact management enabled. (ansible__manage_local_facts: true)'} -%}
+  {%- set exec_upgrade = {'decision': false, 'reason': 'Upgrade strategy once requires aybarsm.helper.ansible role local fact management enabled. (ansible__manage_local_facts: true)'} -%}
   {%-   elif ansible_local[ansible__local_fact_name].package_manager.upgrade is defined -%}
   {%- set exec_upgrade = {'decision': false, 'reason': 'Host already upgraded.'} -%}
   {%-   endif -%}

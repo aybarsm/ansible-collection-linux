@@ -1,0 +1,6 @@
+---
+- name: Check Proxmox links are valid ip addresses
+  assert:
+    that: proxmox__cluster_links | select('ansible.utils.ip') | length == proxmox__cluster_links | length
+    fail_msg: "proxmox__cluster_links must be a list of valid ip addresses"
+    success_msg: "proxmox__cluster_links are valid ip addresses"

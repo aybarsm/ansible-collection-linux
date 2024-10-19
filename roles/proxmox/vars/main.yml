@@ -9,6 +9,7 @@ __proxmox__purpose_packages: >-
     {%- set purpose_packages_done = [] -%}
     {%- if proxmox__all.purposes is defined -%}
     {%-  for purpose in proxmox__purpose_names -%}
+    {%      set proxmox_purpose_loop = loop %}
     {%-     for purpose_type in proxmox__purpose_types -%}
     {%-         set host_config = proxmox__all.purposes[purpose] if purpose in proxmox__all.purposes else none -%}
     {%-         set is_host_purpose = true if host_config else false -%}
@@ -22,7 +23,7 @@ __proxmox__purpose_packages: >-
         'repo': 'deb ' + purpose_repo + '/' + purpose + ' ' + ansible_distribution_release + ' ' + purpose + '-' + purpose_type,
         'filename': purpose + '-' + (purpose_type | replace('_', '-')),
         'state': purpose_repo_state,
-        'update_cache': true
+        'update_cache': proxmox_purpose_loop.last
     }) -%}
     {%-         elif purpose.startswith('ceph-') or purpose.startswith('ceph_') -%}
     {%- set proxmox_repos = proxmox_repos.append({
@@ -30,7 +31,7 @@ __proxmox__purpose_packages: >-
         'repo': 'deb ' + purpose_repo + '/' + (purpose | replace('_', '-')) + ' ' + ansible_distribution_release + ' ' + purpose_type,
         'filename': 'ceph',
         'state': purpose_repo_state,
-        'update_cache': true
+        'update_cache': proxmox_purpose_loop.last
     }) -%}
     {%-         endif -%}
     {%-         if is_host_purpose and proxmox__purpose_packages[purpose] is defined and not purpose in purpose_packages_done -%}

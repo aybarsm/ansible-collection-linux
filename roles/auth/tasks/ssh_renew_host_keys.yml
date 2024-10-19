@@ -6,7 +6,7 @@
       - ansible__role_enabled | default(false) | bool
       - ansible__manage_local_facts | default(false) | bool
       - ansible__local_fact_name is defined
-    fail_msg: "aybarsm.linux.ansible role, local fact management must be enabled and local fact name needs to be defined. \
+    fail_msg: "aybarsm.helper.ansible role, local fact management must be enabled and local fact name needs to be defined. \
       (ansible__role_enabled: true & ansible__manage_local_facts: true & ansible__local_fact_name is defined)"
     success_msg: "Ansible requirements are met for one time ssh host key renewal."
   register: auth__ssh_host_keys_assert_ansible_role
@@ -52,7 +52,7 @@
 
   - name: Include update local facts tasks when ssh host keys renewed
     ansible.builtin.include_role:
-      name: aybarsm.linux.ansible
+      name: aybarsm.helper.ansible
       tasks_from: update_local_facts.yml
     vars:
       ansible__local_fact_updates:

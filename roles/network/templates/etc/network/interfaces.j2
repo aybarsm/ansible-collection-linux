@@ -39,6 +39,9 @@ iface {{ iface.name }} {{ addr_family }} {{ ifaceMethod }}
 {{ ifaceParams | aybarsm.helper.to_querystring('name', 'value', ' ', '\n') | indent(4, true) }}
 {%              endif %}
 {%          endif %}
+{%              if iface.comment is defined %}
+{{ iface.comment | comment }}
+{%              endif %}
 
 {%      endif %}
 {%  endfor %}

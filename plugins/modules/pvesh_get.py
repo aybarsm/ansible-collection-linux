@@ -1,26 +1,74 @@
+#
+# Copyright (c) 2016 Musee Ullah
+# Author: Musee Ullah (@lae)
+# Forked from https://github.com/lae/ansible-role-proxmox
+#
+
 #!/usr/bin/python
 
+ANSIBLE_METADATA = {
+    'metadata_version': '1.0',
+    'status': ['stableinterface'],
+    'supported_by': 'lae'
+}
+
+DOCUMENTATION = '''
+---
+module: proxmox_query
+
+short_description: Uses pvesh to query Proxmox API
+
+options:
+    query:
+        required: true
+        aliases: [ "name" ]
+        description:
+            - Specifies what resource to query
+
+author:
+    - Musee Ullah (@lae)
+'''
+
+EXAMPLES = '''
+- name: Query cluster status
+  proxmox_query:
+    query: cluster/status
+- name: Collect a list of running LXC containers for some hosts
+  proxmox_query:
+    query: "nodes/{{ item }}/lxc"
+  with_items:
+    - node01
+    - node02
+    - node03
+'''
+
+RETURN = '''
+response:
+    description: JSON response from pvesh provided by a query
+    type: json
+'''
+
 from ansible.module_utils.basic import AnsibleModule
-# import ansible_collections.aybarsm.linux.plugins.module_utils.pvecm as pvecm
+from ansible_collections.aybarsm.linux.plugins.module_utils.pvesh import ProxmoxShellError
+import ansible_collections.aybarsm.linux.plugins.module_utils.pvesh as pvesh
 
 def main():
     module = AnsibleModule(
         argument_spec = dict(
-            path=dict(type='path', required=True),
-            options=dict(type='dict', required=False),
-            noproxy=dict(type='bool', required=False, default=False),
-            human_readable=dict(type='bool', required=False, default=False),
-            noborder=dict(type='bool', required=False, default=False),
-            noheader=dict(type='bool', required=False, default=False),
-            output_format=dict(type='str', required=False, default='json', choices=['json', 'json-pretty', 'text', 'yaml']),
+            query=dict(type='str', required=True, aliases=['name']),
         ),
         supports_check_mode=True
     )
 
-    # rc, out, err = pvecm.status(module)
-
     result = {"changed": False}
-    result['response'] = module.params
+
+    try:
+        result['response'] = pvesh.get(module.params['query'])
+    except ProxmoxShellError as e:
+        if e.data:
+            result["response"] = e.data
+
+        module.fail_json(msg=e.message, status_code=e.status_code, **result)
 
     module.exit_json(**result)
 

@@ -1,11 +1,27 @@
 ---
+- name: Include iptables IPv4 cleanup tasks
+  ansible.builtin.include_tasks: iptables_cleanup.yml
+  vars:
+    iptables_cleanup_ip_ver: ipv4
+    iptables_cleanup_state_file: "{{ network__iptables_cleanup_v4_state_file }}"
+    iptables_cleanup_regex: "{{ network__iptables_cleanup_v4_cleanup_regex }}"
+  when: network__iptables_cleanup_v4 | bool and network__iptables_cleanup_v4_cleanup_regex | length > 0
+
+- name: Include iptables IPv6 cleanup tasks
+  ansible.builtin.include_tasks: iptables_cleanup.yml
+  vars:
+    iptables_cleanup_ip_ver: ipv6
+    iptables_cleanup_state_file: "{{ network__iptables_cleanup_v6_state_file }}"
+    iptables_cleanup_regex: "{{ network__iptables_cleanup_v6_cleanup_regex }}"
+  when: network__iptables_cleanup_v6 | bool and network__iptables_cleanup_v6_cleanup_regex | length > 0
+
 - name: Deploy iptables configuration
   become: true
   ansible.builtin.iptables:
     action: "{{ item.action | default(omit) }}"
     chain: "{{ item.chain | default(omit) }}"
     chain_management: "{{ item.chain_management | default(omit) }}"
-    comment: "{{ item.comment | default(omit) }}"
+    comment: "{{ rule_comment | default(omit, true) }}"
     ctstate: "{{ item.ctstate | default(omit) }}"
     destination: "{{ item.destination | default(omit) }}"
     destination_port: "{{ item.destination_port | default(omit) }}"
@@ -48,6 +64,11 @@
     to_source: "{{ item.to_source | default(omit) }}"
     uid_owner: "{{ item.uid_owner | default(omit) }}"
     wait: "{{ item.wait | default(omit) }}"
+  vars:
+    rule_comment: "{{ [(network__iptables_comment_prefix | default('')), (item.comment | default('')), (network__iptables_comment_suffix | default(''))] |
+      join(' ') | trim }}"
   loop: "{{ network__iptables_all }}"
   register: network__iptables_deploy
   when: network__iptables_all | default([]) | length > 0
+
+#TODO: Iptables cleanup regex

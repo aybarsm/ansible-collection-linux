@@ -7,6 +7,7 @@ network__manage_hostname: false
 network__manage_hosts: false
 network__manage_iptables: false
 network__manage_udev_rules: false
+network__manage_gai: false
 
 network__default: []
 network__group: []
@@ -99,8 +100,24 @@ network__hosts_auto_discovery_inventories: 'webservers:&atlanta'
 ##### END: network hosts vars
 
 ##### BEGIN: network udev rules vars
+network__iptables_comment_prefix: ''
+network__iptables_comment_suffix: ''
+network__iptables_cleanup_v4: false
+network__iptables_cleanup_v4_cleanup_regex: []
+network__iptables_cleanup_v4_state_file: /tmp/iptables_state.v4
+network__iptables_cleanup_v6: false
+network__iptables_cleanup_v6_cleanup_regex: []
+network__iptables_cleanup_v6_state_file: /tmp/iptables_state.v6
+##### END: network udev rules vars
+
+##### BEGIN: network udev rules vars
 network__udev_rules_file: /etc/udev/rules.d/70-persistent-net.rules
 network__udev_rules_template: etc/udev/rules.d/70-persistent-net.rules.j2
 network__udev_rules_backup: true
 network__udev_rules_remove: false
+##### END: network udev rules vars
+
+##### BEGIN: network udev rules vars
+# Prefer IPv4 over IPv6 > precedence ::ffff:0:0/96  100
+network__gai_prefer_ipv4: false
 ##### END: network udev rules vars

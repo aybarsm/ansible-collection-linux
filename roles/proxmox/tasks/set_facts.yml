@@ -16,6 +16,8 @@
     - proxmox__clusters | length > 0
     - __proxmox__cluster_query is defined
 
+  #TODO: Assertations for cluster configuration (when proxmox__manage_clusters is true)
+
 - name: Set facts for proxmox cluster configuration
   ansible.builtin.set_fact:
     __proxmox__cluster: "{{ {'members': cluster_members} | combine(cluster_play) if cluster_eligible else None }}"
@@ -44,6 +46,11 @@
     auth__manage_sshd_config: "{{ proxmox__manage_sshd_config if cluster_eligible and proxmox__manage_sshd_config else omit }}"
     auth__manage_ssh_config: "{{ proxmox__manage_ssh_config if cluster_eligible and proxmox__manage_ssh_config else omit }}"
     auth__host: "{{ node_auth + (auth__host | default([])) if cluster_eligible and use_auth else omit }}"
+    file_mgr__role_enabled: "{{ proxmox__manage_files if proxmox__manage_files else omit }}"
+
+    # #TODO: Remove below, testing only
+    # __proxmox__cluster_hosts: "{{ cluster_hosts }}"
+    # __proxmox__node_hosts: "{{ node_hosts }}"
   vars:
     cluster_play: "{{ __proxmox__cluster_configs | selectattr('host', 'eq', inventory_hostname) | first | default(None) }}"
     cluster_members: "{{ __proxmox__cluster_configs |
@@ -92,3 +99,14 @@
       ([node_sshd_config] if cluster_eligible and proxmox__manage_sshd_config else []) }}"
   when:
     - __proxmox__cluster_configs | length > 0
+
+# - name: Debug
+#   ansible.builtin.debug:
+#     msg:
+#       __proxmox__cluster_hosts: "{{ __proxmox__cluster_hosts }}"
+#       __proxmox__node_hosts: "{{ __proxmox__node_hosts }}"
+#   delegate_to: localhost
+
+# - name: Fail for debugging
+#   ansible.builtin.fail:
+#     msg: "Debugging"

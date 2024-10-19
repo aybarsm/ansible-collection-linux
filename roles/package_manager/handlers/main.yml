@@ -1,7 +1,7 @@
 ---
 # - name: Update local facts for the host upgrade
 #   ansible.builtin.include_role:
-#     name: aybarsm.linux.ansible
+#     name: aybarsm.helper.ansible
 #     tasks_from: update_local_facts.yml
 #   vars:
 #     ansible__local_fact_updates:
@@ -31,3 +31,14 @@
   when:
     - ansible_os_family | lower == 'redhat'
 
+- name: DEB APT Full Clean (autoclean, clean, autoremove and purge)
+  become: true
+  ansible.builtin.apt:
+    clean: true
+    autoclean: true
+    autoremove: true
+    purge: true
+  register: package_manager__deb_full_clean
+  listen: "package_manager__manager_full_clean"
+  when:
+    - ansible_os_family | lower == 'debian'
