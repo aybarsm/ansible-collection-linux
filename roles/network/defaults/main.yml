@@ -9,6 +9,7 @@ network__manage_iptables: false
 network__manage_udev_rules: false
 network__manage_gai: false
 
+network__use_only: ['host', 'group', 'default']
 network__default: []
 network__group: []
 network__host: []

@@ -1,0 +1,25 @@
+---
+- name: Proxmox QEMU Nic
+  community.general.proxmox_nic:
+    api_host: "{{ qemu_nic.api_host }}"
+    api_password: "{{ qemu_nic.api_password | default(omit, true) }}"
+    api_port: "{{ qemu_nic.api_port | default(omit, true) }}"
+    api_token_id: "{{ qemu_nic.api_token_id | default(omit, true) }}"
+    api_token_secret: "{{ qemu_nic.api_token_secret | default(omit, true) }}"
+    api_user: "{{ qemu_nic.api_user | default(omit, true) }}"
+    bridge: "{{ qemu_nic.bridge | default(omit, true) }}"
+    firewall: "{{ qemu_nic.firewall | default(omit, true) }}"
+    interface: "{{ qemu_nic.interface | default(omit, true) }}"
+    link_down: "{{ qemu_nic.link_down | default(omit, true) }}"
+    mac: "{{ qemu_nic.mac | default(omit, true) }}"
+    model: "{{ qemu_nic.model | default(omit, true) }}"
+    mtu: "{{ qemu_nic.mtu | default(omit, true) }}"
+    name: "{{ qemu_nic.name | default(omit, true) }}"
+    queues: "{{ qemu_nic.queues | default(omit, true) }}"
+    rate: "{{ qemu_nic.rate | default(omit, true) }}"
+    state: "{{ qemu_nic.state | default(omit, true) }}"
+    tag: "{{ qemu_nic.tag | default(omit, true) }}"
+    trunks: "{{ qemu_nic.trunks | default(omit, true) }}"
+    validate_certs: "{{ qemu_nic.validate_certs | default(omit, true) }}"
+    vmid: "{{ qemu_nic.vmid | default(omit, true) }}"
+  register: proxmox__apply_qemu_nic

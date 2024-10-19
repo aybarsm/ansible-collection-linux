@@ -1,3 +1,4 @@
+#TODO: re-enable geerlingguy.ntp role
 dependencies:
   - role: aybarsm.helper.ansible
-  - role: geerlingguy.ntp
+  # - role: geerlingguy.ntp

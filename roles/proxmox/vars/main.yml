@@ -1,102 +1,11 @@
-# The combination strategy below is highly nested hierarchy compliant and recommended (Example provided below)
-# proxmox__host > proxmox__group > proxmox__default
-proxmox__all: "{{ {'purposes': {}} | combine(proxmox__default, proxmox__group, proxmox__host, recursive=true, list_merge='replace') }}"
+proxmox__all: "{{ {'host': proxmox__host, 'group': proxmox__group, 'default': proxmox__default} | aybarsm.helper.role_vars(only=proxmox__use_only) }}"
 
-__proxmox__purpose_packages: >-
-    {%- set proxmox_repo_keys = [proxmox__repo_keys[ansible_distribution_release] | combine({'type': 'repo_key', 'state': 'present'})] -%}
-    {%- set proxmox_repos = [] -%}
-    {%- set proxmox_packages = [] -%}
-    {%- set purpose_packages_done = [] -%}
-    {%- if proxmox__all.purposes is defined -%}
-    {%-  for purpose in proxmox__purpose_names -%}
-    {%      set proxmox_purpose_loop = loop %}
-    {%-     for purpose_type in proxmox__purpose_types -%}
-    {%-         set host_config = proxmox__all.purposes[purpose] if purpose in proxmox__all.purposes else none -%}
-    {%-         set is_host_purpose = true if host_config else false -%}
-    {%-         set is_host_purpose_type = true if host_config and host_config.type is defined and host_config.type == purpose_type else false -%}
-    {%-         set purpose_package_version = host_config.version if host_config and host_config.version is defined else none -%}
-    {%-         set purpose_repo_state = 'present' if is_host_purpose and is_host_purpose_type else 'absent' -%}
-    {%-         set purpose_repo = proxmox__repo_url_enterprise if purpose_type == 'enterprise' else proxmox__repo_url_no_subscription -%}
-    {%-         if purpose in ['pve', 'pbs', 'pmg'] -%}
-    {%- set proxmox_repos = proxmox_repos.append({
-        'type': 'repo',
-        'repo': 'deb ' + purpose_repo + '/' + purpose + ' ' + ansible_distribution_release + ' ' + purpose + '-' + purpose_type,
-        'filename': purpose + '-' + (purpose_type | replace('_', '-')),
-        'state': purpose_repo_state,
-        'update_cache': proxmox_purpose_loop.last
-    }) -%}
-    {%-         elif purpose.startswith('ceph-') or purpose.startswith('ceph_') -%}
-    {%- set proxmox_repos = proxmox_repos.append({
-        'type': 'repo',
-        'repo': 'deb ' + purpose_repo + '/' + (purpose | replace('_', '-')) + ' ' + ansible_distribution_release + ' ' + purpose_type,
-        'filename': 'ceph',
-        'state': purpose_repo_state,
-        'update_cache': proxmox_purpose_loop.last
-    }) -%}
-    {%-         endif -%}
-    {%-         if is_host_purpose and proxmox__purpose_packages[purpose] is defined and not purpose in purpose_packages_done -%}
-    {%-             set purpose_packages_done = purpose_packages_done.append(purpose) -%}
-    {%-             for purpose_package in proxmox__purpose_packages[purpose] -%}
-    {%-                 set package_name = purpose_package + '=' + purpose_package_version if purpose_package_version else purpose_package -%}
-    {%- set proxmox_packages = proxmox_packages.append({
-        'type': 'package',
-        'name': package_name,
-        'state': 'present',
-        'update_cache': true
-    }) -%}
-    {%-             endfor -%}
-    {%-         endif -%}
-    {%-     endfor -%}
-    {%-  endfor -%}
-    {%- endif -%}
-    {{ proxmox_repo_keys + proxmox_repos + proxmox_packages }}
+__proxmox__cluster: "{{ proxmox__clusters | selectattr('target', 'contains', inventory_hostname) | first | default({}, true) }}"
 
-__proxmox__grub_change_strategy:
-    module: command
-    cmd: 'proxmox-boot-tool refresh'
-    immediate: true
-
-__proxmox__cluster_query: '*.{
-    host: inventory_hostname,
-    hostname: proxmox__hostname,
-    domain: proxmox__domain,
-    fqdn: join(`.`, [not_null(proxmox__hostname, ``), not_null(proxmox__domain, ``)]),
-    links: proxmox__cluster_links} |
-    [?not_null(hostname) && not_null(domain) && not_null(links) && contains(__MEMBERS__, host)]'
-
-__proxmox__root_user_selector:
-    - when:
-        - ['type', 'defined']
-        - ['type', 'equalto', 'user']
-        - ['name', 'defined']
-        - ['name', 'equalto', 'root']
-
-__proxmox__root_user:
-    type: user
-    name: root
-    generate_ssh_key: true
-
-__proxmox__ssh_config:
-    type: ssh_config
-    name: Host
-    value: ''
-    children:
-      - name: IdentityFile
-        value: /root/.ssh/id_rsa
-      - name: Port
-        value: "{{ proxmox__ssh_port | default(22) }}"
-
-__proxmox__sshd_config:
-    type: sshd_config
-    name: 'Match Address'
-    value: ''
-    children:
-      - name: PermitRootLogin
-        value: prohibit-password
-
-__proxmox__default_cluster_config:
-    manage_pools: false
-    manage_roles: false
-    manage_groups: false
-    manage_users: false
-    manage_acls: false
+__proxmox__module_vars:
+  api_host: "{{ hostvars[__proxmox__cluster.init]['proxmox__cluster_links'] | first | default(omit, true) if __proxmox__cluster.init is defined else omit }}"
+  api_user: "{{ __proxmox__cluster.api.user | default(omit, true) }}"
+  api_password: "{{ __proxmox__cluster.api.password | default(omit, true) }}"
+  api_port: "{{ __proxmox__cluster.api.port | default(omit, true) }}"
+  api_token_id: "{{ __proxmox__cluster.api.token.id | default(omit, true) }}"
+  api_token_secret: "{{ __proxmox__cluster.api.token.secret | default(omit, true) }}"
