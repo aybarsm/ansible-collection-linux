@@ -1,0 +1,52 @@
+- name: Check proxmox authorized_keys exists
+  ansible.builtin.stat:
+    path: /etc/pve/priv/authorized_keys
+  register: proxmox__stat_proxmox_auth_keys
+
+- name: Assert proxmox authorized_keys exists
+  ansible.builtin.assert:
+    that:
+      - proxmox__stat_proxmox_auth_keys.stat.exists
+    fail_msg: "Proxmox authorized_keys does not exist. This problem must be fixed."
+    success_msg: "Proxmox authorized_keys exists"
+  register: proxmox__assert_proxmox_auth_keys
+
+- name: Check Proxmox authorized_keys linked to root
+  ansible.builtin.stat:
+    path: /root/.ssh/authorized_keys
+  register: proxmox__stat_root_auth_keys
+  when: proxmox__assert_proxmox_auth_keys is success
+
+- name: Adjust root authorized_keys when not linked to Proxmox
+  block:
+    - name: Retrieve root authorized_keys content
+      ansible.builtin.slurp:
+        src: /root/.ssh/authorized_keys
+      register: proxmox__slurp_root_auth_keys
+    
+    - name: Remove root authorized_keys file
+      ansible.builtin.file:
+        path: /root/.ssh/authorized_keys
+        state: absent
+      register: proxmox__remove_root_auth_keys
+    
+    - name: Move root authorized_keys content to Proxmox
+      ansible.builtin.copy:
+        content: "{{ proxmox__slurp_root_auth_keys.content | b64decode }}"
+        dest: /etc/pve/priv/authorized_keys
+        mode: '0600'
+        owner: root
+        group: 'www-data'
+      register: proxmox__move_root_auth_keys_content
+    
+    - name: Link Proxmox authorized_keys to root
+      ansible.builtin.file:
+        src: /etc/pve/priv/authorized_keys
+        dest: /root/.ssh/authorized_keys
+        state: link
+      register: proxmox__link_proxmox_auth_keys
+
+  when:
+    - proxmox__assert_proxmox_auth_keys is success
+    - (not proxmox__stat_root_auth_keys.stat.islnk) or (proxmox__stat_root_auth_keys.stat.lnk_source != '/etc/pve/priv/authorized_keys')
+

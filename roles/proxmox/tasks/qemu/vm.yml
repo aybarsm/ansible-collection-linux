@@ -75,7 +75,7 @@
     nameservers: "{{ qemu_vm.nameservers | default(omit, true) }}"
     net: "{{ qemu_vm.net | default(omit, true) }}"
     newid: "{{ qemu_vm.newid | default(omit, true) }}"
-    node: "{{ info_vm_node | default((qemu_vm.node | default(omit, true)), true) }}"
+    node: "{{ resolved_vm_node | default((qemu_vm.node | default(omit, true)), true) }}"
     numa: "{{ qemu_vm.numa | default(omit, true) }}"
     numa_enabled: "{{ qemu_vm.numa_enabled | default(omit, true) }}"
     onboot: "{{ qemu_vm.onboot | default(omit, true) }}"
@@ -119,6 +119,6 @@
     vmid: "{{ qemu_vm.vmid | default(omit, true) }}"
     watchdog: "{{ qemu_vm.watchdog | default(omit, true) }}"
   vars:
-    info_vm_node: "{{ proxmox__info_vm.proxmox_vms[0].node | default(undef(), true) if proxmox__assert_qemu_vm_node is failed else undef() }}"
+    resolved_vm_node: "{{ proxmox__info_vm.proxmox_vms[0].node | default((__proxmox__cluster.init | default(undef(), true)), true) if proxmox__assert_qemu_vm_node is failed else undef() }}"
   register: proxmox__apply_qemu_vm
   when: proxmox__assert_qemu_vm_identifier is success

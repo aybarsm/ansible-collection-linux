@@ -1,6 +1,17 @@
 proxmox__all: "{{ {'host': proxmox__host, 'group': proxmox__group, 'default': proxmox__default} | aybarsm.helper.role_vars(only=proxmox__use_only) }}"
 
-__proxmox__cluster: "{{ proxmox__clusters | selectattr('target', 'contains', inventory_hostname) | first | default({}, true) }}"
+__proxmox__cluster_members_query: '*.{
+  host: inventory_hostname,
+  hostname: proxmox__hostname,
+  domain: proxmox__domain,
+  fqdn: join(`.`, [not_null(proxmox__hostname, ``), not_null(proxmox__domain, ``)]),
+  links: proxmox__cluster_links} |
+  [?not_null(hostname) && not_null(domain) && not_null(links) && contains(__MEMBERS__, host)]'
+
+__proxmox__cluster: "{{ proxmox__clusters | selectattr('target', 'contains', inventory_hostname) | first |
+  combine({'members': (dict(hostvars) | community.general.json_query( __proxmox__cluster_members_query |
+  replace('__MEMBERS__', ('[`' + ((proxmox__clusters | selectattr('target', 'contains', inventory_hostname) | first)['target'] | join('`,`')) + '`]'))) |
+  sort(attribute='host'))}) if proxmox__clusters | selectattr('target', 'contains', inventory_hostname) | length > 0 else omit }}"
 
 __proxmox__module_vars:
   api_host: "{{ hostvars[__proxmox__cluster.init]['proxmox__cluster_links'] | first | default(omit, true) if __proxmox__cluster.init is defined else omit }}"

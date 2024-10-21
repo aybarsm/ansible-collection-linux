@@ -1,0 +1,14 @@
+---
+- name: Deploy Proxmox datacenter user
+  aybarsm.linux.proxmox_user:
+    name: "{{ proxmox__dc_user.name }}"
+    state: "{{ proxmox__dc_user.state | default('present') }}"
+    enable: "{{ proxmox__dc_user.enable | default(omit) }}"
+    groups: "{{ proxmox__dc_user.groups | default([]) }}"
+    comment: "{{ proxmox__dc_user.comment | default(omit) }}"
+    email: "{{ proxmox__dc_user.email | default(omit) }}"
+    firstname: "{{ proxmox__dc_user.firstname | default(omit) }}"
+    lastname: "{{ proxmox__dc_user.lastname | default(omit) }}"
+    password: "{{ proxmox__dc_user.password | default(omit) }}"
+    expire: "{{ proxmox__dc_user.expire | default(omit) }}"
+  register: proxmox__deploy_dc_user

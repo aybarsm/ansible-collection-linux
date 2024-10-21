@@ -30,6 +30,9 @@
     dest: "{{ auth__sshd_config_file }}"
     backup: "{{ auth__sshd_config_backup | default(omit) | bool }}"
     validate: "{{ auth__sshd_validate | default(omit) }}"
+    mode: "{{ auth__sshd_config_file_module.mode | default(omit, true) }}"
+    owner: "{{ auth__sshd_config_file_module.owner | default(omit, true) }}"
+    group: "{{ auth__sshd_config_file_module.group | default(omit, true) }}"
   register: auth__sshd_config_apply
   notify: "auth__ssh_apply_changes"
   when: auth__sshd_config_all | default([]) | length > 0
@@ -64,6 +67,9 @@
     src: "{{ auth__ssh_config_template }}"
     dest: "{{ auth__ssh_config_file }}"
     backup: "{{ auth__ssh_config_backup | default(omit) | bool }}"
+    mode: "{{ auth__ssh_config_file_module.mode | default(omit, true) }}"
+    owner: "{{ auth__ssh_config_file_module.owner | default(omit, true) }}"
+    group: "{{ auth__ssh_config_file_module.group | default(omit, true) }}"
   register: auth__ssh_config_apply
   notify: "auth__ssh_apply_changes"
   when: auth__ssh_config_all | default([]) | length > 0

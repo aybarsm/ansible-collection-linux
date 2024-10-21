@@ -1,105 +1,15 @@
 ---
-auth__all: "{{ (auth__host + auth__group + auth__default) | selectattr('type', 'defined') }}"
+auth__all: "{{ {'host': auth__host, 'group': auth__group, 'default': auth__default} | aybarsm.helper.role_vars(only=auth__use_only) }}"
 
-__auth__config:
-  groups:
-    selectattr:
-      - when: [['type', 'eq', 'group']]
-      - when: "{{ __ansible.modules.ansible_builtin_group.uniques | product(['defined']) | list }}"
-        logic: or
-  authorized_keys:
-    selectattr:
-      - when:
-          - ['type', 'defined']
-          - ['type', 'equalto', 'authorized_key']
-          - ['user', 'defined']
-          - ['key', 'defined']
-  users:
-    selectattr:
-      - when:
-          - ['type', 'defined']
-          - ['type', 'equalto', 'user']
-      - when: "{{ __ansible.modules.ansible_builtin_user.uniques | product(['defined']) | list }}"
-        logic: or
-  sshd_config:
-    selectattr:
-      - when:
-          - ['type', 'defined']
-          - ['type', 'equalto', 'sshd_config']
-          - ['name', 'defined']
-          - ['value', 'defined']
-  ssh_config:
-    selectattr:
-      - when:
-          - ['type', 'defined']
-          - ['type', 'equalto', 'ssh_config']
-          - ['name', 'defined']
-          - ['value', 'defined']
-  ssh_config_module:
-    selectattr:
-      - when:
-          - ['type', 'defined']
-          - ['type', 'equalto', 'ssh_config_module']
-          - ['host', 'defined']
-  sudoers_file:
-    selectattr:
-      - when:
-          - ['type', 'defined']
-          - ['type', 'equalto', 'sudoers_file']
-          - ['entry', 'defined']
-  sudoers_module:
-    selectattr:
-      - when:
-          - ['type', 'defined']
-          - ['type', 'equalto', 'sudoers_module']
-          - ['name', 'defined']
+auth__users_all: "{{ auth__all | selectattr('entry__type', 'eq', 'user') }}"
 
-auth__groups_all: "{{ auth__all |
-  aybarsm.helper.selectattr(__auth__config.groups.selectattr) |
-  aybarsm.helper.unique_recursive(__ansible.modules.ansible_builtin_group.uniques) |
-  default([]) }}"
+auth__authorized_keys_all: "{{ auth__all | selectattr('entry__type', 'eq', 'authorized_key') }}"
 
-# Use lists_mergeby to combine all sections and sort by name for better output readability
-auth__users_all: "{{ [auth__default, auth__group, auth__host] |
-  map('selectattr', 'type', 'defined') | map('selectattr', 'type', 'equalto', 'user') |
-  map('aybarsm.helper.replace_aliases', __ansible.modules.ansible_builtin_user.aliases) |
-  map('selectattr', 'name', 'defined') |
-  community.general.lists_mergeby('name', recursive=false, list_merge='prepend') |
-  sort(attribute='name') | default([]) }}"
+auth__sshd_config_all: "{{ auth__all | selectattr('entry__type', 'eq', 'sshd_config') | 
+  sort(attribute='value', reverse=true) | sort(attribute='name', reverse=false) }}"
 
-auth__authorized_keys_all: "{{ auth__all |
-  aybarsm.helper.selectattr(__auth__config.authorized_keys.selectattr) |
-  aybarsm.helper.unique_combinations([['user', 'key']]) |
-  default([]) }}"
-
-# Sort name and value to avoid unneccessary changes
-auth__sshd_config_all: "{{ auth__all |
-  aybarsm.helper.selectattr(__auth__config.sshd_config.selectattr) |
-  aybarsm.helper.unique_combinations([['name', 'value']]) |
-  sort(attribute='value', reverse=true) | sort(attribute='name', reverse=false) |
-  default([]) }}"
-
-# Sort name and value to avoid unneccessary changes
-auth__ssh_config_all: "{{ auth__all |
-  aybarsm.helper.selectattr(__auth__config.ssh_config.selectattr) |
-  aybarsm.helper.unique_combinations([['name', 'value']]) |
-  sort(attribute='value', reverse=true) | sort(attribute='name', reverse=false) |
-  default([]) }}"
-
-auth__ssh_config_module_all: "{{ auth__all |
-  aybarsm.helper.selectattr(__auth__config.ssh_config_module.selectattr) |
-  aybarsm.helper.unique_recursive('host') |
-  default([]) }}"
-
-auth__sudoers_file_all: "{{ auth__all |
-  aybarsm.helper.selectattr(__auth__config.sudoers_file.selectattr) |
-  aybarsm.helper.unique_recursive('entry') |
-  default([]) }}"
-
-auth__sudoers_module_all: "{{ auth__all |
-  aybarsm.helper.selectattr(__auth__config.sudoers_module.selectattr) |
-  aybarsm.helper.unique_recursive('name') |
-  default([]) }}"
+auth__ssh_config_all: "{{ auth__all | selectattr('entry__type', 'eq', 'ssh_config') |
+  sort(attribute='value', reverse=true) | sort(attribute='name', reverse=false) }}"
 
 __auth__key_distribute_query: "*.auth__users_apply.results[*] | [] |
-  [?contains(not_null(item.distribute_ssh_key,``),`{{ inventory_hostname }}`)].{user: name, key: ssh_public_key}"
+  [?contains(not_null(item.entry__distribute_ssh_key,``),`{{ inventory_hostname }}`)].{user: name, key: ssh_public_key}"

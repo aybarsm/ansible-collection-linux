@@ -1,0 +1,7 @@
+---
+- name: Deploy Proxmox datacenter role
+  aybarsm.linux.proxmox_role:
+    name: "{{ proxmox__dc_role.name }}"
+    privileges: "{{ proxmox__dc_role.privileges }}"
+    state: "{{ proxmox__dc_role.state | default('present') }}"
+  register: proxmox__deploy_dc_role

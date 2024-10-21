@@ -1,5 +1,8 @@
 auth__role_enabled: false
 
+auth__no_log: true
+auth__use_only: ['host', 'group', 'default']
+
 auth__manage_groups: false
 auth__manage_users: false
 auth__manage_authorized_keys: false

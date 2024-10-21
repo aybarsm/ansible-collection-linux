@@ -1,6 +1,6 @@
 ---
 - name: Set fact for ssh key distribution to authorized keys, if any
-  set_fact:
+  ansible.builtin.set_fact:
     auth__authorized_keys_all: "{{ (auth__authorized_keys_all | default([])) + ssh_keys_distribute }}"
   vars:
     ssh_keys_distribute: "{{ dict(hostvars) |
@@ -19,22 +19,23 @@
   register: auth__authorized_keys_test_user_existence
   when:
     - auth__authorized_keys_all | length > 0
-    - ansible_check_mode | bool
+    - ansible_check_mode
 
 - name: Apply authorized keys configuration
   become: true
   ansible.posix.authorized_key:
-    comment: "{{ item.comment | default(omit) }}"
-    exclusive: "{{ item.exclusive | default(omit) }}"
-    follow: "{{ item.follow | default(omit) }}"
+    comment: "{{ item.comment | default(omit, true) }}"
+    exclusive: "{{ item.exclusive | default(omit, true) }}"
+    follow: "{{ item.follow | default(omit, true) }}"
     key: "{{ item.key }}"
-    key_options: "{{ item.key_options | default(omit) }}"
-    manage_dir: "{{ item.manage_dir | default(omit) }}"
-    path: "{{ item.path | default(omit) }}"
-    state: "{{ item.state | default(omit) }}"
+    key_options: "{{ item.key_options | default(omit, true) }}"
+    manage_dir: "{{ item.manage_dir | default(omit, true) }}"
+    path: "{{ item.path | default(omit, true) }}"
+    state: "{{ item.state | default(omit, true) }}"
     user: "{{ item.user }}"
-    validate_certs: "{{ item.validate_certs | default(omit) }}"
+    validate_certs: "{{ item.validate_certs | default(omit, true) }}"
   loop: "{{ auth__authorized_keys_all }}"
+  no_log: "{{ auth__no_log | default(true, true) | bool }}"
   register: auth__authorized_keys_apply
   when:
     - auth__authorized_keys_all | length > 0

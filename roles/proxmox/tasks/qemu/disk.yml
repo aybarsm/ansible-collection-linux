@@ -1,8 +1,28 @@
 ---
+- name: Assert conditions as disk size calculation requested
+  ansible.builtin.assert:
+    that:
+      - qemu_disk.state | default('', true) == 'resized'
+      - qemu_disk.size is defined
+      - qemu_disk.disk is defined
+      - qemu_disk.size is match('^(\\d+)([A-Za-z]+)$')
+    fail_msg: "Disk size calculation requested but state is not resized or size is not defined in correct format."
+    success_msg: "Disk size calculation requested and state is resized and size is defined in correct format."
+  register: proxmox__assert_qemu_disk_calc_size
+  when: qemu_disk.entry__calc_size | default(false, true)
+
+- name: Include VM Info Task if calculation requested and conditions are met
+  ansible.builtin.include_tasks:
+    file: info/vm.yml
+  vars:
+    vm_info: "{{ qemu_disk | combine({'config': 'current'}) }}"
+  when:
+    - qemu_disk.entry__calc_size | default(false, true)
+    - proxmox__assert_qemu_disk_calc_size is success
+
 - name: Proxmox QEMU DISK
   community.general.proxmox_disk:
     aio: "{{ qemu_disk.aio | default(omit, true) }}"
-    api_host: "{{ qemu_disk.api_host | default(omit, true) }}"
     api_host: "{{ qemu_disk.api_host }}"
     api_password: "{{ qemu_disk.api_password | default(omit, true) }}"
     api_port: "{{ qemu_disk.api_port | default(omit, true) }}"
@@ -51,7 +71,7 @@
     secs: "{{ qemu_disk.secs | default(omit, true) }}"
     serial: "{{ qemu_disk.serial | default(omit, true) }}"
     shared: "{{ qemu_disk.shared | default(omit, true) }}"
-    size: "{{ qemu_disk.size | default(omit, true) }}"
+    size: "{{ resolved_size | default(qemu_disk.size | default(omit, true), true) }}"
     snapshot: "{{ qemu_disk.snapshot | default(omit, true) }}"
     ssd: "{{ qemu_disk.ssd | default(omit, true) }}"
     state: "{{ qemu_disk.state | default(omit, true) }}"
@@ -65,4 +85,16 @@
     vmid: "{{ qemu_disk.vmid | default(omit, true) }}"
     werror: "{{ qemu_disk.werror | default(omit, true) }}"
     wwn: "{{ qemu_disk.wwn | default(omit, true) }}"
+  vars:
+    is_resolve_request: "{{ (qemu_disk.entry__calc_size | default(false, true)) and 
+      proxmox__assert_qemu_disk_calc_size is success and
+      proxmox__info_vm.proxmox_vms[0][qemu_disk.disk] is defined }}"
+    current_size: "{{ (proxmox__info_vm.proxmox_vms[0][qemu_disk.disk] | regex_search('size=(\\w+)(,|$)', '\\1') | first) if is_resolve_request else undef() }}"
+    current_bytes: "{{ (current_size | human_to_bytes) if is_resolve_request else undef() }}"
+    wanted_bytes: "{{ (qemu_disk.size | human_to_bytes) if is_resolve_request else undef() }}"
+    diff_bytes: "{{ (wanted_bytes | int) - (current_bytes | int) if is_resolve_request else undef() }}"
+    is_eligible: "{{ (diff_bytes | int > 0) if is_resolve_request else false }}"
+    diff_size: "{{ (diff_bytes | int | human_readable) if is_eligible else undef() }}"
+    diff_size_format: "{{ (diff_size | regex_search('(\\d+)\\.(\\d+)\\s([A-Za-z])', '\\1', '\\2', '\\3')) if is_eligible else undef() }}"
+    resolved_size: "{{ ('+' + (diff_size_format | first) + (diff_size_format | last)) if is_eligible else undef() }}"
   register: proxmox__apply_qemu_disk

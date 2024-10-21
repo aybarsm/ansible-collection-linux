@@ -40,5 +40,6 @@
     umask: "{{ item.umask | default(omit) }}"
     update_password: "{{ item.update_password | default(omit) }}"
   loop: "{{ auth__users_all }}"
+  no_log: "{{ auth__no_log | default(true, '') | bool }}"
   register: auth__users_apply
   when: auth__users_all | default([]) | length > 0

@@ -1,0 +1,7 @@
+---
+- name: Deploy Proxmox datacenter user group
+  aybarsm.linux.proxmox_group:
+    name: "{{ proxmox__dc_group.name }}"
+    state: "{{ proxmox__dc_group.state | default('present') }}"
+    comment: "{{ proxmox__dc_group.comment | default(omit) }}"
+  register: proxmox__deploy_dc_group

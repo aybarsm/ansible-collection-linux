@@ -1,9 +1,0 @@
----
-- name: Deploy Proxmox cluster roles
-  aybarsm.linux.proxmox_role:
-    name: "{{ item.name }}"
-    privileges: "{{ item.privileges }}"
-    state: "{{ item.state | default('present') }}"
-  with_items: "{{ __proxmox__cluster.roles }}"
-  when: __proxmox__cluster.roles | default([]) | length > 0
-  register: proxmox__cluster_roles_deploy
