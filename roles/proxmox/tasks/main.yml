@@ -103,12 +103,12 @@
 #     - proxmox__role_enabled | default(false) | bool
 #     - (proxmox__ssl_certificate | default(undef(), true)) is defined or (proxmox__ssl_key | default(undef(), true)) is defined
 
-- name: Include Proxmox datacenter tasks
-  ansible.builtin.include_tasks:
-    file: datacenter/datacenter.yml
-  when:
-    - proxmox__role_enabled
-    - __proxmox__cluster.init | default('', true) == inventory_hostname
+# - name: Include Proxmox datacenter tasks
+#   ansible.builtin.include_tasks:
+#     file: datacenter.yml
+#   when:
+#     - proxmox__role_enabled
+#     - __proxmox__cluster.init | default('', true) == inventory_hostname
 
 # - name: Include Proxmox QEMU tasks
 #   ansible.builtin.include_tasks:

@@ -15,3 +15,7 @@ network__hosts_all: "{{ network__all | selectattr('entry__type', 'eq', 'host') |
 network__hosts_all_ipv4: "{{ network__hosts_all | selectattr('ip', 'ansible.utils.ipv4') | sort(attribute='hostname') }}"
 network__hosts_all_ipv6: "{{ network__hosts_all | selectattr('ip', 'ansible.utils.ipv6') | sort(attribute='hostname') }}"
 ##### END: network hosts vars
+
+##### BEGIN: network iptables vars
+network__iptables_all: "{{ network__all | selectattr('entry__type', 'eq', 'iptables') }}"
+##### END: network iptables vars

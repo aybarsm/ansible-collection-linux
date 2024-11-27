@@ -1,5 +1,26 @@
 proxmox__role_enabled: false
 
+proxmox__repo_url_enterprise: https://enterprise.proxmox.com/debian
+proxmox__repo_url_no_subscription: http://download.proxmox.com/debian
+proxmox__repo_keys:
+  bookworm:
+    url: https://enterprise.proxmox.com/debian/proxmox-release-bookworm.gpg
+    keyring: /etc/apt/trusted.gpg.d/proxmox-release-bookworm.gpg
+  bullseye:
+    url: https://enterprise.proxmox.com/debian/proxmox-release-bullseye.gpg
+    keyring: /etc/apt/trusted.gpg.d/proxmox-release-bullseye.gpg
+
+proxmox__purpose_names: ['pve', 'pbs', 'pmg', 'ceph_pacific', 'ceph_quincy', 'ceph_reef', 'zfs']
+proxmox__purpose_types: ['enterprise', 'no-subscription']
+proxmox__purpose_packages:
+  pve: ['pve-manager']
+  pbs: ['proxmox-backup-server']
+  pmg: ['proxmox-mailgateway']
+  ceph_pacific: ['ceph', 'ceph-common', 'ceph-mds', 'ceph-fuse']
+  ceph_quincy: ['ceph', 'ceph-common', 'ceph-mds', 'ceph-fuse']
+  ceph_reef: ['ceph', 'ceph-common', 'ceph-mds', 'ceph-fuse']
+  zfs: ['zfsutils-linux', 'zfs-initramfs', 'zfs-zed']
+
 proxmox__clusters: {}
 
 proxmox__use_only: ['host', 'group', 'default']
