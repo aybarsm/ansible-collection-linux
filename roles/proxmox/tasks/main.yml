@@ -24,9 +24,9 @@
 #     - proxmox__role_enabled
 #     - proxmox__remove_subscription_warning | bool
   
-- name: Include Truenas Tasks
+- name: Include Freenas Tasks
   ansible.builtin.include_tasks:
-    file: "{{ proxmox__purposes.truenas.params.task_file }}"
+    file: "{{ proxmox__purposes.freenas.params.task_file }}"
   when:
     - proxmox__role_enabled
-    - proxmox__use_truenas
+    - proxmox__all | selectattr('entry__type', 'eq', 'purpose') | selectattr('name', 'eq', 'freenas') | length > 0
