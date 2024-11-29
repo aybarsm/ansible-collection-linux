@@ -1,58 +1,45 @@
 ---
-- name: Include Proxmox datacenter pool tasks
+- name: Include Proxmox Datacenter Pools Task
   ansible.builtin.include_tasks:
-    file: datacenter/pool.yml
-  loop: "{{ __proxmox__cluster.pools }}"
-  loop_control:
-    loop_var: proxmox__dc_pool
-    index_var: proxmox__dc_pool_index
+    file: datacenter/pools.yml
+  vars:
+    proxmox_datacenter_pools: "{{ proxmox__all | selectattr('entry__type', 'eq', 'pool') }}"
   when:
-    - __proxmox__cluster.manage_pools | default(false) | bool
-    - __proxmox__cluster.pools | default([]) | length > 0
+    - proxmox__manage_pools
+    - proxmox_datacenter_pools | length > 0
 
-- name: Include Proxmox datacenter role tasks
+- name: Include Proxmox Datacenter Roles Task
   ansible.builtin.include_tasks:
-    file: datacenter/role.yml
-  loop: "{{ __proxmox__cluster.roles }}"
-  loop_control:
-    loop_var: proxmox__dc_role
-    index_var: proxmox__dc_role_index
+    file: datacenter/roles.yml
+  vars:
+    proxmox_datacenter_roles: "{{ proxmox__all | selectattr('entry__type', 'eq', 'role') }}"
   when:
-    - __proxmox__cluster.manage_roles | default(false) | bool
-    - __proxmox__cluster.roles | default([]) | length > 0
+    - proxmox__manage_roles
+    - proxmox_datacenter_roles | length > 0
 
-- name: Include Proxmox datacenter user group tasks
+- name: Include Proxmox Datacenter User Groups Task
   ansible.builtin.include_tasks:
-    file: datacenter/group.yml
-  loop: "{{ __proxmox__cluster.groups }}"
-  loop_control:
-    loop_var: proxmox__dc_group
-    index_var: proxmox__dc_group_index
+    file: datacenter/user_groups.yml
+  vars:
+    proxmox_datacenter_user_groups: "{{ proxmox__all | selectattr('entry__type', 'eq', 'user_group') }}"
   when:
-    - proxmox__role_enabled
-    - __proxmox__cluster.manage_groups | default(false) | bool
-    - __proxmox__cluster.groups | default([]) | length > 0
+    - proxmox__manage_user_groups
+    - proxmox_datacenter_user_groups | length > 0
 
-- name: Include Proxmox datacenter user tasks
+- name: Include Proxmox Datacenter Users Task
   ansible.builtin.include_tasks:
-    file: datacenter/user.yml
-  loop: "{{ __proxmox__cluster.users }}"
-  loop_control:
-    loop_var: proxmox__dc_user
-    index_var: proxmox__dc_user_index
+    file: datacenter/users.yml
+  vars:
+    proxmox_datacenter_users: "{{ proxmox__all | selectattr('entry__type', 'eq', 'user') }}"
   when:
-    - proxmox__role_enabled
-    - __proxmox__cluster.manage_users | default(false) | bool
-    - __proxmox__cluster.users | default([]) | length > 0
+    - proxmox__manage_users
+    - proxmox_datacenter_users | length > 0
 
-- name: Include Proxmox datacenter ACL tasks
+- name: Include Proxmox Datacenter ACLs Task
   ansible.builtin.include_tasks:
-    file: datacenter/acl.yml
-  loop: "{{ __proxmox__cluster.acls }}"
-  loop_control:
-    loop_var: proxmox__dc_acl
-    index_var: proxmox__dc_acl_index
+    file: datacenter/acls.yml
+  vars:
+    proxmox_datacenter_acls: "{{ proxmox__all | selectattr('entry__type', 'eq', 'acl') }}"
   when:
-    - proxmox__role_enabled
-    - __proxmox__cluster.manage_acls | default(false) | bool
-    - __proxmox__cluster.acls | default([]) | length > 0
+    - proxmox__manage_acls
+    - proxmox_datacenter_acls | length > 0

@@ -1,0 +1,64 @@
+---
+- name: Include APT Tasks
+  ansible.builtin.include_tasks:
+    file: apt.yml
+  when:
+    - pkg_mgr__role_enabled | bool
+    - __pkg_mgr__use_apt | bool
+
+# - name: Include DEB repository tasks (APT)
+#   ansible.builtin.include_tasks:
+#     file: deb_repos.yml
+#   when:
+#     - pkg_mgr__role_enabled | default(false) | bool
+#     - pkg_mgr__manage_repos | default(false) | bool
+#     - ansible_os_family | default('') | lower == 'debian'
+
+# # TODO: Implement RPM repository tasks
+# # - name: Include RPM repository repository tasks (YUM)
+# #   ansible.builtin.include_tasks:
+# #     file: rpm_repo.yml
+# #   when:
+# #     - pkg_mgr__role_enabled | default(false) | bool
+# #     - ansible_os_family | default('') | lower == 'redhat'
+
+# - name: Include DEB package tasks (APT)
+#   ansible.builtin.include_tasks:
+#     file: deb_packages.yml
+#   when:
+#     - pkg_mgr__role_enabled | default(false) | bool
+#     - pkg_mgr__manage_packages | default(false) | bool
+#     - pkg_mgr__package_strategy | lower == 'specific'
+#     - ansible_os_family | default('') | lower == 'debian'
+
+# - name: Include RPM package tasks (DNF)
+#   ansible.builtin.include_tasks:
+#     file: rpm_packages.yml
+#   when:
+#     - pkg_mgr__role_enabled | default(false) | bool
+#     - pkg_mgr__manage_packages | default(false) | bool
+#     - pkg_mgr__package_strategy | lower == 'specific'
+#     - ansible_os_family | default('') | lower == 'redhat'
+
+# - name: Include upgrade tasks
+#   ansible.builtin.include_tasks:
+#     file: upgrade.yml
+#   when:
+#     - pkg_mgr__role_enabled | default(false) | bool
+#     - __pkg_mgr__upgrade_execute.decision
+
+# - name: Inform when upgrade skipped
+#   ansible.builtin.debug:
+#     msg: "{{ __pkg_mgr__upgrade_execute.reason }}"
+#   when:
+#     - pkg_mgr__role_enabled | default(false) | bool
+#     - not __pkg_mgr__upgrade_execute.decision
+#   delegate_to: localhost
+
+# - name: Include common package manager tasks
+#   ansible.builtin.include_tasks:
+#     file: common_packages.yml
+#   when:
+#     - pkg_mgr__role_enabled | default(false) | bool
+#     - pkg_mgr__manage_packages | default(false) | bool
+#     - pkg_mgr__package_strategy | lower == 'common'

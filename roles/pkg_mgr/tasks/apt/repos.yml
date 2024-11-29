@@ -1,5 +1,5 @@
 ---
-- name: Manage DEB repositories via APT
+- name: Manage APT Repositories
   become: true
   ansible.builtin.apt_repository:
     repo: "{{ item.repo }}"
@@ -12,8 +12,5 @@
     update_cache_retries: "{{ item.update_cache_retries | default(omit) }}"
     update_cache_retry_max_delay: "{{ item.update_cache_retry_max_delay | default(omit) }}"
     validate_certs: "{{ item.validate_certs | default(omit) }}"
-  loop: "{{ package_manager__repos_all }}"
-  register: package_manager__repos_deb_apply
-  when:
-    - package_manager__repos_all | type_debug == 'list'
-    - package_manager__repos_all | length > 0
+  loop: "{{ repos }}"
+  register: pkg_mgr__apply_apt_repos

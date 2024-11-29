@@ -1,5 +1,5 @@
 ---
-auth__all: "{{ {'host': auth__host, 'group': auth__group, 'default': auth__default} | aybarsm.helper.role_vars(only=auth__use_only) }}"
+auth__all: "{{ {'host': auth__host, 'group': auth__group, 'default': auth__default} | aybarsm.helper.role_items(only=auth__use_only) }}"
 
 auth__users_all: "{{ auth__all | selectattr('entry__type', 'eq', 'user') }}"
 

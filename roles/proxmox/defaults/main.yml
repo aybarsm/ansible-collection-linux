@@ -1,25 +1,47 @@
 proxmox__role_enabled: false
 
-proxmox__repo_url_enterprise: https://enterprise.proxmox.com/debian
-proxmox__repo_url_no_subscription: http://download.proxmox.com/debian
-proxmox__repo_keys:
-  bookworm:
-    url: https://enterprise.proxmox.com/debian/proxmox-release-bookworm.gpg
-    keyring: /etc/apt/trusted.gpg.d/proxmox-release-bookworm.gpg
-  bullseye:
-    url: https://enterprise.proxmox.com/debian/proxmox-release-bullseye.gpg
-    keyring: /etc/apt/trusted.gpg.d/proxmox-release-bullseye.gpg
+proxmox__manage_repo_keys: false
+proxmox__manage_repos: false
+proxmox__manage_packages: false
+proxmox__manage_pools: false
+proxmox__manage_roles: false
+proxmox__manage_user_groups: false
+proxmox__manage_users: false
+proxmox__manage_acls: false
 
-proxmox__purpose_names: ['pve', 'pbs', 'pmg', 'ceph_pacific', 'ceph_quincy', 'ceph_reef', 'zfs']
-proxmox__purpose_types: ['enterprise', 'no-subscription']
-proxmox__purpose_packages:
-  pve: ['pve-manager']
-  pbs: ['proxmox-backup-server']
-  pmg: ['proxmox-mailgateway']
-  ceph_pacific: ['ceph', 'ceph-common', 'ceph-mds', 'ceph-fuse']
-  ceph_quincy: ['ceph', 'ceph-common', 'ceph-mds', 'ceph-fuse']
-  ceph_reef: ['ceph', 'ceph-common', 'ceph-mds', 'ceph-fuse']
-  zfs: ['zfsutils-linux', 'zfs-initramfs', 'zfs-zed']
+proxmox__remove_subscription_warning: false
+proxmox__use_freenas: false
+
+proxmox__freenas:
+  remote_src: true
+  git:
+    repo: https://github.com/TheGrandWazoo/freenas-proxmox
+    clone: true
+  file_mgr:
+    - entry__type: patch
+      src: pve-manager/js/pvemanagerlib.js.patch
+      dest: /usr/share/pve-manager/js/pvemanagerlib.js
+      entry__handlers: restart_pve_services
+    - entry__type: patch
+      src: pve-manager/js/pvemanagerlib.js.patch
+      dest: /usr/share/pve-manager/js/pvemanagerlib.js
+      entry__handlers: restart_pve_services
+    - entry__type: patch
+      src: pve-manager/js/pvemanagerlib.js.patch
+      dest: /usr/share/pve-manager/js/pvemanagerlib.js
+      entry__handlers: restart_pve_services
+    - entry__type: patch
+      src: pve-manager/js/pvemanagerlib.js.patch
+      dest: /usr/share/pve-manager/js/pvemanagerlib.js
+      entry__handlers: restart_pve_services
+    - entry__type: copy
+      src: perl5/PVE/Storage/LunCmd/FreeNAS.pm
+      dest: /usr/share/perl5/PVE/Storage/LunCmd/FreeNAS.pm
+      entry__handlers: restart_pve_services
+    - entry__type: handlers
+      name: restart_pve_services
+      condition: any
+      handlers: "{{ {'name': ['pvedaemon', 'pveproxy', 'pvestatd', 'pve-ha-lrm', 'pve-ha-crm']} | aybarsm.helper.to_list_of_dicts({'entry__type': 'service', 'state': 'restarted'}) }}"
 
 proxmox__clusters: {}
 
@@ -28,3 +50,56 @@ proxmox__use_only: ['host', 'group', 'default']
 proxmox__default: []
 proxmox__group: []
 proxmox__host: []
+
+proxmox__repos:
+  types:
+    enterprise:
+      url: https://enterprise.proxmox.com/debian
+    no_subscription:
+      url: http://download.proxmox.com/debian
+  keys:
+    bookworm:
+      url: https://enterprise.proxmox.com/debian/proxmox-release-bookworm.gpg
+      keyring: /etc/apt/trusted.gpg.d/proxmox-release-bookworm.gpg
+    bullseye:
+      url: https://enterprise.proxmox.com/debian/proxmox-release-bullseye.gpg
+      keyring: /etc/apt/trusted.gpg.d/proxmox-release-bullseye.gpg
+
+proxmox__purposes:
+  pve:
+    packages: ['pve-manager']
+    repo:
+      file: 'pve-<<REPO_TYPE>>'
+      suffix: 'pve-<<REPO_TYPE>>'
+  pbs:
+    packages: ['proxmox-backup-server']
+    repo:
+      file: 'pbs-<<REPO_TYPE>>'
+      suffix: 'pbs-<<REPO_TYPE>>'
+  pmg: 
+    packages: ['proxmox-mailgateway']
+    repo:
+      file: 'pmg-<<REPO_TYPE>>'
+      suffix: 'pbs-<<REPO_TYPE>>'
+  ceph_pacific:
+    packages: ['ceph', 'ceph-common', 'ceph-mds', 'ceph-fuse']
+    repo:
+      file: 'ceph'
+      suffix: '<<REPO_TYPE>>'
+  ceph_quincy:
+    packages: ['ceph', 'ceph-common', 'ceph-mds', 'ceph-fuse']
+    repo:
+      file: 'ceph'
+      suffix: '<<REPO_TYPE>>'
+  ceph_reef:
+    packages: ['ceph', 'ceph-common', 'ceph-mds', 'ceph-fuse']
+    repo:
+      file: 'ceph'
+      suffix: '<<REPO_TYPE>>'
+  zfs:
+    packages: ['zfsutils-linux', 'zfs-initramfs', 'zfs-zed']
+  freenas:
+    packages: ['librest-client-perl', 'git', 'patch']
+    params:
+      task_file: freenas.yml
+      remote_src: true

@@ -34,8 +34,8 @@
     update_only: "{{ item.update_only | default(omit) }}"
     use_backend: "{{ item.use_backend | default(omit) }}"
     validate_certs: "{{ item.validate_certs | default(omit) }}"
-  loop: "{{ package_manager__packages_all }}"
-  register: package_manager__packages_rpm_apply
+  loop: "{{ pkg_mgr__packages_all }}"
+  register: pkg_mgr__packages_rpm_apply
   when:
-    - package_manager__packages_all | type_debug == 'list'
-    - package_manager__packages_all | length > 0
+    - pkg_mgr__packages_all | type_debug == 'list'
+    - pkg_mgr__packages_all | length > 0

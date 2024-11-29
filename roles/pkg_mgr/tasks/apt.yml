@@ -1,0 +1,29 @@
+---
+- name: Include APT Repository Key Task
+  ansible.builtin.include_tasks:
+    file: apt/repo_keys.yml
+  vars:
+    repo_keys: "{{ pkg_mgr__all | selectattr('entry__type', 'eq', 'repo_key') | aybarsm.helper.all_except(['entry__type']) }}"
+  when:
+    - pkg_mgr__manage_repo_keys | bool
+    - repo_keys | length > 0
+
+- name: Include APT Repository Task
+  ansible.builtin.include_tasks:
+    file: apt/repos.yml
+  vars:
+    repos: "{{ pkg_mgr__all | selectattr('entry__type', 'eq', 'repo') | aybarsm.helper.all_except(['entry__type']) }}"
+  when:
+    - pkg_mgr__manage_repos | bool
+    - repos | length > 0
+  register: pkg_mgr__apply_apt_repos
+
+- name: Include APT Package Task
+  ansible.builtin.include_tasks:
+    file: apt/packages.yml
+  vars:
+    packages: "{{ pkg_mgr__all | selectattr('entry__type', 'eq', 'package') | aybarsm.helper.all_except(['entry__type']) }}"
+  when:
+    - pkg_mgr__manage_packages | bool
+    - packages | length > 0
+  register: pkg_mgr__apply_apt_packages

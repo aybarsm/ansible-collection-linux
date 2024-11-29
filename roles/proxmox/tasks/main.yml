@@ -1,122 +1,32 @@
 ---
-# - name: Import aybarsm.linux.network role for Hosts
-#   ansible.builtin.import_role:
-#     name: aybarsm.linux.network
-#     tasks_from: hosts.yml
-#   vars:
-#     network__use_only: ['host']
-#     network__host: "{{ {
-#       'ip': (__proxmox__cluster.members | map(attribute='links') | map('first')),
-#       'hostname': (__proxmox__cluster.members | map(attribute='hostname')),
-#       'fqdn': (__proxmox__cluster.members | map(attribute='fqdn'))} |
-#       aybarsm.helper.to_list_of_dicts({'entry__type': 'host'}) }}"
-#   when: 
-#     - proxmox__role_enabled | default(false) | bool
-#     - __proxmox__cluster.members is defined
+- name: Include Package Manager Tasks
+  ansible.builtin.include_tasks:
+    name: package_manager.yml
+  when:
+    - proxmox__role_enabled
+    - __proxmox__pkg_mgr | length > 0
 
-# - name: Debug
-#   ansible.builtin.debug:
-#     msg:
-#       auth__host: "{{ auth__host }}"
-#   vars:
-#     auth__host:
-#       - entry__type: user
-#         name: root
-#         generate_ssh_key: true
-#         ssh_key_comment: "root@{{ proxmox__hostname }}"
-#         distribute_ssh_key: "{{ __proxmox__cluster.members | map(attribute='host') }}"
-#   delegate_to: localhost
-
-# - name: Include Proxmox authorized keys config tasks
-#   ansible.builtin.include_tasks:
-#     file: auth_key_config.yml
-#   when: 
-#     - proxmox__role_enabled | default(false) | bool
-
-# - name: Import aybarsm.linux.auth role
-#   ansible.builtin.import_role:
-#     name: aybarsm.linux.auth
-#   vars:
-#     cluster_nodes: "{{ __proxmox__cluster.members | rejectattr('host', 'eq', inventory_hostname) }}"
-#     auth__role_enabled: true
-#     auth__manage_users: true
-#     auth__manage_authorized_keys: true
-#     auth__manage_sshd_config: true
-#     auth__manage_ssh_config: true
-#     auth__use_only: ['host']
-#     auth__ssh_config_file: /root/.ssh/config
-#     auth__ssh_config_file_module:
-#       mode: '0600'
-#       owner: root
-#       group: root
-#     auth__ssh_changes_strategy:
-#       module: systemd_service
-#       immediate: false
-#       smart: true
-#       name: ssh.service
-#       enabled: true
-#       state: restarted
-#     auth__host:
-#       - entry__type: user
-#         entry__distribute_ssh_key: "{{ __proxmox__cluster.members | map(attribute='host') }}"
-#         name: root
-#         generate_ssh_key: true
-#         ssh_key_comment: "root@{{ proxmox__hostname }}"
-#         password: '$6$baqOo8I.hGLL0CIu$QlzIE8GhBpKBSY6sUUV9MROJyxtbwg2CPN86VZPv6jx23.vqwiL4/pAYQWaoeUia5NSTDVojtzlqsNTZBibGy/'
-#         shell: /bin/bash
-#         password_lock: false
-#       - entry__type: sshd_config
-#         name: PasswordAuthentication
-#         value: 'no'
-#       - entry__type: sshd_config
-#         name: PermitRootLogin
-#         value: 'no'
-#       - entry__type: sshd_config
-#         name: UseDNS
-#         value: 'no'
-#       - entry__type: sshd_config
-#         name: 'Match Address'
-#         value: "{{ cluster_nodes | map(attribute='links') | map('join', ',') | join(',') }}"
-#         children:
-#           - name: PermitRootLogin
-#             value: prohibit-password
-#       - entry__type: ssh_config
-#         name: Ciphers
-#         value: 'aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com'
-#       - entry__type: ssh_config
-#         name: Host
-#         value: "{{ cluster_nodes | aybarsm.helper.only_with(['hostname', 'fqdn', 'links']) | map('dict2items') | flatten | map(attribute='value') | flatten | join(' ') }}"
-#         children:
-#           - name: IdentityFile
-#             value: /root/.ssh/id_rsa
-#           - name: Port
-#             value: "{{ proxmox__ssh_port | default(22) }}"
-#   when: 
-#     - proxmox__role_enabled | default(false) | bool
-#     - __proxmox__cluster.members is defined
-
-#FIXME: ONE TIME ONLY BEFORE CLUSTER!!!
-# - name: Include Proxmox SSL Config tasks
-#   ansible.builtin.include_tasks:
-#     file: ssl_config.yml
-#   when: 
-#     - proxmox__role_enabled | default(false) | bool
-#     - (proxmox__ssl_certificate | default(undef(), true)) is defined or (proxmox__ssl_key | default(undef(), true)) is defined
-
-# - name: Include Proxmox datacenter tasks
+# - name: Include Datacenter Tasks
 #   ansible.builtin.include_tasks:
 #     file: datacenter.yml
 #   when:
 #     - proxmox__role_enabled
-#     - __proxmox__cluster.init | default('', true) == inventory_hostname
 
-# - name: Include Proxmox QEMU tasks
-#   ansible.builtin.include_tasks:
-#     file: qemu.yml
-#   loop: "{{ proxmox__all | selectattr('entry__type', 'match', '^qemu_(vm|disk|nic)$') }}"
-#   loop_control:
-#     loop_var: proxmox__qemu_item
-#     index_var: proxmox__qemu_item_index
+# - name: Remove subscription check wrapper function in web UI
+#   become: true
+#   ansible.builtin.lineinfile:
+#     path: /usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js
+#     line: '        orig_cmd(); return;'
+#     insertafter: '^\s+checked_command: function\(orig_cmd\) {$'
+#     firstmatch: true
+#     backup: true
 #   when:
-#     - proxmox__role_enabled | default(false) | bool
-#     - proxmox__all | selectattr('entry__type', 'match', '^qemu_(vm|disk|nic)$') | default([]) | length > 0
+#     - proxmox__role_enabled
+#     - proxmox__remove_subscription_warning | bool
+  
+- name: Include Truenas Tasks
+  ansible.builtin.include_tasks:
+    file: "{{ proxmox__purposes.truenas.params.task_file }}"
+  when:
+    - proxmox__role_enabled
+    - proxmox__use_truenas

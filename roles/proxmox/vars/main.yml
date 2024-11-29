@@ -1,4 +1,4 @@
-proxmox__all: "{{ {'host': proxmox__host, 'group': proxmox__group, 'default': proxmox__default} | aybarsm.helper.role_vars(only=proxmox__use_only) }}"
+proxmox__all: "{{ {'host': proxmox__host, 'group': proxmox__group, 'default': proxmox__default} | aybarsm.helper.role_items(only=proxmox__use_only) }}"
 
 __proxmox__cluster_members_query: '*.{
   host: inventory_hostname,
@@ -21,3 +21,44 @@ __proxmox__module_vars:
   api_token_id: "{{ __proxmox__cluster.api.token.id | default(omit, true) }}"
   api_token_secret: "{{ __proxmox__cluster.api.token.secret | default(omit, true) }}"
   validate_certs: "{{ __proxmox__cluster.validate_certs | default(omit, true) }}"
+
+__proxmox__pkg_mgr: >-
+  {%- set repo_keys = [proxmox__repos['keys'][ansible_distribution_release] | combine({'entry__type': 'repo_key', 'state': 'present'})] if proxmox__manage_repo_keys else [] -%}
+  {%- set repos = [] -%}
+  {%- set packages = [] -%}
+  {%- set purposes = proxmox__all | selectattr('entry__type', 'eq', 'purpose') -%}
+  {%- if (proxmox__manage_repos or proxmox__manage_packages) and purposes | length > 0 -%}
+  {%-   for pName, purpose in proxmox__purposes.items() -%}
+  {%-     set node = purposes | selectattr('name', 'in', [pName, pName | replace('_', '-')]) | default([{}]) | first -%}
+  {%-     if proxmox__manage_repos -%}
+  {%-       for tName, type in proxmox__repos.types.items() -%}
+  {%-         if purpose.repo is defined -%}
+  {%- set replacements = {
+        'PURPOSE_NAME': (pName | replace('_', '-')),
+        'REPO_URL' : type.url,
+        'REPO_TYPE': (tName | replace('_', '-')),
+        'RELEASE': ansible_distribution_release
+  } -%}
+  {%- set repos = repos.append({
+        'entry__type': 'repo',
+        'repo': ('deb <<REPO_URL>>/<<PURPOSE_NAME>> <<RELEASE>> ' + purpose.repo.suffix) | aybarsm.helper.replacer(replacements),
+        'filename': purpose.repo.file | aybarsm.helper.replacer(replacements),
+        'state': 'present' if node.repo is defined and node.repo in [tName, tName | replace('_', '-')] else 'absent',
+        'update_cache': false
+  }) -%}
+  {%-         endif -%}
+  {%-       endfor -%}
+  {%-     endif -%}
+  {%-     if proxmox__manage_packages and purpose.packages | default([]) | length > 0 and node.name is defined and node.name in [pName, pName | replace('_', '-')] -%}
+  {%-       for pkg in purpose.packages -%}
+  {%- set packages = packages.append({
+        'entry__type': 'package',
+        'name': pkg,
+        'state': 'present',
+        'update_cache': true
+  }) -%}
+  {%-       endfor -%}
+  {%-     endif -%}
+  {%-   endfor -%}
+  {%- endif -%}
+  {{ repo_keys + (repos | aybarsm.helper.combine_last({'update_cache': true})) + packages }}

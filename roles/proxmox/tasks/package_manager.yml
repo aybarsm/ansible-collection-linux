@@ -1,0 +1,15 @@
+- name: Include Package Manager
+  ansible.builtin.include_role:
+    name: aybarsm.linux.pkg_mgr
+  vars:
+    pkg_mgr__role_enabled: true
+    pkg_mgr__manage_repo_keys: true
+    pkg_mgr__manage_repos: true
+    pkg_mgr__manage_packages: true
+    pkg_mgr__package_module: specific
+    pkg_mgr__upgrade_strategy: never
+    pkg_mgr__use_only: ['host']
+    pkg_mgr__default: []
+    pkg_mgr__group: []
+    pkg_mgr__host: "{{ __proxmox__pkg_mgr }}"
+  register: proxmox__pkg_mgr

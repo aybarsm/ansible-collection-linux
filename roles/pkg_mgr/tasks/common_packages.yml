@@ -4,8 +4,8 @@
     name: "{{ item.name }}"
     state: "{{ item.state | default(omit) }}"
     use: "{{ item.use | default(omit) }}"
-  register: package_manager__packages_common_apply
+  register: pkg_mgr__packages_common_apply
   when:
-    - package_manager__packages_all | type_debug == 'list'
-    - package_manager__packages_all | length > 0
-  loop: "{{ package_manager__packages_all }}"
+    - pkg_mgr__packages_all | type_debug == 'list'
+    - pkg_mgr__packages_all | length > 0
+  loop: "{{ pkg_mgr__packages_all }}"

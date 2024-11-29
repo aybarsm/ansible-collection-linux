@@ -1,39 +1,41 @@
 ---
-package_manager__role_enabled: false
+pkg_mgr__role_enabled: false
 
-package_manager__manage_repo_keys: false
-package_manager__manage_repos: false
-package_manager__manage_packages: false
+pkg_mgr__manage_repo_keys: false
+pkg_mgr__manage_repos: false
+pkg_mgr__manage_packages: false
 
 # Package Manager Strategy:
 # Change the package manager strategy to use for the system i.e. ansible.builtin.apt vs ansible.builtin.package
 # Available options: specific, common
-package_manager__package_strategy: specific
+pkg_mgr__package_module: specific
 
 # Upgrade Strategy:
 # Upgrade the packages on the system either always, never or once
 # Once option stores the state of the upgrade in host with ansible facts
 # Once option requires ansible__role_enabled and ansible__manage_local_facts to be enabled
-# package_manager__upgrade_strategy: once
-package_manager__upgrade_strategy: never
+# pkg_mgr__upgrade_strategy: once
+pkg_mgr__upgrade_strategy: never
 
 # Upgrade Mode:
 # Available options for APT: full, clean_full, safe, clean_safe, yes, clean_yes, dist, clean_dist
 # Available options for DNF: full, clean_full
 # Clean options temproarily removes all repos other than OS default repos before upgrade
-package_manager__upgrade_mode: clean_full
+pkg_mgr__upgrade_mode: clean_full
 # This option removes the backup repo list files in clean upgrade mode after upgrade
-package_manager__clean_upgrade_post_remove_backups: true
+pkg_mgr__clean_upgrade_post_remove_backups: true
 
 # Shared Options:
-package_manager__repo_list_disabled_template: common/repo_list_disabled.j2
-package_manager__repo_list_disabled_comment: "This repository list temporarily disabled by ansible."
-package_manager__upgrade_update_repo_cache: true
-package_manager__repo_list_use_regex: true
+pkg_mgr__repo_list_disabled_template: common/repo_list_disabled.j2
+pkg_mgr__repo_list_disabled_comment: "This repository list temporarily disabled by ansible."
+pkg_mgr__upgrade_update_repo_cache: true
+pkg_mgr__repo_list_use_regex: true
 
 # TODO: Implement this feature
-# package_manager__package_simulation: true
+# pkg_mgr__package_simulation: true
 
-package_manager__default: []
-package_manager__group: []
-package_manager__host: []
+pkg_mgr__use_only: ['host', 'group', 'default']
+
+pkg_mgr__default: []
+pkg_mgr__group: []
+pkg_mgr__host: []

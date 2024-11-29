@@ -7,18 +7,18 @@
 #     ansible__local_fact_updates:
 #       - path: package_manager.upgrade
 #         value: "{{ (__ansible__local_facts.package_manager.upgrade | default([])) + [{'timestamp': now().utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ')}] }}"
-#   register: package_manager__upgrade_update_local_facts
-#   listen: "package_manager__upgrade_update_local_facts"
+#   register: pkg_mgr__upgrade_update_local_facts
+#   listen: "pkg_mgr__upgrade_update_local_facts"
 #   when:
-#     - package_manager__upgrade_strategy is defined
-#     - package_manager__upgrade_strategy == 'once'
+#     - pkg_mgr__upgrade_strategy is defined
+#     - pkg_mgr__upgrade_strategy == 'once'
 
 - name: Update DEB repo cache
   become: true
   ansible.builtin.apt:
     update_cache: true
-  register: package_manager__deb_update_repo_cache
-  listen: "package_manager__update_repo_cache"
+  register: pkg_mgr__deb_update_repo_cache
+  listen: "pkg_mgr__update_repo_cache"
   when:
     - ansible_os_family | lower == 'debian'
 
@@ -26,8 +26,8 @@
   become: true
   ansible.builtin.command:
     cmd: yum clean metadata
-  register: package_manager__rpm_clean_metadata_cache
-  listen: "package_manager__update_repo_cache"
+  register: pkg_mgr__rpm_clean_metadata_cache
+  listen: "pkg_mgr__update_repo_cache"
   when:
     - ansible_os_family | lower == 'redhat'
 
@@ -38,7 +38,7 @@
     autoclean: true
     autoremove: true
     purge: true
-  register: package_manager__deb_full_clean
-  listen: "package_manager__manager_full_clean"
+  register: pkg_mgr__deb_full_clean
+  listen: "pkg_mgr__manager_full_clean"
   when:
     - ansible_os_family | lower == 'debian'

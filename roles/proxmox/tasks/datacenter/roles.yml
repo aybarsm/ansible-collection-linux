@@ -1,0 +1,8 @@
+---
+- name: Manage Proxmox Datacenter Roles
+  aybarsm.linux.proxmox_role:
+    name: "{{ item.name }}"
+    privileges: "{{ item.privileges }}"
+    state: "{{ item.state | default('present') }}"
+  loop: "{{ proxmox_datacenter_roles }}"
+  register: proxmox__apply_datacenter_roles

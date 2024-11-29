@@ -1,0 +1,8 @@
+---
+- name: Manage Proxmox Datacenter Pools
+  aybarsm.linux.proxmox_pool:
+    name: "{{ item.name }}"
+    state: "{{ item.state | default('present') }}"
+    comment: "{{ item.comment | default(omit) }}"
+  loop: "{{ proxmox_datacenter_pools }}"
+  register: proxmox__apply_datacenter_pools

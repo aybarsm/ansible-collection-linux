@@ -1,9 +1,0 @@
----
-- name: Deploy Proxmox datacenter ACL
-  aybarsm.linux.proxmox_acl:
-    path: "{{ proxmox__dc_acl.path }}"
-    roles: "{{ proxmox__dc_acl.roles }}"
-    state: "{{ proxmox__dc_acl.state | default('present') }}"
-    groups: "{{ proxmox__dc_acl.groups | default([]) }}"
-    users: "{{ proxmox__dc_acl.users | default([]) }}"
-  register: proxmox__deploy_dc_acl

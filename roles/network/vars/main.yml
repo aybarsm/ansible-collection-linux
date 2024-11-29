@@ -1,4 +1,4 @@
-network__all: "{{ {'host': network__host, 'group': network__group, 'default': network__default} | aybarsm.helper.role_vars(only=network__use_only) }}"
+network__all: "{{ {'host': network__host, 'group': network__group, 'default': network__default} | aybarsm.helper.role_items(only=network__use_only) }}"
 
 ##### BEGIN: network sysctl vars
 network__sysctl_all: "{{ network__all | selectattr('entry__type', 'eq', 'sysctl') |

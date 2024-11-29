@@ -1,7 +1,0 @@
----
-- name: Deploy Proxmox datacenter pool
-  aybarsm.linux.proxmox_pool:
-    name: "{{ proxmox__dc_pool.name }}"
-    state: "{{ proxmox__dc_pool.state | default('present') }}"
-    comment: "{{ proxmox__dc_pool.comment | default(omit) }}"
-  register: proxmox__deploy_dc_pool

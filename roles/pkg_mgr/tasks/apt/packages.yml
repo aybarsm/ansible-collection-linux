@@ -1,5 +1,5 @@
 ---
-- name: Manage DEB packages via APT
+- name: Manage APT Packages
   become: true
   ansible.builtin.apt:
     name: "{{ item.name }}"
@@ -26,6 +26,5 @@
     update_cache_retries: "{{ item.update_cache_retries | default(omit) }}"
     update_cache_retry_max_delay: "{{ item.update_cache_retry_max_delay | default(omit) }}"
     upgrade: "{{ item.upgrade | default(omit) }}"
-  loop: "{{ package_manager__packages_all }}"
-  register: package_manager__packages_deb_deploy
-  when: package_manager__packages_all | default([]) | length > 0
+  loop: "{{ packages }}"
+  register: pkg_mgr__apply_apt_packages

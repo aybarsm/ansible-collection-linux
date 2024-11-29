@@ -4,12 +4,12 @@
     - name: Find repo list files (Clean Upgrade)
       become: true
       ansible.builtin.find:
-        paths: "{{ package_manager__repo_list_dir }}"
-        patterns: "{{ package_manager__repo_list_patterns }}"
-        use_regex: "{{ package_manager__repo_list_use_regex | bool }}"
-      register: package_manager__upgrade_clean_find_repo_list_files
+        paths: "{{ pkg_mgr__repo_list_dir }}"
+        patterns: "{{ pkg_mgr__repo_list_patterns }}"
+        use_regex: "{{ pkg_mgr__repo_list_use_regex | bool }}"
+      register: pkg_mgr__upgrade_clean_find_repo_list_files
       when:
-        - __package_manager__upgrade_clean | default(false) | bool
+        - __pkg_mgr__upgrade_clean | default(false) | bool
 
     - name: Deploy default repo lists by copy with backups (Clean Upgrade)
       become: true
@@ -17,12 +17,12 @@
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
         backup: true
-      loop: "{{ __package_manager__repo_list_defaults_copy }}"
-      register: package_manager__upgrade_clean_default_repo_list_copies
-      notify: "package_manager__update_repo_cache"
+      loop: "{{ __pkg_mgr__repo_list_defaults_copy }}"
+      register: pkg_mgr__upgrade_clean_default_repo_list_copies
+      notify: "pkg_mgr__update_repo_cache"
       when:
-        - __package_manager__upgrade_clean | default(false) | bool
-        - __package_manager__repo_list_defaults_copy | length > 0
+        - __pkg_mgr__upgrade_clean | default(false) | bool
+        - __pkg_mgr__repo_list_defaults_copy | length > 0
 
     - name: Deploy default repo lists by template with backups (Clean Upgrade)
       become: true
@@ -32,34 +32,34 @@
         backup: true
       loop: "{{ repo_list_templates }}"
       vars:
-        repo_lists_default: "{{ __package_manager__repo_list_defaults_template | default([]) }}"
-        repo_list_additonals_src: "{{ package_manager__upgrade_clean_find_repo_list_files.files | map(attribute='path') | default([]) }}"
+        repo_lists_default: "{{ __pkg_mgr__repo_list_defaults_template | default([]) }}"
+        repo_list_additonals_src: "{{ pkg_mgr__upgrade_clean_find_repo_list_files.files | map(attribute='path') | default([]) }}"
         repo_lists_additional: "{{ (repo_list_additonals_src | length > 0) |
           ternary(
-          {'dest': repo_list_additonals_src} | aybarsm.helper.to_list_of_dicts(defaults={'src': package_manager__repo_list_disabled_template}),
+          {'dest': repo_list_additonals_src} | aybarsm.helper.to_list_of_dicts(defaults={'src': pkg_mgr__repo_list_disabled_template}),
           []) |
-          rejectattr('dest', 'in', (__package_manager__repo_list_defaults | map(attribute='dest'))) }}"
+          rejectattr('dest', 'in', (__pkg_mgr__repo_list_defaults | map(attribute='dest'))) }}"
         repo_list_templates: "{{ repo_lists_default + repo_lists_additional }}"
-      register: package_manager__upgrade_clean_default_repo_list_templates
-      notify: "package_manager__update_repo_cache"
+      register: pkg_mgr__upgrade_clean_default_repo_list_templates
+      notify: "pkg_mgr__update_repo_cache"
       when:
-        - __package_manager__upgrade_clean | default(false) | bool
+        - __pkg_mgr__upgrade_clean | default(false) | bool
         - repo_list_templates | length > 0
 
     - name: Update package manager cache after repo list changes (Clean Upgrade)
       ansible.builtin.meta: 'flush_handlers'
-      when: package_manager__upgrade_clean_default_repo_list_copies.changed or package_manager__upgrade_clean_default_repo_list_templates.changed
+      when: pkg_mgr__upgrade_clean_default_repo_list_copies.changed or pkg_mgr__upgrade_clean_default_repo_list_templates.changed
 
     - name: Perform DEB package upgrade via APT
       become: true
       ansible.builtin.apt:
         update_cache: "{{ update_repo_cache }}"
-        upgrade: "{{ __package_manager__upgrade_mode }}"
-        dpkg_options: "{{ package_manager__upgrade_dpkg_options | default(omit) }}"
-      register: package_manager__upgrade_deb
+        upgrade: "{{ __pkg_mgr__upgrade_mode }}"
+        dpkg_options: "{{ pkg_mgr__upgrade_dpkg_options | default(omit) }}"
+      register: pkg_mgr__upgrade_deb
       vars:
-        handler_triggered: "{{ package_manager__upgrade_clean_default_repo_list_copies.changed or package_manager__upgrade_clean_default_repo_list_templates.changed }}"
-        update_repo_cache: "{{ false if handler_triggered else package_manager__upgrade_update_repo_cache }}"
+        handler_triggered: "{{ pkg_mgr__upgrade_clean_default_repo_list_copies.changed or pkg_mgr__upgrade_clean_default_repo_list_templates.changed }}"
+        update_repo_cache: "{{ false if handler_triggered else pkg_mgr__upgrade_update_repo_cache }}"
       when:
         - ansible_os_family | lower == 'debian'
 
@@ -68,9 +68,9 @@
       ansible.builtin.command:
         cmd: yum clean metadata
       vars:
-        handler_triggered: "{{ package_manager__upgrade_clean_default_repo_list_copies.changed or package_manager__upgrade_clean_default_repo_list_templates.changed }}"
-        update_repo_cache: "{{ false if handler_triggered else package_manager__upgrade_update_repo_cache }}"
-      register: package_manager__rpm_upgrade_clean_cache_pre
+        handler_triggered: "{{ pkg_mgr__upgrade_clean_default_repo_list_copies.changed or pkg_mgr__upgrade_clean_default_repo_list_templates.changed }}"
+        update_repo_cache: "{{ false if handler_triggered else pkg_mgr__upgrade_update_repo_cache }}"
+      register: pkg_mgr__rpm_upgrade_clean_cache_pre
       when:
         - ansible_os_family | lower == 'redhat'
         - update_repo_cache
@@ -80,7 +80,7 @@
       ansible.builtin.dnf:
         name: "*"
         state: latest
-      register: package_manager__rpm_upgrade
+      register: pkg_mgr__rpm_upgrade
       when: ansible_os_family | lower == 'redhat'
 
     - name: Include update local facts tasks when upgrade is successful
@@ -91,10 +91,10 @@
         ansible__local_fact_updates:
           package_manager:
             upgrade: ["{{ now().utcnow().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"]
-        is_deb_upgrade_success: "{{ ansible_os_family | lower == 'debian' and not package_manager__upgrade_deb.failed }}"
-        is_rpm_upgrade_success: "{{ ansible_os_family | lower == 'redhat' and not package_manager__rpm_upgrade.failed }}"
+        is_deb_upgrade_success: "{{ ansible_os_family | lower == 'debian' and not pkg_mgr__upgrade_deb.failed }}"
+        is_rpm_upgrade_success: "{{ ansible_os_family | lower == 'redhat' and not pkg_mgr__rpm_upgrade.failed }}"
       when:
-        - __package_manager__upgrade_once
+        - __pkg_mgr__upgrade_once
         - is_deb_upgrade_success or is_rpm_upgrade_success
   rescue:
       - name: Inform when errors
@@ -110,9 +110,9 @@
         backup: false
       loop: "{{ restore_files }}"
       vars:
-        repo_list_copies: "{{ package_manager__upgrade_clean_default_repo_list_copies.results | default([]) |
+        repo_list_copies: "{{ pkg_mgr__upgrade_clean_default_repo_list_copies.results | default([]) |
           selectattr('backup_file', 'defined') | selectattr('dest', 'defined') }}"
-        repo_list_templates: "{{ package_manager__upgrade_clean_default_repo_list_templates.results | default([]) |
+        repo_list_templates: "{{ pkg_mgr__upgrade_clean_default_repo_list_templates.results | default([]) |
           selectattr('backup_file', 'defined') | selectattr('dest', 'defined') }}"
         restore_src: "{{ (repo_list_copies | map(attribute='backup_file') | default([])) + (repo_list_templates | map(attribute='backup_file') | default([])) }}"
         restore_dest: "{{ (repo_list_copies | map(attribute='dest') | default([])) + (repo_list_templates | map(attribute='dest') | default([])) }}"
@@ -121,10 +121,10 @@
             {'src': restore_src, 'dest': restore_dest} | aybarsm.helper.to_list_of_dicts,
             []
           ) }}"
-      register: package_manager__upgrade_clean_restore_repo_lists
-      notify: "package_manager__update_repo_cache"
+      register: pkg_mgr__upgrade_clean_restore_repo_lists
+      notify: "pkg_mgr__update_repo_cache"
       when:
-        - __package_manager__upgrade_clean | default(false) | bool
+        - __pkg_mgr__upgrade_clean | default(false) | bool
         - restore_files | length > 0
 
     - name: Remove backup repo list files (Clean Upgrade)
@@ -132,13 +132,13 @@
       ansible.builtin.file:
         path: "{{ item }}"
         state: absent
-      loop: "{{ package_manager__upgrade_clean_restore_repo_lists.results | map(attribute='src') }}"
-      register: package_manager__upgrade_clean_remove_backup_repo_lists
+      loop: "{{ pkg_mgr__upgrade_clean_restore_repo_lists.results | map(attribute='src') }}"
+      register: pkg_mgr__upgrade_clean_remove_backup_repo_lists
       when:
-        - __package_manager__upgrade_clean | default(false) | bool
-        - package_manager__clean_upgrade_post_remove_backups | default(false) | bool
-        - package_manager__upgrade_clean_restore_repo_lists.results | default([]) | length > 0
+        - __pkg_mgr__upgrade_clean | default(false) | bool
+        - pkg_mgr__clean_upgrade_post_remove_backups | default(false) | bool
+        - pkg_mgr__upgrade_clean_restore_repo_lists.results | default([]) | length > 0
 
     - name: Update package manager cache after repo list changes (Clean Upgrade)
       ansible.builtin.meta: 'flush_handlers'
-      when: package_manager__upgrade_clean_restore_repo_lists.changed
+      when: pkg_mgr__upgrade_clean_restore_repo_lists.changed
