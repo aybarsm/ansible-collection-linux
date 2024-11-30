@@ -1,8 +1,17 @@
 proxmox__all: "{{ {'host': proxmox__host, 'group': proxmox__group, 'default': proxmox__default} | aybarsm.helper.role_items(only=proxmox__use_only) }}"
+
 __proxmox__purposes: "{{ {
-  'key': (proxmox__all | selectattr('entry__type', 'eq', 'purpose') | map(attribute='name')),
-  'value': (proxmox__all | selectattr('entry__type', 'eq', 'purpose') | map('aybarsm.helper.all_except', ['entry__type', 'name']))
-  } | aybarsm.helper.to_list_of_dicts() | items2dict }}"
+  'key': (proxmox__all | selectattr('_type', 'eq', 'purpose') | map(attribute='name')),
+  'value': (proxmox__all | selectattr('_type', 'eq', 'purpose') | map('aybarsm.helper.all_except', ['_type', 'name']))
+  } | aybarsm.helper.to_list_of_dicts() | items2dict | 
+  aybarsm.helper.combine_reverse(({'freenas': {
+    'remote_src': proxmox__role_config.purpose.freenas.remote_src,
+    'task_file': proxmox__role_config.purpose.freenas.task_file 
+    }} if proxmox__all | selectattr('_type', 'eq', 'purpose') | selectattr('name', 'eq', 'freenas') | length > 0 else {}), recursive=true) }}"
+
+# __proxmox__freenas:
+#   remote_src: "{{ __proxmox__purposes.freenas.remote_src | default(proxmox__role_config.purpose.freenas.remote_src) }}"
+#   delegate:
 
 __proxmox__cluster_members_query: '*.{
   host: inventory_hostname,
@@ -27,16 +36,14 @@ __proxmox__module_vars:
   validate_certs: "{{ __proxmox__cluster.validate_certs | default(omit, true) }}"
 
 __proxmox__pkg_mgr: >-
-  {%- set repo_keys = [proxmox__repos['keys'][ansible_distribution_release] | combine({'entry__type': 'repo_key', 'state': 'present'})] if proxmox__manage_repo_keys else [] -%}
+  {%- set repo_keys = [proxmox__role_config.repo.key[ansible_distribution_release] | combine({'_type': 'repo_key', 'state': 'present'})] -%}
   {%- set repos = [] -%}
   {%- set packages = [] -%}
-  {%- set purposes = proxmox__all | selectattr('entry__type', 'eq', 'purpose') -%}
-  {%- if (proxmox__manage_repos or proxmox__manage_packages) and purposes | length > 0 -%}
-  {%-   for pName, purpose in proxmox__purposes.items() -%}
-  {%-     set node = purposes | selectattr('name', 'in', [pName, pName | replace('_', '-')]) | default([{}]) | first -%}
-  {%-     if proxmox__manage_repos -%}
-  {%-       for tName, type in proxmox__repos.types.items() -%}
-  {%-         if purpose.repo is defined -%}
+  {%- set purposes = proxmox__all | selectattr('_type', 'eq', 'purpose') -%}
+  {%- for pName, purpose in proxmox__role_config.purpose.items() -%}
+  {%-   set node = purposes | selectattr('name', 'in', [pName, pName | replace('_', '-')]) | default([{}]) | first -%}
+  {%-   for tName, type in proxmox__role_config.repo.type.items() -%}
+  {%-     if purpose.repo is defined -%}
   {%- set replacements = {
         'PURPOSE_NAME': (pName | replace('_', '-')),
         'REPO_URL' : type.url,
@@ -44,19 +51,17 @@ __proxmox__pkg_mgr: >-
         'RELEASE': ansible_distribution_release
   } -%}
   {%- set repos = repos.append({
-        'entry__type': 'repo',
+        '_type': 'repo',
         'repo': ('deb <<REPO_URL>>/<<PURPOSE_NAME>> <<RELEASE>> ' + purpose.repo.suffix) | aybarsm.helper.replacer(replacements),
         'filename': purpose.repo.file | aybarsm.helper.replacer(replacements),
         'state': 'present' if node.repo is defined and node.repo in [tName, tName | replace('_', '-')] else 'absent',
         'update_cache': false
   }) -%}
-  {%-         endif -%}
-  {%-       endfor -%}
   {%-     endif -%}
-  {%-     if proxmox__manage_packages and purpose.packages | default([]) | length > 0 and node.name is defined and node.name in [pName, pName | replace('_', '-')] -%}
+  {%-     if purpose.packages | default([]) | length > 0 and node.name is defined and node.name in [pName, pName | replace('_', '-')] -%}
   {%-       for pkg in purpose.packages -%}
   {%- set packages = packages.append({
-        'entry__type': 'package',
+        '_type': 'package',
         'name': pkg,
         'state': 'present',
         'update_cache': true
@@ -64,5 +69,5 @@ __proxmox__pkg_mgr: >-
   {%-       endfor -%}
   {%-     endif -%}
   {%-   endfor -%}
-  {%- endif -%}
+  {%- endfor -%}
   {{ repo_keys + (repos | aybarsm.helper.combine_last({'update_cache': true})) + packages }}

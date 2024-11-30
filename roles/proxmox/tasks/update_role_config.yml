@@ -1,0 +1,6 @@
+---
+- name: Set Fact to Update Proxmox Role Config
+  ansible.utils.set_fact:
+    proxmox__role_config: "{{ proxmox__role_config | default({}) | combine(proxmox__role_config_updates, recursive=true, list_merge='replace') }}"
+  register: proxmox__update_role_config
+  when: proxmox__role_config_updates | default({}) | keys | length > 0

@@ -6,20 +6,20 @@
         file: qemu/vm.yml
       vars:
         qemu_vm: "{{ __proxmox__module_vars | combine(proxmox__qemu_item) }}"
-      when: proxmox__qemu_item.entry__type == 'qemu_vm'
+      when: proxmox__qemu_item._type== 'qemu_vm'
     
     - name: "Include QEMU NIC Tasks - Index: {{ proxmox__qemu_item_index }}"
       ansible.builtin.include_tasks:
         file: qemu/nic.yml
       vars:
         qemu_nic: "{{ __proxmox__module_vars | combine(proxmox__qemu_item) }}"
-      when: proxmox__qemu_item.entry__type == 'qemu_nic'
+      when: proxmox__qemu_item._type== 'qemu_nic'
     
     - name: "Include QEMU DISK Tasks - Index: {{ proxmox__qemu_item_index }}"
       ansible.builtin.include_tasks:
         file: qemu/disk.yml
       vars:
         qemu_disk: "{{ __proxmox__module_vars | combine(proxmox__qemu_item) }}"
-      when: proxmox__qemu_item.entry__type == 'qemu_disk'
+      when: proxmox__qemu_item._type== 'qemu_disk'
 
   delegate_to: localhost

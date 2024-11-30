@@ -1,72 +1,67 @@
 ---
-- name: Set Facts for Proxmox Freenas
-  ansible.builtin.set_fact:
-    freenas_remote_src: "{{ freenas_remote_src }}"
-    freenas_delegate: "{{ inventory_hostname if freenas_remote_src else 'localhost' }}"
-  vars:
-    freenas_remote_src: "{{ __proxmox__purposes.freenas.remote_src | default(proxmox__purposes.freenas.remote_src) }}"
-  register: proxmox__freenas__set_fact
+- name: Apply Freenas
+  block:
+    - name: Create Temp Directory for Git Repo
+      ansible.builtin.tempfile:
+        state: directory
+      register: proxmox__freenas__temp_dir
+      delegate_to: "{{ inventory_hostname if __proxmox__purposes.freenas.remote_src else 'localhost' }}"
 
-- name: Create Temp Directory for Git Repo
-  ansible.builtin.tempfile:
-    state: directory
-  register: proxmox__freenas__temp_dir
-  delegate_to: "{{ freenas_delegate }}"
+    - name: Include Git Task to Clone Freenas Repo
+      ansible.builtin.include_role:
+        name: aybarsm.helper.misc
+        tasks_from: ansible/builtin/git.yml
+      vars:
+        misc__item:
+          repo: https://github.com/TheGrandWazoo/freenas-proxmox
+          clone: true
+          dest: "{{ proxmox__freenas__temp_dir.path }}"
+          _module:
+            delegate_to: "{{ inventory_hostname if __proxmox__purposes.freenas.remote_src else 'localhost' }}"
+      register: proxmox__freenas__git
+      when: proxmox__freenas__temp_dir.path is defined
 
-- name: Include Git Task to Clone Freenas Repo
-  ansible.builtin.include_role:
-    name: aybarsm.helper.misc
-    tasks_from: ansible/builtin/git.yml
-  vars:
-    misc__item:
-      repo: https://github.com/TheGrandWazoo/freenas-proxmox
-      clone: true
-      dest: "{{ proxmox__freenas__temp_dir.path }}"
-      __module:
-        delegate_to: "{{ freenas_delegate }}"
-  register: proxmox__freenas__git
-  when: proxmox__freenas__temp_dir.path is defined
-
-- name: Include File Manager Role to Apply Changes
-  ansible.builtin.include_role:
-    name: aybarsm.helper.file_mgr        
-  vars:
-    file_mgr__role_enabled: true
-    file_mgr__strict_safe: true
-    file_mgr__no_log: false
-    file_mgr__use_only: ['host']
-    file_mgr__host:
-      - entry__type: patch
-        src: "{{ proxmox__freenas__temp_dir.path }}/pve-manager/js/pvemanagerlib.js.patch"
-        dest: /usr/share/pve-manager/js/pvemanagerlib.js
-        remote_src: "{{ freenas_remote_src }}"
-        entry__handlers: restart_pve_services
-      - entry__type: patch
-        src: "{{ proxmox__freenas__temp_dir.path }}/perl5/PVE/Storage/ZFSPlugin.pm.patch"
-        dest: /usr/share/perl5/PVE/Storage/ZFSPlugin.pm
-        remote_src: "{{ freenas_remote_src }}"
-        entry__handlers: restart_pve_services
-      - entry__type: patch
-        src: "{{ proxmox__freenas__temp_dir.path }}/pve-docs/api-viewer/apidoc.js.patch"
-        dest: /usr/share/pve-docs/api-viewer/apidoc.js
-        remote_src: "{{ freenas_remote_src }}"
-        entry__handlers: restart_pve_services
-      - entry__type: copy
-        src: "{{ proxmox__freenas__temp_dir.path }}/perl5/PVE/Storage/LunCmd/FreeNAS.pm"
-        dest: /usr/share/perl5/PVE/Storage/LunCmd/FreeNAS.pm
-        remote_src: "{{ freenas_remote_src }}"
-        entry__handlers: restart_pve_services
-      - entry__type: handlers
-        name: restart_pve_services
-        condition: any
-        handlers: "{{ {'name': ['pvedaemon', 'pveproxy', 'pvestatd', 'pve-ha-lrm', 'pve-ha-crm']} | 
-          aybarsm.helper.to_list_of_dicts({'entry__type': 'service', 'state': 'restarted'}) }}"
-  register: proxmox__freenas__patch
-  when: proxmox__freenas__temp_dir.path is defined
-
-- name: Remove Git Repo Temp Directory
-  ansible.builtin.file:
-    path: "{{ proxmox__freenas__temp_dir.path }}"
-    state: absent
-  delegate_to: "{{ freenas_delegate }}"
-  when: proxmox__freenas__temp_dir.path is defined
+    - name: Include File Manager Role to Apply Changes
+      ansible.builtin.include_role:
+        name: aybarsm.helper.file_mgr
+      vars:
+        file_mgr__role_enabled: true
+        file_mgr__strict_safe: true
+        file_mgr__no_log: false
+        file_mgr__use_only: ['host']
+        file_mgr__host:
+          - _type: patch
+            src: "{{ proxmox__freenas__temp_dir.path }}/pve-manager/js/pvemanagerlib.js.patch"
+            dest: /usr/share/pve-manager/js/pvemanagerlib.js
+            remote_src: "{{ __proxmox__purposes.freenas.remote_src }}"
+            _handler: restart_pve_services
+          - _type: patch
+            src: "{{ proxmox__freenas__temp_dir.path }}/perl5/PVE/Storage/ZFSPlugin.pm.patch"
+            dest: /usr/share/perl5/PVE/Storage/ZFSPlugin.pm            
+            remote_src: "{{ __proxmox__purposes.freenas.remote_src }}"
+            _handler: restart_pve_services
+          - _type: patch
+            src: "{{ proxmox__freenas__temp_dir.path }}/pve-docs/api-viewer/apidoc.js.patch"
+            dest: /usr/share/pve-docs/api-viewer/apidoc.js
+            remote_src: "{{ __proxmox__purposes.freenas.remote_src }}"
+            _handler: restart_pve_services
+          - _type: copy
+            src: "{{ proxmox__freenas__temp_dir.path }}/perl5/PVE/Storage/LunCmd/FreeNAS.pm"
+            dest: /usr/share/perl5/PVE/Storage/LunCmd/FreeNAS.pm
+            remote_src: "{{ __proxmox__purposes.freenas.remote_src }}"
+            _handler: restart_pve_services
+          - _type: handler
+            _name: restart_pve_services
+            _when: any
+            _actions: "{{ {'name': ['pvedaemon', 'pveproxy', 'pvestatd', 'pve-ha-lrm', 'pve-ha-crm']} | 
+              aybarsm.helper.to_list_of_dicts({'_type': 'service', 'state': 'restarted'}) }}"
+      register: proxmox__freenas__patch
+      when: proxmox__freenas__temp_dir.path is defined
+  
+  always:
+    - name: Remove Git Repo Temp Directory
+      ansible.builtin.file:
+        path: "{{ proxmox__freenas__temp_dir.path }}"
+        state: absent
+      delegate_to: "{{ inventory_hostname if __proxmox__purposes.freenas.remote_src else 'localhost' }}"
+      when: proxmox__freenas__temp_dir.path is defined

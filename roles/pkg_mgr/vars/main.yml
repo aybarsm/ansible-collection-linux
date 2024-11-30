@@ -2,7 +2,7 @@ pkg_mgr__all: "{{ {'host': pkg_mgr__host, 'group': pkg_mgr__group, 'default': pk
 
 __pkg_mgr__use_apt: "{{ ansible_os_family | default('') | lower == 'debian' and pkg_mgr__package_module == 'specific' }}"
 
-# pkg_mgr__packages: "{{ pkg_mgr__all | selectattr('entry__type', 'eq', 'package') }}"
-# pkg_mgr__repo_keys: "{{ pkg_mgr__all | selectattr('entry__type', 'eq', 'repo_key') }}"
-# pkg_mgr__repos: "{{ pkg_mgr__all | selectattr('entry__type', 'eq', 'repo') }}"
-# pkg_mgr__repo_lists: "{{ pkg_mgr__all | selectattr('entry__type', 'eq', 'repo_list') }}"
+# pkg_mgr__packages: "{{ pkg_mgr__all | selectattr('_type', 'eq', 'package') }}"
+# pkg_mgr__repo_keys: "{{ pkg_mgr__all | selectattr('_type', 'eq', 'repo_key') }}"
+# pkg_mgr__repos: "{{ pkg_mgr__all | selectattr('_type', 'eq', 'repo') }}"
+# pkg_mgr__repo_lists: "{{ pkg_mgr__all | selectattr('_type', 'eq', 'repo_list') }}"

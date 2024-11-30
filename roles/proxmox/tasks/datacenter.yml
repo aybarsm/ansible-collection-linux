@@ -3,7 +3,7 @@
   ansible.builtin.include_tasks:
     file: datacenter/pools.yml
   vars:
-    proxmox_datacenter_pools: "{{ proxmox__all | selectattr('entry__type', 'eq', 'pool') }}"
+    proxmox_datacenter_pools: "{{ proxmox__all | selectattr('_type', 'eq', 'pool') }}"
   when:
     - proxmox__manage_pools
     - proxmox_datacenter_pools | length > 0
@@ -12,7 +12,7 @@
   ansible.builtin.include_tasks:
     file: datacenter/roles.yml
   vars:
-    proxmox_datacenter_roles: "{{ proxmox__all | selectattr('entry__type', 'eq', 'role') }}"
+    proxmox_datacenter_roles: "{{ proxmox__all | selectattr('_type', 'eq', 'role') }}"
   when:
     - proxmox__manage_roles
     - proxmox_datacenter_roles | length > 0
@@ -21,7 +21,7 @@
   ansible.builtin.include_tasks:
     file: datacenter/user_groups.yml
   vars:
-    proxmox_datacenter_user_groups: "{{ proxmox__all | selectattr('entry__type', 'eq', 'user_group') }}"
+    proxmox_datacenter_user_groups: "{{ proxmox__all | selectattr('_type', 'eq', 'user_group') }}"
   when:
     - proxmox__manage_user_groups
     - proxmox_datacenter_user_groups | length > 0
@@ -30,7 +30,7 @@
   ansible.builtin.include_tasks:
     file: datacenter/users.yml
   vars:
-    proxmox_datacenter_users: "{{ proxmox__all | selectattr('entry__type', 'eq', 'user') }}"
+    proxmox_datacenter_users: "{{ proxmox__all | selectattr('_type', 'eq', 'user') }}"
   when:
     - proxmox__manage_users
     - proxmox_datacenter_users | length > 0
@@ -39,7 +39,7 @@
   ansible.builtin.include_tasks:
     file: datacenter/acls.yml
   vars:
-    proxmox_datacenter_acls: "{{ proxmox__all | selectattr('entry__type', 'eq', 'acl') }}"
+    proxmox_datacenter_acls: "{{ proxmox__all | selectattr('_type', 'eq', 'acl') }}"
   when:
     - proxmox__manage_acls
     - proxmox_datacenter_acls | length > 0

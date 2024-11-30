@@ -1,14 +1,14 @@
 network__all: "{{ {'host': network__host, 'group': network__group, 'default': network__default} | aybarsm.helper.role_items(only=network__use_only) }}"
 
 ##### BEGIN: network sysctl vars
-network__sysctl_all: "{{ network__all | selectattr('entry__type', 'eq', 'sysctl') |
+network__sysctl_all: "{{ network__all | selectattr('_type', 'eq', 'sysctl') |
   aybarsm.helper.replace_aliases(__ansible.modules.ansible_posix_sysctl.aliases, removeAliases=true) |
   community.general.json_query('[?not_null(name) && not_null(value)]') |
   unique(attribute='name') }}"
 ##### END: network sysctl vars
 
 ##### BEGIN: network hosts vars
-network__hosts_all: "{{ network__all | selectattr('entry__type', 'eq', 'host') |
+network__hosts_all: "{{ network__all | selectattr('_type', 'eq', 'host') |
   aybarsm.helper.replace_aliases({'fqdn': ['hostname']}) | unique(attribute='ip') }}"
 
 # Sort hosts by hostname to avoid unneccessary changes
@@ -17,5 +17,5 @@ network__hosts_all_ipv6: "{{ network__hosts_all | selectattr('ip', 'ansible.util
 ##### END: network hosts vars
 
 ##### BEGIN: network iptables vars
-network__iptables_all: "{{ network__all | selectattr('entry__type', 'eq', 'iptables') }}"
+network__iptables_all: "{{ network__all | selectattr('_type', 'eq', 'iptables') }}"
 ##### END: network iptables vars

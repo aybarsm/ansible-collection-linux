@@ -3,9 +3,9 @@
     name: aybarsm.linux.pkg_mgr
   vars:
     pkg_mgr__role_enabled: true
-    pkg_mgr__manage_repo_keys: true
-    pkg_mgr__manage_repos: true
-    pkg_mgr__manage_packages: true
+    pkg_mgr__manage_repo_keys: "{{ proxmox__manage_repo_keys }}"
+    pkg_mgr__manage_repos: "{{ proxmox__manage_repos }}"
+    pkg_mgr__manage_packages: "{{ proxmox__manage_packages }}"
     pkg_mgr__package_module: specific
     pkg_mgr__upgrade_strategy: never
     pkg_mgr__use_only: ['host']

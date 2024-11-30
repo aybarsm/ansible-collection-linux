@@ -6,25 +6,25 @@
     file_mgr__role_enabled: true
     file_mgr__use_only: ['host']
     file_mgr__host:
-      - entry__type: copy
-        entry__keep: "{{ (proxmox__ssl_certificate | default(undef(), true)) is defined }}"
+      - _type: copy
+        _keep: "{{ (proxmox__ssl_certificate | default(undef(), true)) is defined }}"
         content: "{{ lookup('file', proxmox__ssl_certificate) if (proxmox__ssl_certificate | default(undef(), true)) is defined else omit }}"
         dest: /etc/pve/local/pve-ssl.pem
         mode: '0640'
         owner: root
         group: 'www-data'
-        entry__handlers:
-          - entry__type: service
+        _handlers:
+          - _type: service
             name: pveproxy
             state: restarted
-      - entry__type: copy
-        entry__keep: "{{ (proxmox__ssl_key | default(undef(), true)) is defined }}"
+      - _type: copy
+        _keep: "{{ (proxmox__ssl_key | default(undef(), true)) is defined }}"
         content: "{{ lookup('file', proxmox__ssl_key) if (proxmox__ssl_key | default(undef(), true)) is defined else omit }}"
         dest: /etc/pve/local/pve-ssl.key
         mode: '0640'
         owner: root
         group: 'www-data'
-        entry__handlers:
-          - entry__type: service
+        _handlers:
+          - _type: service
             name: pveproxy
             state: restarted

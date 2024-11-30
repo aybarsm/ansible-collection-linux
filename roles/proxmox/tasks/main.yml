@@ -4,7 +4,8 @@
 #     file: package_manager.yml
 #   when:
 #     - proxmox__role_enabled
-#     - __proxmox__pkg_mgr | length > 0
+#     - proxmox__manage_repo_keys or proxmox__manage_repos or proxmox__manage_packages
+#   tags: '{{"always" if proxmox__role_enabled else "never"}}'
 
 # - name: Include Datacenter Tasks
 #   ansible.builtin.include_tasks:
@@ -26,7 +27,7 @@
 
 - name: Include Freenas Tasks
   ansible.builtin.include_tasks:
-    file: "{{ __proxmox__purposes.freenas.task_file | default(proxmox__purposes.freenas.task_file) }}"
+    file: "{{ __proxmox__purposes.freenas.task_file }}"
   when:
     - proxmox__role_enabled
     - __proxmox__purposes.freenas is defined

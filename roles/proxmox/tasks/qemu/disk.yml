@@ -9,7 +9,7 @@
     fail_msg: "Disk size calculation requested but state is not resized or size is not defined in correct format."
     success_msg: "Disk size calculation requested and state is resized and size is defined in correct format."
   register: proxmox__assert_qemu_disk_calc_size
-  when: qemu_disk.entry__calc_size | default(false, true)
+  when: qemu_disk._calc_size| default(false, true)
 
 - name: Include VM Info Task if calculation requested and conditions are met
   ansible.builtin.include_tasks:
@@ -17,7 +17,7 @@
   vars:
     vm_info: "{{ qemu_disk | combine({'config': 'current'}) }}"
   when:
-    - qemu_disk.entry__calc_size | default(false, true)
+    - qemu_disk._calc_size| default(false, true)
     - proxmox__assert_qemu_disk_calc_size is success
 
 - name: Proxmox QEMU DISK
@@ -86,7 +86,7 @@
     werror: "{{ qemu_disk.werror | default(omit, true) }}"
     wwn: "{{ qemu_disk.wwn | default(omit, true) }}"
   vars:
-    is_resolve_request: "{{ (qemu_disk.entry__calc_size | default(false, true)) and 
+    is_resolve_request: "{{ (qemu_disk._calc_size| default(false, true)) and 
       proxmox__assert_qemu_disk_calc_size is success and
       proxmox__info_vm.proxmox_vms[0][qemu_disk.disk] is defined }}"
     current_size: "{{ (proxmox__info_vm.proxmox_vms[0][qemu_disk.disk] | regex_search('size=(\\w+)(,|$)', '\\1') | first) if is_resolve_request else undef() }}"

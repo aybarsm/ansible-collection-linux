@@ -1,15 +1,15 @@
 ---
 auth__all: "{{ {'host': auth__host, 'group': auth__group, 'default': auth__default} | aybarsm.helper.role_items(only=auth__use_only) }}"
 
-auth__users_all: "{{ auth__all | selectattr('entry__type', 'eq', 'user') }}"
+auth__users_all: "{{ auth__all | selectattr('_type', 'eq', 'user') }}"
 
-auth__authorized_keys_all: "{{ auth__all | selectattr('entry__type', 'eq', 'authorized_key') }}"
+auth__authorized_keys_all: "{{ auth__all | selectattr('_type', 'eq', 'authorized_key') }}"
 
-auth__sshd_config_all: "{{ auth__all | selectattr('entry__type', 'eq', 'sshd_config') | 
+auth__sshd_config_all: "{{ auth__all | selectattr('_type', 'eq', 'sshd_config') | 
   sort(attribute='value', reverse=true) | sort(attribute='name', reverse=false) }}"
 
-auth__ssh_config_all: "{{ auth__all | selectattr('entry__type', 'eq', 'ssh_config') |
+auth__ssh_config_all: "{{ auth__all | selectattr('_type', 'eq', 'ssh_config') |
   sort(attribute='value', reverse=true) | sort(attribute='name', reverse=false) }}"
 
 __auth__key_distribute_query: "*.auth__users_apply.results[*] | [] |
-  [?contains(not_null(item.entry__distribute_ssh_key,``),`{{ inventory_hostname }}`)].{user: name, key: ssh_public_key}"
+  [?contains(not_null(item._distribute_ssh_key,``),`{{inventory_hostname }}`)].{user: name, key: ssh_public_key}"
