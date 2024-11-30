@@ -10,38 +10,6 @@ proxmox__manage_users: false
 proxmox__manage_acls: false
 
 proxmox__remove_subscription_warning: false
-proxmox__use_freenas: false
-
-proxmox__freenas:
-  remote_src: true
-  git:
-    repo: https://github.com/TheGrandWazoo/freenas-proxmox
-    clone: true
-  file_mgr:
-    - entry__type: patch
-      src: pve-manager/js/pvemanagerlib.js.patch
-      dest: /usr/share/pve-manager/js/pvemanagerlib.js
-      entry__handlers: restart_pve_services
-    - entry__type: patch
-      src: pve-manager/js/pvemanagerlib.js.patch
-      dest: /usr/share/pve-manager/js/pvemanagerlib.js
-      entry__handlers: restart_pve_services
-    - entry__type: patch
-      src: pve-manager/js/pvemanagerlib.js.patch
-      dest: /usr/share/pve-manager/js/pvemanagerlib.js
-      entry__handlers: restart_pve_services
-    - entry__type: patch
-      src: pve-manager/js/pvemanagerlib.js.patch
-      dest: /usr/share/pve-manager/js/pvemanagerlib.js
-      entry__handlers: restart_pve_services
-    - entry__type: copy
-      src: perl5/PVE/Storage/LunCmd/FreeNAS.pm
-      dest: /usr/share/perl5/PVE/Storage/LunCmd/FreeNAS.pm
-      entry__handlers: restart_pve_services
-    - entry__type: handlers
-      name: restart_pve_services
-      condition: any
-      handlers: "{{ {'name': ['pvedaemon', 'pveproxy', 'pvestatd', 'pve-ha-lrm', 'pve-ha-crm']} | aybarsm.helper.to_list_of_dicts({'entry__type': 'service', 'state': 'restarted'}) }}"
 
 proxmox__clusters: {}
 
@@ -100,6 +68,5 @@ proxmox__purposes:
     packages: ['zfsutils-linux', 'zfs-initramfs', 'zfs-zed']
   freenas:
     packages: ['librest-client-perl', 'git', 'patch']
-    params:
-      task_file: freenas.yml
-      remote_src: true
+    task_file: freenas.yml
+    remote_src: true

@@ -1,4 +1,8 @@
 proxmox__all: "{{ {'host': proxmox__host, 'group': proxmox__group, 'default': proxmox__default} | aybarsm.helper.role_items(only=proxmox__use_only) }}"
+__proxmox__purposes: "{{ {
+  'key': (proxmox__all | selectattr('entry__type', 'eq', 'purpose') | map(attribute='name')),
+  'value': (proxmox__all | selectattr('entry__type', 'eq', 'purpose') | map('aybarsm.helper.all_except', ['entry__type', 'name']))
+  } | aybarsm.helper.to_list_of_dicts() | items2dict }}"
 
 __proxmox__cluster_members_query: '*.{
   host: inventory_hostname,

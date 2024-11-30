@@ -1,10 +1,10 @@
 ---
-- name: Include Package Manager Tasks
-  ansible.builtin.include_tasks:
-    name: package_manager.yml
-  when:
-    - proxmox__role_enabled
-    - __proxmox__pkg_mgr | length > 0
+# - name: Include Package Manager Tasks
+#   ansible.builtin.include_tasks:
+#     file: package_manager.yml
+#   when:
+#     - proxmox__role_enabled
+#     - __proxmox__pkg_mgr | length > 0
 
 # - name: Include Datacenter Tasks
 #   ansible.builtin.include_tasks:
@@ -23,10 +23,10 @@
 #   when:
 #     - proxmox__role_enabled
 #     - proxmox__remove_subscription_warning | bool
-  
+
 - name: Include Freenas Tasks
   ansible.builtin.include_tasks:
-    file: "{{ proxmox__purposes.freenas.params.task_file }}"
+    file: "{{ __proxmox__purposes.freenas.task_file | default(proxmox__purposes.freenas.task_file) }}"
   when:
     - proxmox__role_enabled
-    - proxmox__all | selectattr('entry__type', 'eq', 'purpose') | selectattr('name', 'eq', 'freenas') | length > 0
+    - __proxmox__purposes.freenas is defined

@@ -9,7 +9,5 @@
     pkg_mgr__package_module: specific
     pkg_mgr__upgrade_strategy: never
     pkg_mgr__use_only: ['host']
-    pkg_mgr__default: []
-    pkg_mgr__group: []
     pkg_mgr__host: "{{ __proxmox__pkg_mgr }}"
   register: proxmox__pkg_mgr
